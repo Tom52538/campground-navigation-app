@@ -10,10 +10,10 @@ interface SwipeNavigationPanelProps {
 }
 
 const panels = [
-  { id: 'search', label: 'Search', icon: Search },
-  { id: 'map', label: 'Map', icon: Map },
-  { id: 'navigation', label: 'Navigation', icon: Navigation },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  { id: 'search', label: 'search', icon: Search },
+  { id: 'map', label: 'map', icon: Map },
+  { id: 'navigation', label: 'navigate', icon: Navigation },
+  { id: 'settings', label: 'settings', icon: Settings }
 ] as const;
 
 export const SwipeNavigationPanel = ({ 
@@ -21,6 +21,7 @@ export const SwipeNavigationPanel = ({
   onNavigateRight, 
   currentPanel 
 }: SwipeNavigationPanelProps) => {
+  const { t } = useLanguage();
   const currentIndex = panels.findIndex(panel => panel.id === currentPanel);
 
   return (
@@ -64,7 +65,7 @@ export const SwipeNavigationPanel = ({
                     text-xs font-medium transition-colors duration-300
                     ${isActive ? 'text-blue-600' : 'text-gray-500'}
                   `}>
-                    {panel.label}
+                    {t(`navigation.${panel.label}`)}
                   </span>
                 </div>
               );
