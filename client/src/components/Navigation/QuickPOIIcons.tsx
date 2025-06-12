@@ -47,7 +47,7 @@ const CAMPING_POI_ICONS = [
 
 export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOIIconsProps) => {
   return (
-    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3">
+    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-2">
       {CAMPING_POI_ICONS.map((poi, index) => {
         const isActive = filteredCategories.includes(poi.category);
         
@@ -57,9 +57,9 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
             variant="ghost"
             size="sm"
             className={`
-              w-12 h-12 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
+              w-11 h-11 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
               ${isActive 
-                ? `${poi.color} text-white scale-110 shadow-xl` 
+                ? `${poi.color} text-white scale-105 shadow-xl` 
                 : 'bg-white/90 text-gray-700 hover:scale-105 hover:shadow-xl'
               }
             `}

@@ -59,7 +59,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
   }, []);
 
   return (
-    <div className="absolute right-4 bottom-32 z-20 flex flex-col space-y-3">
+    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col space-y-2">
       {/* Beautiful Camping Compass */}
       <div className="relative w-14 h-14 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-white/20 flex items-center justify-center">
         <div 
