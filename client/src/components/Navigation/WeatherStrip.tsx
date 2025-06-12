@@ -56,59 +56,40 @@ export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
   const alerts = getCampingAlert(weather);
 
   return (
-    <div className="absolute bottom-40 left-4 right-4 z-30">
-      <div className="bg-gradient-to-r from-blue-50/90 to-green-50/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/30 p-3">
-        {/* Main Weather Info */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white/60 rounded-full p-2">
-              <WeatherIcon className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <div className="text-lg font-semibold text-gray-800">
-                {Math.round(weather.temperature)}°C
-              </div>
-              <div className="text-sm text-gray-600 capitalize">
-                {weather.condition}
-              </div>
-            </div>
+    <div className="absolute bottom-24 left-4 right-4 z-30">
+      <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-white/30 px-3 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <WeatherIcon className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-semibold text-gray-800">
+              {Math.round(weather.temperature)}°C
+            </span>
+            <span className="text-xs text-gray-600 capitalize">
+              {weather.condition}
+            </span>
           </div>
           
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
+          <div className="flex items-center space-x-3 text-xs text-gray-600">
             {weather.humidity && (
               <div className="flex items-center space-x-1">
-                <Droplets className="w-4 h-4" />
+                <Droplets className="w-3 h-3" />
                 <span>{weather.humidity}%</span>
               </div>
             )}
             {weather.windSpeed && (
               <div className="flex items-center space-x-1">
-                <Wind className="w-4 h-4" />
-                <span>{Math.round(weather.windSpeed)} km/h</span>
+                <Wind className="w-3 h-3" />
+                <span>{Math.round(weather.windSpeed)}km/h</span>
+              </div>
+            )}
+            {alerts.length > 0 && (
+              <div className="flex items-center space-x-1 text-amber-600">
+                <AlertTriangle className="w-3 h-3" />
+                <span>{alerts.length}</span>
               </div>
             )}
           </div>
         </div>
-
-        {/* Camping Alerts */}
-        {alerts.length > 0 && (
-          <div className="border-t border-white/30 pt-2">
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="text-xs font-medium text-amber-800 mb-1">Camping Alerts</div>
-                <div className="space-y-1">
-                  {alerts.map((alert, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-xs text-gray-700">
-                      <span>{alert.icon}</span>
-                      <span>{alert.message}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
