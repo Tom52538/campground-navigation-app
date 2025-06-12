@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -10,6 +11,7 @@ interface SearchBarProps {
 
 export const SearchBar = ({ onSearch, onFilter }: SearchBarProps) => {
   const [query, setQuery] = useState('');
+  const { t } = useLanguage();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -24,7 +26,7 @@ export const SearchBar = ({ onSearch, onFilter }: SearchBarProps) => {
           <Search className="text-gray-500 w-4 h-4 mr-3 flex-shrink-0" />
           <Input
             type="text"
-            placeholder="Find campsites, trails, amenities..."
+            placeholder={t('navigation.search')}
             value={query}
             onChange={handleInputChange}
             className="border-none shadow-none p-0 focus-visible:ring-0 text-sm bg-transparent flex-1 text-gray-800 placeholder-gray-400"

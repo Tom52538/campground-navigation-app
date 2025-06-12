@@ -20,6 +20,7 @@ import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
 import { useWeather } from '@/hooks/useWeather';
+import { useLanguage } from '@/hooks/useLanguage';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
 import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +32,7 @@ export default function Navigation() {
   const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
   const { getRoute } = useRouting();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // Map state
   const [mapCenter, setMapCenter] = useState(TEST_SITES.kamperland.coordinates);
