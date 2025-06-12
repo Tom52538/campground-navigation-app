@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { Icon, divIcon } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
+import { GestureController } from './GestureController';
+import { ZoomGestureIndicator } from './ZoomGestureIndicator';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -90,17 +92,45 @@ export const MapContainerComponent = ({
   onPOIClick,
   onMapClick,
 }: MapContainerProps) => {
-  // POIs are already filtered in Navigation component, use them directly
+  const [gestureIndicator, setGestureIndicator] = useState<{
+    isVisible: boolean;
+    type: 'pinch-in' | 'pinch-out' | 'rotate' | null;
+    intensity: number;
+  }>({
+    isVisible: false,
+    type: null,
+    intensity: 0
+  });
+
+  const handlePinchZoom = (scale: number) => {
+    const intensity = Math.abs(scale - 1);
+    setGestureIndicator({
+      isVisible: true,
+      type: scale > 1 ? 'pinch-out' : 'pinch-in',
+      intensity: Math.min(intensity, 1)
+    });
+
+    setTimeout(() => {
+      setGestureIndicator(prev => ({ ...prev, isVisible: false }));
+    }, 100);
+  };
+
+  const handleDoubleTap = (latlng: any) => {
+    console.log('Double tap zoom at:', latlng);
+  };
+
+  const handleLongPress = (latlng: any) => {
+    console.log('Long press - add POI at:', latlng);
+  };
 
   return (
-    <div className="map-container">
+    <div className="map-container relative">
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
         className="w-full h-full z-0"
         zoomControl={false}
         attributionControl={false}
-
       >
         <MapController center={center} zoom={zoom} />
         
@@ -110,9 +140,14 @@ export const MapContainerComponent = ({
           maxZoom={19}
         />
         
-        <GestureEnhancedMap 
-          onDoubleTab={(latlng) => console.log('Double tap at:', latlng)}
-          onLongPress={(latlng) => console.log('Long press at:', latlng)}
+        <GestureController
+          onPinchZoom={handlePinchZoom}
+          onDoubleTap={handleDoubleTap}
+          onLongPress={handleLongPress}
+          onSwipeLeft={() => console.log('Swipe left - next panel')}
+          onSwipeRight={() => console.log('Swipe right - previous panel')}
+          onSwipeUp={() => console.log('Swipe up - show details')}
+          onSwipeDown={() => console.log('Swipe down - hide panels')}
         />
         
         <CurrentLocationMarker position={currentPosition} />
@@ -128,6 +163,12 @@ export const MapContainerComponent = ({
         
         {route && <RoutePolyline route={route} />}
       </MapContainer>
+      
+      <ZoomGestureIndicator
+        isVisible={gestureIndicator.isVisible}
+        gestureType={gestureIndicator.type}
+        intensity={gestureIndicator.intensity}
+      />
     </div>
   );
 };

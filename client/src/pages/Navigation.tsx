@@ -15,6 +15,7 @@ import { POIClearButton } from '@/components/Navigation/POIClearButton';
 import { WeatherWidget } from '@/components/Navigation/WeatherWidget';
 import { WeatherStrip } from '@/components/Navigation/WeatherStrip';
 import { CampingAlerts } from '@/components/Navigation/CampingAlerts';
+import { SwipeNavigationPanel } from '@/components/Map/SwipeNavigationPanel';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
