@@ -273,10 +273,6 @@ export default function Navigation() {
         onToggleCategory={handleToggleCategory}
       />
 
-      {weather && (
-        <CampingAlerts weather={weather} coordinates={currentPosition} />
-      )}
-
       <WeatherStrip coordinates={currentPosition} />
 
       <StatusBar currentPosition={currentPosition} />

@@ -124,7 +124,7 @@ export const CampingAlerts = ({ weather, coordinates }: CampingAlertsProps) => {
   useEffect(() => {
     const newAlerts = generateAlerts(weather, t);
     setAlerts(newAlerts);
-  }, [weather, t]);
+  }, [weather.temperature, weather.condition, weather.windSpeed]);
 
   const dismissAlert = (alertId: string) => {
     const prevArray = Array.from(dismissedAlerts);

@@ -47,8 +47,20 @@ export const translations = {
       condition: 'Condition',
       humidity: 'Humidity',
       windSpeed: 'Wind Speed',
-      alerts: 'alert',
-      alertsPlural: 'alerts'
+      loading: 'Loading weather...',
+      alerts: {
+        cold: 'Cold weather - check gear',
+        rain: 'Rain expected - secure equipment',
+        wind: 'High winds - secure tents',
+        heat: 'Hot weather - stay hydrated',
+        coldTitle: 'Cold Weather Alert',
+        rainTitle: 'Rain Expected',
+        windTitle: 'High Wind Alert',
+        heatTitle: 'High Temperature Alert'
+      }
+    },
+    search: {
+      placeholder: 'Search facilities, restaurants, activities...'
     },
     poi: {
       navigate: 'Navigate',
@@ -73,13 +85,13 @@ export const translations = {
   },
   de: {
     navigation: {
-      search: 'Campingplätze, Wege, Einrichtungen finden...',
+      search: 'Suchen',
       kamperland: 'Kamperland',
       zuhause: 'Zuhause',
       clearPOIs: 'POIs löschen',
       filter: 'Filter',
       map: 'Karte',
-      navigation: 'Navigation',
+      navigate: 'Navigation',
       settings: 'Einstellungen'
     },
     categories: {
@@ -94,8 +106,20 @@ export const translations = {
       condition: 'Bedingung',
       humidity: 'Luftfeuchtigkeit',
       windSpeed: 'Windgeschwindigkeit',
-      alerts: 'Warnung',
-      alertsPlural: 'Warnungen'
+      loading: 'Wetter wird geladen...',
+      alerts: {
+        cold: 'Kaltes Wetter - Ausrüstung prüfen',
+        rain: 'Regen erwartet - Ausrüstung sichern',
+        wind: 'Starke Winde - Zelte sichern',
+        heat: 'Heißes Wetter - viel trinken',
+        coldTitle: 'Kältealarm',
+        rainTitle: 'Regen erwartet',
+        windTitle: 'Starker Wind',
+        heatTitle: 'Hitzewarnung'
+      }
+    },
+    search: {
+      placeholder: 'Einrichtungen, Restaurants, Aktivitäten suchen...'
     },
     poi: {
       navigate: 'Navigieren',
