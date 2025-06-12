@@ -20,7 +20,7 @@ export const CategoryFilter = ({ filteredCategories, onToggleCategory }: Categor
   const categories = Object.entries(POI_CATEGORIES) as [POICategory, typeof POI_CATEGORIES[POICategory]][];
 
   return (
-    <div className="absolute left-4 top-20 z-20 flex flex-col space-y-3">
+    <div className="absolute left-4 top-24 z-20 flex flex-col space-y-3">
       {categories.map(([key, category]) => {
         const isActive = filteredCategories.includes(key);
         const emoji = getEmojiForCategory(category.icon);

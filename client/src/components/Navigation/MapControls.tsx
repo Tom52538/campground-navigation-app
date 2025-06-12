@@ -59,7 +59,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
   }, []);
 
   return (
-    <div className="absolute right-4 top-20 z-20 flex flex-col space-y-3">
+    <div className="absolute right-4 top-24 z-20 flex flex-col space-y-3">
       <div className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border-2 border-black/30 flex items-center justify-center">
         <CompassIcon heading={heading} />
       </div>
