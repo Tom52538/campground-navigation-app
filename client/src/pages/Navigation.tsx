@@ -4,7 +4,7 @@ import { TopBar } from '@/components/Navigation/TopBar';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
 import { POIPanel } from '@/components/Navigation/POIPanel';
-import { CategoryFilter } from '@/components/Navigation/CategoryFilter';
+import { FilterModal } from '@/components/Navigation/FilterModal';
 
 import { StatusBar } from '@/components/Navigation/StatusBar';
 import { SiteSelector } from '@/components/Navigation/SiteSelector';
@@ -32,6 +32,7 @@ export default function Navigation() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -63,12 +64,8 @@ export default function Navigation() {
   }, []);
 
   const handleFilter = useCallback(() => {
-    // Toggle filter options - could open a modal or side panel
-    toast({
-      title: "Filter Options",
-      description: "Use the category buttons on the left to filter POIs",
-    });
-  }, [toast]);
+    setShowFilterModal(true);
+  }, []);
 
   const handleZoomIn = useCallback(() => {
     setMapZoom(prev => Math.min(prev + 1, 19));
@@ -249,6 +246,13 @@ export default function Navigation() {
       <div className="absolute bottom-4 right-4 z-30">
         <WeatherWidget coordinates={currentPosition} />
       </div>
+
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filteredCategories={filteredCategories}
+        onToggleCategory={handleToggleCategory}
+      />
     </div>
   );
 }

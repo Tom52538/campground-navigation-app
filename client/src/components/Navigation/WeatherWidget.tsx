@@ -58,26 +58,23 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]">
-      <div className="space-y-2">
-        {[0, 1, 2].map((dayOffset) => (
-          <div key={dayOffset} className={`flex items-center justify-between ${dayOffset === 0 ? 'border-b border-gray-200 pb-2' : ''}`}>
-            <div className="text-xs text-gray-600 min-w-[40px]">
+    <div className="bg-white rounded-lg shadow-md p-3 min-w-[120px]">
+      <div className="flex items-center space-x-2 mb-2">
+        {getWeatherIcon(weather.condition)}
+        <div className="text-lg font-semibold text-gray-800">{weather.temperature}°</div>
+      </div>
+      <div className="text-xs text-gray-500 mb-2">{weather.condition}</div>
+      <div className="space-y-1">
+        {[1, 2].map((dayOffset) => (
+          <div key={dayOffset} className="flex items-center justify-between">
+            <div className="text-xs text-gray-600">
               {getDayName(dayOffset)}
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4">
-                {dayOffset === 0 ? getWeatherIcon(weather.condition) : <Sun className="text-yellow-500 w-4 h-4" />}
-              </div>
-              <div className={`text-sm ${dayOffset === 0 ? 'font-bold text-gray-800' : 'text-gray-600'}`}>
-                {getForecastTemp(dayOffset)}°
-              </div>
+            <div className="text-xs text-gray-600">
+              {getForecastTemp(dayOffset)}°
             </div>
           </div>
         ))}
-        <div className="text-xs text-gray-500 text-center mt-2">
-          {weather.condition}
-        </div>
       </div>
     </div>
   );
