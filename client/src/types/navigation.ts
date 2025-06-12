@@ -47,13 +47,13 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'restaurants' | 'activities' | 'facilities' | 'services';
+export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  restaurants: { icon: 'fas fa-utensils', color: 'bg-secondary', label: 'Restaurants' },
-  activities: { icon: 'fas fa-swimming-pool', color: 'bg-primary', label: 'Activities' },
-  facilities: { icon: 'fas fa-restroom', color: 'bg-warning', label: 'Facilities' },
-  services: { icon: 'fas fa-info-circle', color: 'bg-gray-500', label: 'Services' }
+  'food-drink': { icon: 'utensils', color: 'text-orange-600', label: 'Food & Drink' },
+  'services': { icon: 'building-2', color: 'text-blue-600', label: 'Essential Services' },
+  'recreation': { icon: 'waves', color: 'text-green-600', label: 'Recreation' },
+  'facilities': { icon: 'car', color: 'text-purple-600', label: 'Practical Facilities' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
