@@ -9,6 +9,7 @@ import { CategoryFilter } from '@/components/Navigation/CategoryFilter';
 import { StatusBar } from '@/components/Navigation/StatusBar';
 import { SiteSelector } from '@/components/Navigation/SiteSelector';
 import { POIClearButton } from '@/components/Navigation/POIClearButton';
+import { WeatherWidget } from '@/components/Navigation/WeatherWidget';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
@@ -249,6 +250,10 @@ export default function Navigation() {
 
 
       <StatusBar currentPosition={currentPosition} />
+      
+      <div className="absolute bottom-4 right-4 z-30">
+        <WeatherWidget coordinates={currentPosition} />
+      </div>
     </div>
   );
 }
