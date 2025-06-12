@@ -41,6 +41,7 @@ export default function Navigation() {
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -179,6 +180,23 @@ export default function Navigation() {
     });
   }, [toast]);
 
+  // Gesture navigation handlers
+  const handleNavigateLeft = useCallback(() => {
+    const panels = ['search', 'map', 'navigation', 'settings'] as const;
+    const currentIndex = panels.indexOf(currentPanel);
+    if (currentIndex > 0) {
+      setCurrentPanel(panels[currentIndex - 1]);
+    }
+  }, [currentPanel]);
+
+  const handleNavigateRight = useCallback(() => {
+    const panels = ['search', 'map', 'navigation', 'settings'] as const;
+    const currentIndex = panels.indexOf(currentPanel);
+    if (currentIndex < panels.length - 1) {
+      setCurrentPanel(panels[currentIndex + 1]);
+    }
+  }, [currentPanel]);
+
   if (poisLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-50">
@@ -262,6 +280,12 @@ export default function Navigation() {
       <StatusBar currentPosition={currentPosition} />
       
       <GPSAccuracyIndicator useRealGPS={useRealGPS} />
+
+      <SwipeNavigationPanel
+        currentPanel={currentPanel}
+        onNavigateLeft={handleNavigateLeft}
+        onNavigateRight={handleNavigateRight}
+      />
 
       <FilterModal
         isOpen={showFilterModal}
