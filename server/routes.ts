@@ -5,49 +5,99 @@ import { RoutingService } from "../client/src/lib/routingService";
 import { readFileSync } from "fs";
 import { join } from "path";
 
-// Direct POI data access for Railway deployment
+
+// Category mapping for campsite navigation
+const categoryMapping: Record<string, string> = {
+  'restaurant': 'food-drink',
+  'cafe': 'food-drink',
+  'bar': 'food-drink',
+  'pub': 'food-drink',
+  'fast_food': 'food-drink',
+  'shop': 'services',
+  'pharmacy': 'services',
+  'bank': 'services',
+  'atm': 'services',
+  'information': 'services',
+  'fuel': 'services',
+  'supermarket': 'services',
+  'swimming_pool': 'recreation',
+  'playground': 'recreation',
+  'sports_centre': 'recreation',
+  'attraction': 'recreation',
+  'parking': 'facilities',
+  'toilets': 'facilities',
+  'waste_disposal': 'facilities',
+  'bicycle_parking': 'facilities'
+};
+
+// Load authentic OpenStreetMap POI data
 async function getPOIData(site: string) {
   try {
-    const filename = site === 'zuhause' ? 'zuhause_1749652477995.geojson' : 'kamperland_1749651931880.geojson';
-    const filePath = join(process.cwd(), 'attached_assets', filename);
+    const filename = site === 'zuhause' ? 'zuhause_pois.geojson' : 'kamperland_pois.geojson';
+    const filePath = join(process.cwd(), 'server', 'data', filename);
     const data = readFileSync(filePath, 'utf-8');
     const geojson = JSON.parse(data);
     
-    return geojson.features.map((feature: any) => {
-      // Handle different geometry types properly
-      let coordinates;
-      if (feature.geometry.type === 'Point') {
-        coordinates = {
-          lat: feature.geometry.coordinates[1],
-          lng: feature.geometry.coordinates[0]
-        };
-      } else if (feature.geometry.type === 'Polygon') {
-        // Calculate centroid for polygons
-        const coords = feature.geometry.coordinates[0];
-        const lats = coords.map((c: number[]) => c[1]);
-        const lngs = coords.map((c: number[]) => c[0]);
-        coordinates = {
-          lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
-          lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
-        };
-      } else {
-        // Fallback for other geometry types
-        coordinates = {
-          lat: 51.5886,
-          lng: 3.7160
-        };
-      }
+    return geojson.features
+      .filter((feature: any) => feature.properties?.name) // Only named features
+      .map((feature: any, index: number) => {
+        // Extract coordinates from geometry
+        let coordinates;
+        if (feature.geometry.type === 'Point') {
+          coordinates = {
+            lat: feature.geometry.coordinates[1],
+            lng: feature.geometry.coordinates[0]
+          };
+        } else if (feature.geometry.type === 'Polygon') {
+          // Calculate centroid for polygons
+          const coords = feature.geometry.coordinates[0];
+          const lats = coords.map((c: number[]) => c[1]);
+          const lngs = coords.map((c: number[]) => c[0]);
+          coordinates = {
+            lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
+            lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
+          };
+        } else {
+          // Skip unsupported geometry types
+          return null;
+        }
 
-      return {
-        id: feature.properties.id || feature.id || `feature_${Math.random()}`,
-        name: feature.properties.name || feature.properties.Name || 'Unnamed Location',
-        category: feature.properties.amenity || feature.properties.tourism || feature.properties.leisure || 'general',
-        coordinates,
-        description: feature.properties.description || '',
-        amenities: feature.properties.amenities ? feature.properties.amenities.split(',') : [],
-        hours: feature.properties.hours || feature.properties.opening_hours || ''
-      };
-    });
+        // Categorize using OSM tags
+        const props = feature.properties;
+        let category = 'services'; // default
+        
+        if (props.amenity && categoryMapping[props.amenity]) {
+          category = categoryMapping[props.amenity];
+        } else if (props.leisure && categoryMapping[props.leisure]) {
+          category = categoryMapping[props.leisure];
+        } else if (props.tourism && categoryMapping[props.tourism]) {
+          category = categoryMapping[props.tourism];
+        } else if (props.shop) {
+          category = 'services';
+        }
+
+        // Extract amenities
+        const amenities = [];
+        if (props.cuisine) amenities.push(`Cuisine: ${props.cuisine}`);
+        if (props.phone) amenities.push(`Phone: ${props.phone}`);
+        if (props.website) amenities.push(`Website: ${props.website}`);
+        if (props['addr:street'] && props['addr:housenumber']) {
+          amenities.push(`Address: ${props['addr:housenumber']} ${props['addr:street']}`);
+        }
+
+        return {
+          id: feature.id?.toString() || `${site}_${index}`,
+          name: props.name,
+          category,
+          coordinates,
+          description: [props.amenity, props.leisure, props.tourism, props.shop]
+            .filter(Boolean)
+            .join(', ') || 'Point of interest',
+          amenities: amenities.length > 0 ? amenities : undefined,
+          hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
+        };
+      })
+      .filter(Boolean); // Remove null entries
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
     return [];
