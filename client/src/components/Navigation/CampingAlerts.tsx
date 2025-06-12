@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, X, Thermometer, CloudRain, Wind, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WeatherData } from '@/types/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface CampingAlert {
   id: string;
@@ -18,7 +19,7 @@ interface CampingAlertsProps {
   coordinates: { lat: number; lng: number };
 }
 
-const generateAlerts = (weather: WeatherData): CampingAlert[] => {
+const generateAlerts = (weather: WeatherData, t: (key: string) => string): CampingAlert[] => {
   const alerts: CampingAlert[] = [];
 
   // Temperature alerts

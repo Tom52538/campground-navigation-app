@@ -16,23 +16,23 @@ const getWeatherIcon = (condition: string) => {
   return Cloud;
 };
 
-const getCampingAlert = (weather: any) => {
+const getCampingAlert = (weather: any, t: (key: string) => string) => {
   const alerts = [];
   
   if (weather.temperature < 5) {
-    alerts.push({ type: 'cold', message: 'Cold weather - check gear', icon: '🥶' });
+    alerts.push({ type: 'cold', message: t('weather.alerts.cold'), icon: '🥶' });
   }
   
   if (weather.condition?.toLowerCase().includes('rain')) {
-    alerts.push({ type: 'rain', message: 'Rain expected - secure equipment', icon: '🌧️' });
+    alerts.push({ type: 'rain', message: t('weather.alerts.rain'), icon: '🌧️' });
   }
   
   if (weather.windSpeed && weather.windSpeed > 20) {
-    alerts.push({ type: 'wind', message: 'High winds - secure tents', icon: '💨' });
+    alerts.push({ type: 'wind', message: t('weather.alerts.wind'), icon: '💨' });
   }
   
   if (weather.temperature > 30) {
-    alerts.push({ type: 'heat', message: 'Hot weather - stay hydrated', icon: '🌡️' });
+    alerts.push({ type: 'heat', message: t('weather.alerts.heat'), icon: '🌡️' });
   }
   
   return alerts;
@@ -47,7 +47,7 @@ export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
       <div className="absolute bottom-20 left-4 right-4 z-30">
         <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-white/30 p-3">
           <div className="flex items-center justify-center">
-            <div className="animate-pulse text-gray-500">Loading weather...</div>
+            <div className="animate-pulse text-gray-500">{t('weather.loading')}</div>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@ export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
   }
 
   const WeatherIcon = getWeatherIcon(weather.condition);
-  const alerts = getCampingAlert(weather);
+  const alerts = getCampingAlert(weather, t);
 
   return (
     <div className="absolute bottom-4 right-4 z-30">
