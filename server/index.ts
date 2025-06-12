@@ -55,8 +55,8 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    // Custom static file serving with Railway-compatible paths
-    const distPath = path.join(__dirname, "..", "dist", "public");
+    // Custom static file serving with Railway absolute path
+    const distPath = "/app/dist/public";
     
     if (!fs.existsSync(distPath)) {
       log(`Warning: Build directory not found at ${distPath}. Run 'npm run build' first.`);
