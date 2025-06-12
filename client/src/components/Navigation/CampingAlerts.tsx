@@ -119,11 +119,12 @@ const generateAlerts = (weather: WeatherData, t: (key: string) => string): Campi
 export const CampingAlerts = ({ weather, coordinates }: CampingAlertsProps) => {
   const [alerts, setAlerts] = useState<CampingAlert[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const { t } = useLanguage();
 
   useEffect(() => {
-    const newAlerts = generateAlerts(weather);
+    const newAlerts = generateAlerts(weather, t);
     setAlerts(newAlerts);
-  }, [weather]);
+  }, [weather, t]);
 
   const dismissAlert = (alertId: string) => {
     const prevArray = Array.from(dismissedAlerts);
