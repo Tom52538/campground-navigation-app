@@ -70,6 +70,21 @@ export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
           <div className="text-xs text-gray-600 capitalize">
             {weather.condition}
           </div>
+          <div className="flex items-center space-x-2 text-xs">
+            <select 
+              className="bg-transparent text-gray-600 text-xs border-none"
+              onChange={(e) => {
+                localStorage.setItem('campground-language', e.target.value);
+                window.location.reload();
+              }}
+              defaultValue={localStorage.getItem('campground-language') || 'en'}
+            >
+              <option value="en">EN</option>
+              <option value="de">DE</option>
+              <option value="fr">FR</option>
+              <option value="nl">NL</option>
+            </select>
+          </div>
           
           <div className="flex items-center justify-between text-xs text-gray-600 pt-1">
             {weather.humidity && (
