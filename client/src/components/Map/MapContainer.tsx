@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-
 import { Icon, divIcon } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
+import { GestureEnhancedMap } from './GestureEnhancedMap';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -107,6 +108,11 @@ export const MapContainerComponent = ({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           maxZoom={19}
+        />
+        
+        <GestureEnhancedMap 
+          onDoubleTab={(latlng) => console.log('Double tap at:', latlng)}
+          onLongPress={(latlng) => console.log('Long press at:', latlng)}
         />
         
         <CurrentLocationMarker position={currentPosition} />

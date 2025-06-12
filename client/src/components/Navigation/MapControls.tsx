@@ -59,45 +59,62 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
   }, []);
 
   return (
-    <div className="absolute right-4 bottom-20 z-20 flex flex-col space-y-2">
-      <div className="bg-white rounded-lg shadow-md">
+    <div className="absolute right-4 bottom-32 z-20 flex flex-col space-y-3">
+      {/* Beautiful Camping Compass */}
+      <div className="relative w-14 h-14 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-white/20 flex items-center justify-center">
+        <div 
+          className="relative w-10 h-10 transition-transform duration-500 ease-out"
+          style={{ transform: `rotate(${heading}deg)` }}
+        >
+          <div className="absolute inset-0 rounded-full border-2 border-orange-300/60"></div>
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-2 border-r-2 border-b-4 border-l-transparent border-r-transparent border-b-orange-600"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-600 rounded-full"></div>
+        </div>
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs font-bold text-orange-600">N</div>
+      </div>
+
+      {/* Floating Zoom Controls */}
+      <div className="bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-white/20 overflow-hidden">
         <Button
           variant="ghost"
           size="sm"
-          className="w-10 h-10 p-0 rounded-t-lg hover:bg-gray-50 border-b border-gray-100"
+          className="w-11 h-11 p-0 rounded-t-full hover:bg-green-50/80 transition-all duration-200"
           onClick={onZoomIn}
         >
-          <Plus className="w-5 h-5 text-gray-600" />
+          <Plus className="w-4 h-4 text-green-700" />
         </Button>
+        <div className="h-px bg-gray-200/50"></div>
         <Button
           variant="ghost"
           size="sm"
-          className="w-10 h-10 p-0 rounded-b-lg hover:bg-gray-50"
+          className="w-11 h-11 p-0 rounded-b-full hover:bg-green-50/80 transition-all duration-200"
           onClick={onZoomOut}
         >
-          <Minus className="w-5 h-5 text-gray-600" />
+          <Minus className="w-4 h-4 text-green-700" />
         </Button>
       </div>
       
+      {/* Location Button */}
       <Button
         variant="ghost"
         size="sm"
-        className="w-10 h-10 p-0 bg-white rounded-lg shadow-md hover:bg-gray-50"
+        className="w-11 h-11 p-0 bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-white/20 hover:bg-blue-50/80 hover:scale-105 transition-all duration-200"
         onClick={onCenterOnLocation}
       >
-        <Crosshair className="w-5 h-5 text-blue-500" />
+        <Crosshair className="w-4 h-4 text-blue-600" />
       </Button>
 
+      {/* GPS Toggle */}
       <Button
         variant="ghost"
         size="sm"
-        className={`w-10 h-10 p-0 rounded-lg shadow-md ${
+        className={`w-11 h-11 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:scale-105 ${
           useRealGPS 
-            ? 'bg-blue-500 text-white hover:bg-blue-600' 
-            : 'bg-white text-gray-600 hover:bg-gray-50'
+            ? 'bg-emerald-500/90 text-white hover:bg-emerald-600/90 shadow-emerald-200' 
+            : 'bg-white/90 text-gray-600 hover:bg-orange-50/80'
         }`}
         onClick={onToggleGPS}
-        title={useRealGPS ? 'Using Real GPS' : 'Using Mock GPS'}
+        title={useRealGPS ? 'Real GPS Active' : 'Demo Mode'}
       >
         <NavigationIcon className="w-4 h-4" />
       </Button>

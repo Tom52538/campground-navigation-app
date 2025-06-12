@@ -6,6 +6,7 @@ import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
 import { POIPanel } from '@/components/Navigation/POIPanel';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { QuickPOIIcons } from '@/components/Navigation/QuickPOIIcons';
+import { GPSAccuracyIndicator } from '@/components/Navigation/GPSAccuracyIndicator';
 
 import { StatusBar } from '@/components/Navigation/StatusBar';
 import { SiteSelector } from '@/components/Navigation/SiteSelector';
@@ -251,6 +252,8 @@ export default function Navigation() {
 
       <StatusBar currentPosition={currentPosition} />
       
+      <GPSAccuracyIndicator useRealGPS={useRealGPS} />
+
       <div className="absolute bottom-4 right-4 z-30">
         <WeatherWidget coordinates={currentPosition} />
       </div>
