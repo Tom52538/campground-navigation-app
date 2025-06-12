@@ -55,8 +55,8 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    // Custom static file serving with correct path and API route protection
-    const distPath = path.resolve(process.cwd(), "dist/public");
+    // Custom static file serving with Railway-compatible paths
+    const distPath = path.join(__dirname, "..", "dist", "public");
     
     if (!fs.existsSync(distPath)) {
       log(`Warning: Build directory not found at ${distPath}. Run 'npm run build' first.`);
@@ -71,7 +71,7 @@ app.use((req, res, next) => {
           return res.status(404).json({ message: 'API endpoint not found' });
         }
         
-        res.sendFile(path.resolve(distPath, "index.html"));
+        res.sendFile(path.join(distPath, "index.html"));
       });
     }
   }
