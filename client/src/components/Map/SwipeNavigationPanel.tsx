@@ -23,7 +23,7 @@ export const SwipeNavigationPanel = ({
   const currentIndex = panels.findIndex(panel => panel.id === currentPanel);
 
   return (
-    <div className="absolute bottom-32 left-4 right-4 z-30">
+    <div className="absolute top-20 left-4 right-4 z-30">
       <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-white/30 p-2">
         <div className="flex items-center justify-between">
           <Button
