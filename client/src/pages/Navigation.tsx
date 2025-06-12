@@ -233,8 +233,8 @@ export default function Navigation() {
         onToggleCategory={handleToggleCategory}
       />
 
-      <div className="absolute top-16 right-4 z-40">
-        <div className="flex space-x-2">
+      <div className="absolute top-4 right-4 z-40">
+        <div className="flex space-x-2 pt-4">
           <SiteSelector
             currentSite={currentSite}
             onSiteChange={handleSiteChange}
