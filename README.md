@@ -91,4 +91,4 @@ Required API keys:
 ├── server/            # Express backend
 ├── shared/            # Shared types and schemas
 └── attached_assets/   # Test data and assets
-```
+```# Force Railway deployment of POI system
