@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Minus, Crosshair } from 'lucide-react';
+import { Plus, Minus, Crosshair, Navigation as NavigationIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GPSToggle } from './GPSToggle';
 
@@ -59,41 +59,48 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
   }, []);
 
   return (
-    <div className="absolute right-4 top-16 z-20 flex flex-col space-y-3">
-      <div className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border-2 border-black/30 flex items-center justify-center">
-        <CompassIcon heading={heading} />
+    <div className="absolute right-4 bottom-20 z-20 flex flex-col space-y-2">
+      <div className="bg-white rounded-lg shadow-md">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-10 h-10 p-0 rounded-t-lg hover:bg-gray-50 border-b border-gray-100"
+          onClick={onZoomIn}
+        >
+          <Plus className="w-5 h-5 text-gray-600" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-10 h-10 p-0 rounded-b-lg hover:bg-gray-50"
+          onClick={onZoomOut}
+        >
+          <Minus className="w-5 h-5 text-gray-600" />
+        </Button>
       </div>
       
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
-        className="w-12 h-12 p-0 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border-2 border-black/30 hover:bg-gray-50"
-        onClick={onZoomIn}
-      >
-        <Plus className="w-6 h-6" />
-      </Button>
-      
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-12 h-12 p-0 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border-2 border-black/30 hover:bg-gray-50"
-        onClick={onZoomOut}
-      >
-        <Minus className="w-6 h-6" />
-      </Button>
-      
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-12 h-12 p-0 rounded-full bg-blue-500 text-white shadow-lg border-2 border-black/30 hover:bg-blue-600"
+        className="w-10 h-10 p-0 bg-white rounded-lg shadow-md hover:bg-gray-50"
         onClick={onCenterOnLocation}
       >
-        <Crosshair className="w-6 h-6" />
+        <Crosshair className="w-5 h-5 text-blue-500" />
       </Button>
-      
-      <div className="w-12 h-12">
-        <GPSToggle useRealGPS={useRealGPS} onToggle={onToggleGPS} />
-      </div>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`w-10 h-10 p-0 rounded-lg shadow-md ${
+          useRealGPS 
+            ? 'bg-blue-500 text-white hover:bg-blue-600' 
+            : 'bg-white text-gray-600 hover:bg-gray-50'
+        }`}
+        onClick={onToggleGPS}
+        title={useRealGPS ? 'Using Real GPS' : 'Using Mock GPS'}
+      >
+        <NavigationIcon className="w-4 h-4" />
+      </Button>
     </div>
   );
 };

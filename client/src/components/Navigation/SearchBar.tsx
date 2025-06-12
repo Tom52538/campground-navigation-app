@@ -18,24 +18,24 @@ export const SearchBar = ({ onSearch, onFilter }: SearchBarProps) => {
   };
 
   return (
-    <div className="flex-1 relative">
-      <div className="bg-white/80 backdrop-blur-sm rounded-lg border-2 border-black/30 overflow-hidden">
-        <div className="flex items-center p-2">
-          <Search className="text-gray-600 w-4 h-4 mr-2" />
+    <div className="w-full relative">
+      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+        <div className="flex items-center px-4 py-3">
+          <Search className="text-gray-400 w-5 h-5 mr-3 flex-shrink-0" />
           <Input
             type="text"
-            placeholder="Search POIs..."
+            placeholder="Search for places"
             value={query}
             onChange={handleInputChange}
-            className="border-none shadow-none p-0 focus-visible:ring-0 text-sm bg-transparent"
+            className="border-none shadow-none p-0 focus-visible:ring-0 text-base bg-transparent flex-1 text-gray-800 placeholder-gray-500"
           />
           <Button
             variant="ghost"
             size="sm"
             onClick={onFilter}
-            className="text-gray-600 hover:text-gray-800 p-1 ml-1"
+            className="text-gray-400 hover:text-gray-600 p-1 ml-2 flex-shrink-0"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-5 h-5" />
           </Button>
         </div>
       </div>

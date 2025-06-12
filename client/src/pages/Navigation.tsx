@@ -229,12 +229,7 @@ export default function Navigation() {
         onClose={handleClosePOIPanel}
       />
 
-      <CategoryFilter
-        filteredCategories={filteredCategories}
-        onToggleCategory={handleToggleCategory}
-      />
-
-      <div className="absolute top-28 left-4 right-4 z-50">
+      <div className="absolute top-20 left-4 right-4 z-50">
         <div className="flex space-x-2">
           <SiteSelector
             currentSite={currentSite}
