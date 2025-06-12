@@ -56,7 +56,7 @@ export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
   const alerts = getCampingAlert(weather);
 
   return (
-    <div className="absolute bottom-20 left-4 right-4 z-30">
+    <div className="absolute bottom-40 left-4 right-4 z-30">
       <div className="bg-gradient-to-r from-blue-50/90 to-green-50/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/30 p-3">
         {/* Main Weather Info */}
         <div className="flex items-center justify-between mb-2">
