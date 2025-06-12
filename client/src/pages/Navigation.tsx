@@ -36,7 +36,7 @@ export default function Navigation() {
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
   const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
   
-  // Filter POIs based on search and category selection
+  // Filter POIs based on search and category selection - only show when searched
   let displayPOIs: POI[] = [];
   
   if (searchQuery.length > 0) {
@@ -45,12 +45,9 @@ export default function Navigation() {
   } else if (filteredCategories.length > 0) {
     // Apply category filtering to all POIs
     displayPOIs = allPOIs.filter(poi => filteredCategories.includes(poi.category));
-  } else {
-    // Show all POIs by default
-    displayPOIs = allPOIs;
   }
-  
-  const shouldShowPOIs = true; // Always show POIs
+  // Don't show POIs by default - only when searched or filtered
+  const shouldShowPOIs = displayPOIs.length > 0;
 
   // Add distance to POIs
   const poisWithDistance = displayPOIs.map(poi => ({
@@ -61,6 +58,7 @@ export default function Navigation() {
 
 
   const handleSearch = useCallback((query: string) => {
+    console.log('Search triggered:', query);
     setSearchQuery(query);
   }, []);
 

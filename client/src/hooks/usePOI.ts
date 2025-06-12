@@ -25,14 +25,16 @@ export const useSearchPOI = (query: string, site: TestSite = 'kamperland', categ
       params.append('site', site);
       if (category) params.append('category', category);
       
+      console.log('Search API call:', `/api/pois/search?${params.toString()}`);
       const response = await fetch(`/api/pois/search?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to search POIs');
       }
       const data = await response.json();
+      console.log('Search results:', data.length, 'POIs found');
       return data as POI[];
     },
-    enabled: query.length > 0,
+    enabled: query.length >= 2, // Require at least 2 characters
     staleTime: 60000, // 1 minute
   });
 };
