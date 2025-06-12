@@ -18,14 +18,14 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve("/app", "client", "src"),
-      "@shared": path.resolve("/app", "shared"),
-      "@assets": path.resolve("/app", "attached_assets"),
+      "@": path.resolve(process.cwd(), "client", "src"),
+      "@shared": path.resolve(process.cwd(), "shared"),
+      "@assets": path.resolve(process.cwd(), "attached_assets"),
     },
   },
-  root: path.resolve("/app", "client"),
+  root: path.resolve(process.cwd(), "client"),
   build: {
-    outDir: path.resolve("/app", "dist/public"),
+    outDir: path.resolve(process.cwd(), "dist/public"),
     emptyOutDir: true,
   },
   server: {
