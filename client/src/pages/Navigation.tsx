@@ -32,12 +32,25 @@ export default function Navigation() {
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Search functionality
-  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite);
+  // Search functionality - include category filter for search
+  const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
+  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
   
-  // Only show POIs when actively searching or filtering
+  // Filter POIs based on search and category selection
   const shouldShowPOIs = searchQuery.length > 0 || filteredCategories.length > 0;
-  const displayPOIs = shouldShowPOIs ? (searchQuery ? searchResults : allPOIs) : [];
+  
+  let displayPOIs: POI[] = [];
+  if (shouldShowPOIs) {
+    if (searchQuery.length > 0) {
+      // Use search results (already filtered by category if single category selected)
+      displayPOIs = searchResults;
+    } else {
+      // Apply category filtering to all POIs
+      displayPOIs = filteredCategories.length > 0 
+        ? allPOIs.filter(poi => filteredCategories.includes(poi.category))
+        : allPOIs;
+    }
+  }
 
   // Add distance to POIs
   const poisWithDistance = displayPOIs.map(poi => ({
