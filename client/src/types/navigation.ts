@@ -50,10 +50,10 @@ export interface MapState {
 export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'food-drink': { icon: 'utensils', color: 'text-orange-600', label: 'Food & Drink' },
-  'services': { icon: 'building-2', color: 'text-blue-600', label: 'Essential Services' },
-  'recreation': { icon: 'waves', color: 'text-green-600', label: 'Recreation' },
-  'facilities': { icon: 'car', color: 'text-purple-600', label: 'Practical Facilities' }
+  'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Food & Drink' },
+  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Essential Services' },
+  'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Recreation' },
+  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Practical Facilities' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
