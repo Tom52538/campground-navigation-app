@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Plus, Minus, Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GPSToggle } from './GPSToggle';
 
 interface MapControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onCenterOnLocation: () => void;
+  useRealGPS: boolean;
+  onToggleGPS: () => void;
 }
 
 interface CompassProps {
@@ -25,7 +28,7 @@ const CompassIcon = ({ heading }: CompassProps) => (
   </div>
 );
 
-export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation }: MapControlsProps) => {
+export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGPS, onToggleGPS }: MapControlsProps) => {
   const [heading, setHeading] = useState(0);
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation }: MapCont
   }, []);
 
   return (
-    <div className="absolute left-4 top-20 z-20 flex flex-col space-y-3">
+    <div className="absolute right-4 top-20 z-20 flex flex-col space-y-3">
       <div className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-lg border-2 border-black/30 flex items-center justify-center">
         <CompassIcon heading={heading} />
       </div>
@@ -87,6 +90,10 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation }: MapCont
       >
         <Crosshair className="w-6 h-6" />
       </Button>
+      
+      <div className="w-12 h-12">
+        <GPSToggle useRealGPS={useRealGPS} onToggle={onToggleGPS} />
+      </div>
     </div>
   );
 };

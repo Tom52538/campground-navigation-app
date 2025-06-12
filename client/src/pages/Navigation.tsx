@@ -58,7 +58,6 @@ export default function Navigation() {
 
 
   const handleSearch = useCallback((query: string) => {
-    console.log('Search triggered:', query);
     setSearchQuery(query);
   }, []);
 
@@ -201,16 +200,16 @@ export default function Navigation() {
 
       <TopBar
         currentPosition={currentPosition}
-        useRealGPS={useRealGPS}
         onSearch={handleSearch}
         onFilter={handleFilter}
-        onToggleGPS={toggleGPS}
       />
 
       <MapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onCenterOnLocation={handleCenterOnLocation}
+        useRealGPS={useRealGPS}
+        onToggleGPS={toggleGPS}
       />
 
       {currentRoute && (
