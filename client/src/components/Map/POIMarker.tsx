@@ -1,8 +1,6 @@
 import { Marker, Popup } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import { POI, POI_CATEGORIES } from '@/types/navigation';
-import { Utensils, Building2, Waves, Car, MapPin } from 'lucide-react';
-import { renderToStaticMarkup } from 'react-dom/server';
 
 interface POIMarkerProps {
   poi: POI;
@@ -10,14 +8,13 @@ interface POIMarkerProps {
   onClick: () => void;
 }
 
-const getIconComponent = (iconName: string) => {
-  const iconProps = { size: 16, color: 'white' };
+const getEmojiIcon = (iconName: string) => {
   switch (iconName) {
-    case 'Utensils': return <Utensils {...iconProps} />;
-    case 'Building2': return <Building2 {...iconProps} />;
-    case 'Waves': return <Waves {...iconProps} />;
-    case 'Car': return <Car {...iconProps} />;
-    default: return <MapPin {...iconProps} />;
+    case 'Utensils': return '🍽️';
+    case 'Building2': return '🏢';
+    case 'Waves': return '🌊';
+    case 'Car': return '🚗';
+    default: return '📍';
   }
 };
 
@@ -25,14 +22,13 @@ export const POIMarker = ({ poi, isSelected, onClick }: POIMarkerProps) => {
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
   const iconName = category?.icon || 'MapPin';
   const colorClass = category?.color || 'bg-gray-500';
-
-  const iconSvg = renderToStaticMarkup(getIconComponent(iconName));
+  const emoji = getEmojiIcon(iconName);
 
   const markerIcon = divIcon({
     html: `
-      <div class="poi-marker-wrapper">
-        <div class="w-8 h-8 rounded-full ${colorClass} border-2 border-white shadow-lg flex items-center justify-center ${isSelected ? 'ring-2 ring-blue-400 animate-pulse' : ''}">
-          ${iconSvg}
+      <div class="poi-marker-wrapper" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+        <div class="w-8 h-8 rounded-full ${colorClass} border-2 border-white shadow-lg flex items-center justify-center ${isSelected ? 'animate-pulse' : ''}" style="display: flex; align-items: center; justify-content: center; position: relative; z-index: 1000;">
+          <span style="font-size: 16px; line-height: 1;">${emoji}</span>
         </div>
       </div>
     `,

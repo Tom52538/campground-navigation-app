@@ -117,6 +117,19 @@
     @apply bg-red-500;
   }
   
+  /* POI Marker Styling */
+  .poi-marker-container {
+    @apply pointer-events-auto;
+  }
+  
+  .poi-marker-wrapper {
+    @apply cursor-pointer transform transition-transform duration-200 hover:scale-110;
+  }
+  
+  .poi-marker-wrapper:hover {
+    @apply scale-110;
+  }
+
   .category-button {
     @apply w-12 h-12 floating-button;
   }
