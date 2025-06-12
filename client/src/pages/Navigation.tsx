@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { TopBar } from '@/components/Navigation/TopBar';
+import { SearchBar } from '@/components/Navigation/SearchBar';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
 import { POIPanel } from '@/components/Navigation/POIPanel';
@@ -198,11 +199,25 @@ export default function Navigation() {
         onMapClick={handleMapClick}
       />
 
-      <TopBar
-        currentPosition={currentPosition}
-        onSearch={handleSearch}
-        onFilter={handleFilter}
-      />
+      <div className="absolute top-0 left-0 right-0 z-30 pt-safe-top">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex-1 max-w-xs">
+            <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
+          </div>
+          <div className="flex space-x-2 ml-4">
+            <SiteSelector
+              currentSite={currentSite}
+              onSiteChange={handleSiteChange}
+            />
+            {shouldShowPOIs && (
+              <POIClearButton
+                onClear={handleClearPOIs}
+                disabled={false}
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       <MapControls
         onZoomIn={handleZoomIn}
@@ -232,21 +247,6 @@ export default function Navigation() {
         filteredCategories={filteredCategories}
         onToggleCategory={handleToggleCategory}
       />
-
-      <div className="absolute top-4 right-4 z-40">
-        <div className="flex space-x-2 pt-4">
-          <SiteSelector
-            currentSite={currentSite}
-            onSiteChange={handleSiteChange}
-          />
-          {shouldShowPOIs && (
-            <POIClearButton
-              onClear={handleClearPOIs}
-              disabled={false}
-            />
-          )}
-        </div>
-      </div>
 
 
 
