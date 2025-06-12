@@ -5,6 +5,7 @@ import { MapControls } from '@/components/Navigation/MapControls';
 import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
 import { POIPanel } from '@/components/Navigation/POIPanel';
 import { FilterModal } from '@/components/Navigation/FilterModal';
+import { QuickPOIIcons } from '@/components/Navigation/QuickPOIIcons';
 
 import { StatusBar } from '@/components/Navigation/StatusBar';
 import { SiteSelector } from '@/components/Navigation/SiteSelector';
@@ -226,16 +227,23 @@ export default function Navigation() {
         onClose={handleClosePOIPanel}
       />
 
-      <div className="absolute top-20 left-4 right-4 z-50">
-        <div className="flex space-x-2">
+      <QuickPOIIcons
+        filteredCategories={filteredCategories}
+        onToggleCategory={handleToggleCategory}
+      />
+
+      <div className="absolute top-20 right-4 z-40">
+        <div className="flex flex-col space-y-2">
           <SiteSelector
             currentSite={currentSite}
             onSiteChange={handleSiteChange}
           />
-          <POIClearButton
-            onClear={handleClearPOIs}
-            disabled={!shouldShowPOIs}
-          />
+          {shouldShowPOIs && (
+            <POIClearButton
+              onClear={handleClearPOIs}
+              disabled={false}
+            />
+          )}
         </div>
       </div>
 
