@@ -26,13 +26,13 @@ export const detectBrowserLanguage = (): SupportedLanguage => {
 export const translations = {
   en: {
     navigation: {
-      search: 'Find campsites, trails, amenities...',
+      search: 'Search',
       kamperland: 'Kamperland',
       zuhause: 'Zuhause',
       clearPOIs: 'Clear POIs',
       filter: 'Filter',
       map: 'Map',
-      navigation: 'Navigation',
+      navigate: 'Navigation',
       settings: 'Settings'
     },
     categories: {
@@ -144,13 +144,13 @@ export const translations = {
   },
   fr: {
     navigation: {
-      search: 'Trouver campings, sentiers, équipements...',
+      search: 'Rechercher',
       kamperland: 'Kamperland',
       zuhause: 'Zuhause',
       clearPOIs: 'Effacer POIs',
       filter: 'Filtrer',
       map: 'Carte',
-      navigation: 'Navigation',
+      navigate: 'Navigation',
       settings: 'Paramètres'
     },
     categories: {
@@ -165,8 +165,20 @@ export const translations = {
       condition: 'Condition',
       humidity: 'Humidité',
       windSpeed: 'Vitesse du vent',
-      alerts: 'alerte',
-      alertsPlural: 'alertes'
+      loading: 'Chargement météo...',
+      alerts: {
+        cold: 'Temps froid - vérifier équipement',
+        rain: 'Pluie attendue - sécuriser équipement',
+        wind: 'Vents forts - sécuriser tentes',
+        heat: 'Temps chaud - rester hydraté',
+        coldTitle: 'Alerte froid',
+        rainTitle: 'Pluie attendue',
+        windTitle: 'Vents forts',
+        heatTitle: 'Alerte chaleur'
+      }
+    },
+    search: {
+      placeholder: 'Rechercher installations, restaurants, activités...'
     },
     poi: {
       navigate: 'Naviguer',
@@ -191,13 +203,13 @@ export const translations = {
   },
   nl: {
     navigation: {
-      search: 'Campings, paden, voorzieningen zoeken...',
+      search: 'Zoeken',
       kamperland: 'Kamperland',
       zuhause: 'Zuhause',
       clearPOIs: 'POIs wissen',
       filter: 'Filter',
       map: 'Kaart',
-      navigation: 'Navigatie',
+      navigate: 'Navigatie',
       settings: 'Instellingen'
     },
     categories: {
@@ -212,8 +224,20 @@ export const translations = {
       condition: 'Conditie',
       humidity: 'Luchtvochtigheid',
       windSpeed: 'Windsnelheid',
-      alerts: 'waarschuwing',
-      alertsPlural: 'waarschuwingen'
+      loading: 'Weer laden...',
+      alerts: {
+        cold: 'Koud weer - uitrusting controleren',
+        rain: 'Regen verwacht - spullen vastzetten',
+        wind: 'Harde wind - tenten beveiligen',
+        heat: 'Heet weer - gehydrateerd blijven',
+        coldTitle: 'Koudewaarschuwing',
+        rainTitle: 'Regen verwacht',
+        windTitle: 'Harde wind',
+        heatTitle: 'Hittewaarschuwing'
+      }
+    },
+    search: {
+      placeholder: 'Zoek faciliteiten, restaurants, activiteiten...'
     },
     poi: {
       navigate: 'Navigeren',
