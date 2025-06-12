@@ -26,7 +26,7 @@ export const SearchBar = ({ onSearch, onFilter }: SearchBarProps) => {
           <Search className="text-gray-500 w-4 h-4 mr-3 flex-shrink-0" />
           <Input
             type="text"
-            placeholder={t('navigation.search')}
+            placeholder={t('search.placeholder')}
             value={query}
             onChange={handleInputChange}
             className="border-none shadow-none p-0 focus-visible:ring-0 text-sm bg-transparent flex-1 text-gray-800 placeholder-gray-400"

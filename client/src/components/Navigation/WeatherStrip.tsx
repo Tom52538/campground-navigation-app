@@ -1,6 +1,7 @@
 import { useWeather } from '@/hooks/useWeather';
 import { Coordinates } from '@/types/navigation';
 import { Cloud, Sun, CloudRain, CloudSnow, Wind, Droplets, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface WeatherStripProps {
   coordinates: Coordinates;
@@ -39,6 +40,7 @@ const getCampingAlert = (weather: any) => {
 
 export const WeatherStrip = ({ coordinates }: WeatherStripProps) => {
   const { data: weather, isLoading } = useWeather(coordinates.lat, coordinates.lng);
+  const { t } = useLanguage();
 
   if (isLoading || !weather) {
     return (
