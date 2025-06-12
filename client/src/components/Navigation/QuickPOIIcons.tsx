@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { POICategory } from '@/types/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface QuickPOIIconsProps {
   filteredCategories: string[];
@@ -46,6 +47,8 @@ const CAMPING_POI_ICONS = [
 ];
 
 export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOIIconsProps) => {
+  const { t } = useLanguage();
+  
   return (
     <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-2">
       {CAMPING_POI_ICONS.map((poi, index) => {
@@ -64,7 +67,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
               }
             `}
             onClick={() => onToggleCategory(poi.category)}
-            title={poi.label}
+            title={t(`categories.${poi.category}`)}
           >
             <span className="text-lg">{poi.icon}</span>
           </Button>

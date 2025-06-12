@@ -166,8 +166,8 @@ export default function Navigation() {
     setFilteredCategories([]);
     
     toast({
-      title: "Site Changed",
-      description: `Switched to ${TEST_SITES[site].name}`,
+      title: t('alerts.siteChanged'),
+      description: `${t('alerts.siteSwitched')} ${TEST_SITES[site].name}`,
     });
   }, [toast]);
 
@@ -177,8 +177,8 @@ export default function Navigation() {
     setSelectedPOI(null);
     
     toast({
-      title: "POIs Cleared",
-      description: "All POI markers have been hidden",
+      title: t('alerts.poisCleared'),
+      description: t('alerts.poisHidden'),
     });
   }, [toast]);
 
@@ -204,7 +204,7 @@ export default function Navigation() {
       <div className="h-screen w-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading campground map...</p>
+          <p className="text-gray-600">{t('status.loading')}</p>
         </div>
       </div>
     );
