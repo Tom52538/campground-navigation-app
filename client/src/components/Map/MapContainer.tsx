@@ -89,9 +89,7 @@ export const MapContainerComponent = ({
   onPOIClick,
   onMapClick,
 }: MapContainerProps) => {
-  const filteredPOIs = pois.filter(poi => 
-    filteredCategories.length === 0 || filteredCategories.includes(poi.category)
-  );
+  // POIs are already filtered in Navigation component, use them directly
 
   return (
     <div className="map-container">
@@ -113,7 +111,7 @@ export const MapContainerComponent = ({
         
         <CurrentLocationMarker position={currentPosition} />
         
-        {filteredPOIs.map((poi) => (
+        {pois.map((poi) => (
           <POIMarker
             key={poi.id}
             poi={poi}
