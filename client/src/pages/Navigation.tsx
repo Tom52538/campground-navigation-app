@@ -13,9 +13,12 @@ import { StatusBar } from '@/components/Navigation/StatusBar';
 import { SiteSelector } from '@/components/Navigation/SiteSelector';
 import { POIClearButton } from '@/components/Navigation/POIClearButton';
 import { WeatherWidget } from '@/components/Navigation/WeatherWidget';
+import { WeatherStrip } from '@/components/Navigation/WeatherStrip';
+import { CampingAlerts } from '@/components/Navigation/CampingAlerts';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
+import { useWeather } from '@/hooks/useWeather';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
 import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +27,7 @@ export default function Navigation() {
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
   const { currentPosition, useRealGPS, toggleGPS } = useLocation({ currentSite });
   const { data: allPOIs = [], isLoading: poisLoading } = usePOI(currentSite);
+  const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
   const { getRoute } = useRouting();
   const { toast } = useToast();
 
@@ -248,15 +252,15 @@ export default function Navigation() {
         onToggleCategory={handleToggleCategory}
       />
 
+      {weather && (
+        <CampingAlerts weather={weather} coordinates={currentPosition} />
+      )}
 
+      <WeatherStrip coordinates={currentPosition} />
 
       <StatusBar currentPosition={currentPosition} />
       
       <GPSAccuracyIndicator useRealGPS={useRealGPS} />
-
-      <div className="absolute bottom-4 right-4 z-30">
-        <WeatherWidget coordinates={currentPosition} />
-      </div>
 
       <FilterModal
         isOpen={showFilterModal}
