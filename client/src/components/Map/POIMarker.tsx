@@ -6,6 +6,7 @@ interface POIMarkerProps {
   poi: POI;
   isSelected: boolean;
   onClick: () => void;
+  onNavigate?: (poi: POI) => void;
 }
 
 const getEmojiIcon = (iconName: string) => {
@@ -18,7 +19,7 @@ const getEmojiIcon = (iconName: string) => {
   }
 };
 
-export const POIMarker = ({ poi, isSelected, onClick }: POIMarkerProps) => {
+export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerProps) => {
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
   const iconName = category?.icon || 'MapPin';
   const colorClass = category?.color || 'bg-gray-500';
@@ -45,7 +46,25 @@ export const POIMarker = ({ poi, isSelected, onClick }: POIMarkerProps) => {
         click: onClick,
       }}
     >
-      {/* Popup removed - using custom overlay system instead */}
+      {isSelected && (
+        <Popup>
+          <div className="p-2 min-w-[200px]">
+            <h3 className="font-semibold text-gray-800 mb-1">{poi.name}</h3>
+            <p className="text-sm text-gray-600 mb-2">{category?.label || poi.category}</p>
+            {poi.distance && (
+              <p className="text-xs text-gray-500 mb-3">{poi.distance} away</p>
+            )}
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate(poi)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                🧭 Navigate Here
+              </button>
+            )}
+          </div>
+        </Popup>
+      )}
     </Marker>
   );
 };

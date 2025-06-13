@@ -25,6 +25,7 @@ interface MapContainerProps {
   route: NavigationRoute | null;
   filteredCategories: string[];
   onPOIClick: (poi: POI) => void;
+  onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
 }
 
@@ -90,6 +91,7 @@ export const MapContainerComponent = ({
   route,
   filteredCategories,
   onPOIClick,
+  onPOINavigate,
   onMapClick,
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
@@ -158,6 +160,7 @@ export const MapContainerComponent = ({
             poi={poi}
             isSelected={selectedPOI?.id === poi.id}
             onClick={() => onPOIClick(poi)}
+            onNavigate={onPOINavigate}
           />
         ))}
         
