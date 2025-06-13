@@ -1,4 +1,4 @@
-import { Marker, Popup } from 'react-leaflet';
+import { Marker } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import { POI, POI_CATEGORIES } from '@/types/navigation';
 
@@ -45,17 +45,6 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerPro
       eventHandlers={{
         click: onClick,
       }}
-    >
-      <Popup>
-        <div className="p-2 min-w-[200px]">
-          <h3 className="font-semibold text-gray-800 mb-1">{poi.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{category?.label || poi.category}</p>
-          {poi.distance && (
-            <p className="text-xs text-gray-500 mb-3">{poi.distance} away</p>
-          )}
-          <p className="text-xs text-gray-400 italic">Click marker for details</p>
-        </div>
-      </Popup>
-    </Marker>
+    />
   );
 };
