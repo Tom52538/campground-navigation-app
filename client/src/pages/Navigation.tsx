@@ -408,6 +408,25 @@ export default function Navigation() {
         </div>
       </div>
 
+      {/* Test Transparency Component */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        width: '200px',
+        height: '80px',
+        background: 'rgba(255, 0, 0, 0.7)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        borderRadius: '12px',
+        padding: '16px',
+        zIndex: 1000,
+        color: '#000',
+        fontWeight: 600
+      }}>
+        TEST TRANSPARENCY
+      </div>
+
       {/* Filter Modal - Preserved */}
       <FilterModal
         isOpen={showFilterModal}
