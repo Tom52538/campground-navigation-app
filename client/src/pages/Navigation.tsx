@@ -257,6 +257,7 @@ export default function Navigation() {
         route={currentRoute}
         filteredCategories={filteredCategories}
         onPOIClick={handlePOIClick}
+        onPOINavigate={handleNavigateToPOI}
         onMapClick={handleMapClick}
       />
 
