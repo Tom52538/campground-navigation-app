@@ -16,75 +16,53 @@ import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Navigation() {
+  // State management
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
-  const { currentPosition, useRealGPS, toggleGPS } = useLocation({ currentSite });
-  const { data: allPOIs = [], isLoading: poisLoading } = usePOI(currentSite);
-  const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
-  const { getRoute } = useRouting();
-  const { toast } = useToast();
-  const { t } = useLanguage();
-
-  // Map state
-  const [mapCenter, setMapCenter] = useState(TEST_SITES.kamperland.coordinates);
-  const [mapZoom, setMapZoom] = useState(16);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [currentRoute, setCurrentRoute] = useState<NavigationRoute | null>(null);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
-  
-  // Transparent Overlay UI state
-  const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
+  const [mapCenter, setMapCenter] = useState(TEST_SITES[currentSite].coordinates);
+  const [mapZoom, setMapZoom] = useState(15);
+  const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'navigation'>('start');
   const [overlayStates, setOverlayStates] = useState({
     search: false,
     poiInfo: false,
-    routePlanning: false,
-    navigation: false
+    navigation: false,
+    routePlanning: false
   });
+  const [currentPanel, setCurrentPanel] = useState<'search' | 'map' | 'navigation' | 'settings'>('map');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [useRealGPS, setUseRealGPS] = useState(false);
 
-  // Search functionality - include category filter for search
-  const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
-  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
-  
-  // Filter POIs based on search and category selection - only show when searched
-  let displayPOIs: POI[] = [];
-  
-  if (searchQuery.length > 0) {
-    // Use search results (already filtered by category if single category selected)
-    displayPOIs = searchResults;
-  } else if (filteredCategories.length > 0) {
-    // Apply category filtering to all POIs
-    displayPOIs = allPOIs.filter(poi => filteredCategories.includes(poi.category));
-  }
-  // Don't show POIs by default - only when searched or filtered
-  const shouldShowPOIs = displayPOIs.length > 0;
+  // Hooks
+  const { currentPosition, updatePosition } = useLocation({ currentSite });
+  const { data: pois = [], isLoading: poisLoading } = usePOI(currentSite);
+  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite);
+  const { mutateAsync: getRoute } = useRouting();
+  const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
+  const { t } = useLanguage();
+  const { toast } = useToast();
 
-  // Add distance to POIs
-  const poisWithDistance = displayPOIs.map(poi => ({
+  // Calculate POIs with distance
+  const poisWithDistance = pois.map(poi => ({
     ...poi,
     distance: formatDistance(calculateDistance(currentPosition, poi.coordinates))
   }));
 
+  const shouldShowPOIs = searchQuery.length > 0 || filteredCategories.length > 0;
 
-
+  // Event handlers
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.length > 0) {
       setUIMode('search');
-      setOverlayStates(prev => ({ ...prev, search: true }));
+      setOverlayStates(prev => ({ ...prev, search: true, poiInfo: false }));
     } else {
       setUIMode('start');
       setOverlayStates(prev => ({ ...prev, search: false }));
     }
   }, []);
-
-  const handleFilter = useCallback(() => {
-    setShowFilterModal(true);
-  }, []);
-
-  // Removed hamburger menu - using permanent header approach
 
   const handleZoomIn = useCallback(() => {
     setMapZoom(prev => Math.min(prev + 1, 19));
@@ -99,14 +77,11 @@ export default function Navigation() {
     setMapZoom(16);
   }, [currentPosition]);
 
-  const handlePOIClick = useCallback((poi: POI) => {
-    setSelectedPOI(poi);
-    setMapCenter(poi.coordinates);
-    setUIMode('poi-info');
-    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
+  const toggleGPS = useCallback(() => {
+    setUseRealGPS(prev => !prev);
   }, []);
 
-  const handlePOISelect = useCallback((poi: POI) => {
+  const handlePOIClick = useCallback((poi: POI) => {
     setSelectedPOI(poi);
     setMapCenter(poi.coordinates);
     setUIMode('poi-info');
@@ -123,78 +98,51 @@ export default function Navigation() {
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     try {
-      // 1. IMMEDIATELY hide POI info box - FIRST ACTION
-      setSelectedPOI(null);
-      setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
-      
-      // 2. Show calculating state
-      setIsNavigating(false); // Clear any existing navigation
-      
-      // 3. Calculate route directly
-      const route = await getRoute.mutateAsync({
+      const route = await getRoute({
         from: currentPosition,
         to: poi.coordinates
       });
-      
-      // 4. Start navigation with panel at bottom
-      setCurrentRoute(route);
-      setIsNavigating(true);
-      setUIMode('navigation');
-      setOverlayStates(prev => ({ ...prev, navigation: true }));
-      
-      // Navigation started - no confirmation dialog needed
+
+      if (route) {
+        setCurrentRoute(route);
+        setUIMode('navigation');
+        setOverlayStates(prev => ({ ...prev, navigation: true, poiInfo: false }));
+        
+        toast({
+          title: t('navigation.routeCalculated'),
+          description: `${route.totalDistance} • ${route.estimatedTime}`,
+        });
+      }
     } catch (error) {
       toast({
-        title: "Route Error",
-        description: "Failed to calculate route. Please try again.",
-        variant: "destructive",
+        title: t('errors.routeCalculation'),
+        description: t('errors.tryAgain'),
+        variant: 'destructive',
       });
     }
-  }, [currentPosition, getRoute, toast]);
+  }, [currentPosition, getRoute, toast, t]);
 
   const handleEndNavigation = useCallback(() => {
     setCurrentRoute(null);
-    setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
-    // Toast removed - user can see route cleared visually
-  }, [toast]);
-
-
-
-  const handleClosePOIPanel = useCallback(() => {
-    setSelectedPOI(null);
-  }, []);
-
-  const handleToggleCategory = useCallback((category: string) => {
-    setFilteredCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else if (prev.length === 0) {
-        // If no categories selected, select only this one
-        return [category];
-      } else {
-        // Add to existing selection
-        return [...prev, category];
-      }
+    
+    toast({
+      title: t('navigation.ended'),
+      description: t('navigation.backToExploring'),
     });
-  }, []);
+  }, [toast, t]);
 
   const handleSiteChange = useCallback((site: TestSite) => {
     setCurrentSite(site);
     setMapCenter(TEST_SITES[site].coordinates);
-    setMapZoom(16);
     setSelectedPOI(null);
     setCurrentRoute(null);
-    setIsNavigating(false);
     setSearchQuery('');
     setFilteredCategories([]);
-    
-    toast({
-      title: t('alerts.siteChanged'),
-      description: `${t('alerts.siteSwitched')} ${TEST_SITES[site].name}`,
-    });
-  }, [toast]);
+    setUIMode('start');
+    setOverlayStates({ search: false, poiInfo: false, navigation: false, routePlanning: false });
+  }, []);
 
   const handleClearPOIs = useCallback(() => {
     setSearchQuery('');
@@ -209,38 +157,22 @@ export default function Navigation() {
     });
   }, [toast, t]);
 
-  const handleCloseOverlay = useCallback(() => {
-    setSelectedPOI(null);
-    setUIMode('start');
-    setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false, routePlanning: false }));
-  }, []);
-
-  // Gesture navigation handlers
-  const handleNavigateLeft = useCallback(() => {
-    const panels = ['search', 'map', 'navigation', 'settings'] as const;
-    const currentIndex = panels.indexOf(currentPanel);
-    if (currentIndex > 0) {
-      setCurrentPanel(panels[currentIndex - 1]);
-    }
-  }, [currentPanel]);
-
-  const handleNavigateRight = useCallback(() => {
-    const panels = ['search', 'map', 'navigation', 'settings'] as const;
-    const currentIndex = panels.indexOf(currentPanel);
-    if (currentIndex < panels.length - 1) {
-      setCurrentPanel(panels[currentIndex + 1]);
-    }
-  }, [currentPanel]);
-
-  // POI Category Filter Handler for Quick Access
   const handleCategoryFilter = useCallback((category: string) => {
     setFilteredCategories(prev => {
       if (prev.includes(category)) {
-        // Remove category if already selected
         return prev.filter(c => c !== category);
       } else {
-        // Replace with single category selection for "one touch" behavior
         return [category];
+      }
+    });
+  }, []);
+
+  const handleToggleCategory = useCallback((category: string) => {
+    setFilteredCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else {
+        return [...prev, category];
       }
     });
   }, []);
@@ -406,7 +338,7 @@ export default function Navigation() {
         )}
       </div>
 
-      {/* Filter Modal - Preserved */}
+      {/* Filter Modal */}
       <FilterModal
         isOpen={showFilterModal}
         onClose={() => setShowFilterModal(false)}
