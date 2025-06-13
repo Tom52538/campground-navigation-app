@@ -320,6 +320,7 @@ export default function Navigation() {
             onClick={() => {
               const poiToNavigate = selectedPOI;
               setSelectedPOI(null); // HIDE POI INFO IMMEDIATELY
+              setOverlayStates(prev => ({ ...prev, poiInfo: false })); // ALSO HIDE OVERLAY
               handleNavigateToPOI(poiToNavigate);
             }}
             style={{
