@@ -311,42 +311,45 @@ export default function Navigation() {
         />
       )}
 
-      {/* Navigation Panel - Bottom Position, 60px Height */}
+      {/* Navigation Panel - Top Position */}
       {currentRoute && overlayStates.navigation && (
         <div 
-          className="fixed z-50 transition-all duration-300"
+          className="absolute top-16 left-4 right-4 z-30 transition-all duration-300"
           style={{
-            bottom: '100px',
-            left: '16px',
-            right: '16px',
-            height: '60px',
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '12px',
             padding: '12px 16px',
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(12px)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px'
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
           }}
         >
-          <div className="flex items-center justify-between h-full">
-            <div className="flex items-center space-x-4 text-sm text-black font-medium">
-              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                📍 {currentRoute.totalDistance}
-              </span>
-              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                ⏱️ {currentRoute.estimatedTime}
-              </span>
-              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                🚗 ETA: {currentRoute.arrivalTime}
-              </span>
+          <div className="flex items-center justify-between">
+            {/* Distance */}
+            <div className="flex items-center space-x-2">
+              <span className="text-red-500">📍</span>
+              <span className="font-semibold text-gray-900">{currentRoute.totalDistance}</span>
             </div>
+            
+            {/* Time */}
+            <div className="flex items-center space-x-2">
+              <span className="text-blue-500">⏱️</span>
+              <span className="font-semibold text-gray-900">{currentRoute.estimatedTime}</span>
+            </div>
+            
+            {/* ETA */}
+            <div className="flex items-center space-x-2">
+              <span className="text-green-500">🚗</span>
+              <span className="font-semibold text-gray-900">ETA: {currentRoute.arrivalTime}</span>
+            </div>
+            
+            {/* End Button */}
             <button
               onClick={handleEndNavigation}
-              className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg"
+              className="px-3 py-1 rounded-full text-red-600 font-medium hover:text-red-700 transition-colors"
               style={{
-                background: 'rgba(255, 0, 0, 0.1)',
-                backdropFilter: 'blur(4px)',
-                border: '1px solid rgba(255, 0, 0, 0.2)'
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)'
               }}
             >
               End
