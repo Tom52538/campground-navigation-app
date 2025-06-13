@@ -318,8 +318,9 @@ export default function Navigation() {
           
           <button
             onClick={() => {
+              const poiToNavigate = selectedPOI;
               setSelectedPOI(null); // HIDE POI INFO IMMEDIATELY
-              handleNavigateToPOI(selectedPOI);
+              handleNavigateToPOI(poiToNavigate);
             }}
             style={{
               background: 'rgba(45, 90, 39, 0.9)',
@@ -407,23 +408,7 @@ export default function Navigation() {
         </div>
       </div>
 
-      {/* Test Transparency Component - Simple RGBA */}
-      <div style={{
-        position: 'fixed',
-        top: '20px',
-        left: '20px',
-        width: '200px',
-        height: '80px',
-        backgroundColor: 'rgba(255, 0, 0, 0.7)',
-        border: '1px solid white',
-        borderRadius: '12px',
-        padding: '16px',
-        zIndex: 1000,
-        color: 'black',
-        fontWeight: 'bold'
-      }}>
-        TEST TRANSPARENCY V2
-      </div>
+
 
       {/* Filter Modal - Preserved */}
       <FilterModal
