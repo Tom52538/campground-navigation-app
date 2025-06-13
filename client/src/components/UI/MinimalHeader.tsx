@@ -59,10 +59,6 @@ export const MinimalHeader = ({
           <SearchBar
             onSearch={onSearch}
             onFilter={onFilter}
-            onFocus={handleSearchFocus}
-            onBlur={handleSearchBlur}
-            placeholder="Search camping facilities..."
-            className="w-full"
           />
         </div>
 
@@ -82,7 +78,6 @@ export const MinimalHeader = ({
           <SiteSelector
             currentSite={currentSite}
             onSiteChange={onSiteChange}
-            compact={true}
           />
           
           <Button

@@ -27,6 +27,7 @@ interface SmartBottomDrawerProps {
   onPOISelect?: (poi: POI) => void;
   onClose?: () => void;
   onHeightChange?: (height: 'peek' | 'half' | 'full') => void;
+  onEndNavigation?: () => void;
 }
 
 export const SmartBottomDrawer = ({
@@ -41,7 +42,8 @@ export const SmartBottomDrawer = ({
   onPOINavigate,
   onPOISelect,
   onClose,
-  onHeightChange
+  onHeightChange,
+  onEndNavigation
 }: SmartBottomDrawerProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -155,6 +157,7 @@ export const SmartBottomDrawer = ({
           <NavigationContent
             route={currentRoute}
             currentPosition={currentPosition}
+            onEndNavigation={onEndNavigation}
           />
         ) : null;
         

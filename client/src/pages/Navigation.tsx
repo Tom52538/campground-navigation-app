@@ -298,6 +298,7 @@ export default function Navigation() {
         onPOISelect={handlePOISelect}
         onClose={handleDrawerClose}
         onHeightChange={handleDrawerHeightChange}
+        onEndNavigation={handleEndNavigation}
       />
 
       {/* Filter Modal - Preserved */}
