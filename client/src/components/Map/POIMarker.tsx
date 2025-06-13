@@ -53,14 +53,7 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerPro
           {poi.distance && (
             <p className="text-xs text-gray-500 mb-3">{poi.distance} away</p>
           )}
-          {onNavigate && (
-            <button
-              onClick={() => onNavigate(poi)}
-              className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            >
-              🧭 Navigate Here
-            </button>
-          )}
+          <p className="text-xs text-gray-400 italic">Click marker for details</p>
         </div>
       </Popup>
     </Marker>
