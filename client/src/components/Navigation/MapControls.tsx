@@ -88,8 +88,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
       <button 
         onClick={onZoomIn}
         style={{
-          background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
           width: '44px',
@@ -112,8 +111,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
       <button 
         onClick={onZoomOut}
         style={{
-          background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
           width: '44px',
@@ -136,8 +134,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
       <button 
         onClick={onCenterOnLocation}
         style={{
-          background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
           width: '44px',

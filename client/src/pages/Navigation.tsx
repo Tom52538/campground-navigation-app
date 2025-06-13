@@ -290,8 +290,7 @@ export default function Navigation() {
             maxWidth: '280px',
             maxHeight: '140px',
             margin: '0 auto',
-            background: 'rgba(255, 255, 255, 0.7)',
-            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
             borderRadius: '12px',
@@ -408,23 +407,22 @@ export default function Navigation() {
         </div>
       </div>
 
-      {/* Test Transparency Component */}
+      {/* Test Transparency Component - Simple RGBA */}
       <div style={{
         position: 'fixed',
         top: '20px',
         left: '20px',
         width: '200px',
         height: '80px',
-        background: 'rgba(255, 0, 0, 0.7)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
+        backgroundColor: 'rgba(255, 0, 0, 0.7)',
+        border: '1px solid white',
         borderRadius: '12px',
         padding: '16px',
         zIndex: 1000,
-        color: '#000',
-        fontWeight: 600
+        color: 'black',
+        fontWeight: 'bold'
       }}>
-        TEST TRANSPARENCY
+        TEST TRANSPARENCY V2
       </div>
 
       {/* Filter Modal - Preserved */}

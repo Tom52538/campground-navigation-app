@@ -79,8 +79,7 @@
   
   .navigation-panel {
     @apply absolute bottom-0 left-0 right-0 rounded-t-3xl shadow-2xl border-t border-white/30 transition-transform duration-300;
-    background: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(12px) !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
   }
   
   .navigation-panel.hidden {
@@ -89,12 +88,11 @@
   
   .floating-button {
     @apply rounded-xl shadow-lg border border-white/30 flex items-center justify-center transition-colors;
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(8px) !important;
+    background-color: rgba(255, 255, 255, 0.75) !important;
   }
   
   .floating-button:hover {
-    background: rgba(255, 255, 255, 0.85) !important;
+    background-color: rgba(255, 255, 255, 0.85) !important;
   }
   
   .floating-button.primary {
@@ -107,8 +105,7 @@
   
   .weather-widget {
     @apply rounded-xl shadow-lg border border-white/30 p-4 min-w-[120px];
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(10px) !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
   }
   
   .status-dot {
