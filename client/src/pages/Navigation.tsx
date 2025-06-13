@@ -279,78 +279,74 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {/* POI Info Transparent Overlay */}
-      <TransparentOverlay
-        isVisible={overlayStates.poiInfo && !!selectedPOI}
-        position="bottom"
-        onClose={handleCloseOverlay}
-        animation="slide"
-      >
-        {selectedPOI && (
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4">
-              <div className="bg-blue-600 rounded-xl p-3 flex-shrink-0">
-                <span className="text-white text-xl">🏕️</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-black mb-1"
-                    style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                  {selectedPOI.name}
-                </h3>
-                <p className="text-gray-700 mb-2 font-medium"
-                   style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                  {selectedPOI.category}
-                </p>
-                {selectedPOI.distance && (
-                  <p className="text-sm text-gray-600 font-medium"
-                     style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                    📍 {selectedPOI.distance} away
-                  </p>
-                )}
-              </div>
-            </div>
+      {/* POI Info Compact Overlay */}
+      {selectedPOI && overlayStates.poiInfo && (
+        <div 
+          className="fixed z-50 mx-auto transition-all duration-300"
+          style={{
+            bottom: '100px',
+            left: '20px',
+            right: '20px',
+            maxWidth: '280px',
+            maxHeight: '140px',
+            margin: '0 auto',
+            background: 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px',
+            padding: '12px'
+          }}
+        >
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold text-black"
+                style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+              {selectedPOI.name}
+            </h3>
+            <p className="text-xs text-gray-600 font-medium"
+               style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+              {selectedPOI.category}
+            </p>
+            {selectedPOI.distance && (
+              <p className="text-xs text-gray-500 font-medium"
+                 style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                📍 {selectedPOI.distance} away
+              </p>
+            )}
             
             <button
               onClick={() => handleNavigateToPOI(selectedPOI)}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-6 rounded-xl
-                         hover:from-blue-700 hover:to-blue-800 transition-all duration-200
-                         shadow-lg hover:shadow-xl transform hover:scale-[1.02]
-                         flex items-center justify-center space-x-2"
+              className="w-full h-9 text-sm font-medium text-white rounded-lg transition-all duration-200"
+              style={{
+                background: 'rgba(45, 90, 39, 0.9)',
+                border: 'none'
+              }}
             >
-              <span>🧭</span>
-              <span>Navigate Here</span>
+              🧭 Navigate Here
             </button>
           </div>
-        )}
-      </TransparentOverlay>
+        </div>
+      )}
 
-      {/* Navigation Overlay - Bottom Position */}
-      <TransparentOverlay
-        isVisible={overlayStates.navigation && !!currentRoute}
-        position="bottom"
-        animation="slide"
-        className="mb-20"
-      >
-        {currentRoute && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-black"
-                  style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                Navigation Active
-              </h3>
-              <button
-                onClick={handleEndNavigation}
-                className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg"
-                style={{
-                  background: 'rgba(255, 0, 0, 0.1)',
-                  backdropFilter: 'blur(4px)',
-                  border: '1px solid rgba(255, 0, 0, 0.2)'
-                }}
-              >
-                End Navigation
-              </button>
-            </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-700 font-medium">
+      {/* Navigation Panel - Bottom Position, 60px Height */}
+      {currentRoute && overlayStates.navigation && (
+        <div 
+          className="fixed z-50 transition-all duration-300"
+          style={{
+            bottom: '100px',
+            left: '16px',
+            right: '16px',
+            height: '60px',
+            padding: '12px 16px',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            borderRadius: '12px'
+          }}
+        >
+          <div className="flex items-center justify-between h-full">
+            <div className="flex items-center space-x-4 text-sm text-black font-medium">
               <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
                 📍 {currentRoute.totalDistance}
               </span>
@@ -361,9 +357,20 @@ export default function Navigation() {
                 🚗 ETA: {currentRoute.arrivalTime}
               </span>
             </div>
+            <button
+              onClick={handleEndNavigation}
+              className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg"
+              style={{
+                background: 'rgba(255, 0, 0, 0.1)',
+                backdropFilter: 'blur(4px)',
+                border: '1px solid rgba(255, 0, 0, 0.2)'
+              }}
+            >
+              End
+            </button>
           </div>
-        )}
-      </TransparentOverlay>
+        </div>
+      )}
 
       {/* Weather Widget - Bottom Right */}
       <div className="absolute bottom-4 right-4 z-30">
