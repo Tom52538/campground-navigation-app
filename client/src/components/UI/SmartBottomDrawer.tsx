@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { POI, Coordinates, NavigationRoute } from '@/types/navigation';
-import { POIDetailContent } from './DrawerContent/POIDetailContent';
-import { SearchResultsContent } from './DrawerContent/SearchResultsContent';
-import { NavigationContent } from './DrawerContent/NavigationContent';
-import { CampingCenterContent } from './DrawerContent/CampingCenterContent';
+
+// Import drawer content components
+import { POIDetailContent } from '@/components/UI/DrawerContent/POIDetailContent';
+import { SearchResultsContent } from '@/components/UI/DrawerContent/SearchResultsContent';
+import { NavigationContent } from '@/components/UI/DrawerContent/NavigationContent';
+import { CampingCenterContent } from '@/components/UI/DrawerContent/CampingCenterContent';
 
 interface SmartBottomDrawerProps {
   // Mode determines the content and behavior
@@ -50,9 +52,9 @@ export const SmartBottomDrawer = ({
   // Show drawer when there's content or in camping-center mode
   useEffect(() => {
     const shouldShow = mode === 'camping-center' || 
-                     (mode === 'poi-detail' && selectedPOI) ||
+                     (mode === 'poi-detail' && !!selectedPOI) ||
                      (mode === 'search' && (searchQuery.length > 0 || searchResults.length > 0)) ||
-                     (mode === 'navigation' && currentRoute);
+                     (mode === 'navigation' && !!currentRoute);
     setIsVisible(shouldShow);
   }, [mode, selectedPOI, searchQuery, searchResults.length, currentRoute]);
 

@@ -1,21 +1,10 @@
 import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
-import { TopBar } from '@/components/Navigation/TopBar';
-import { SearchBar } from '@/components/Navigation/SearchBar';
 import { MapControls } from '@/components/Navigation/MapControls';
-import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
-import { POIPanel } from '@/components/Navigation/POIPanel';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { QuickPOIIcons } from '@/components/Navigation/QuickPOIIcons';
-import { GPSAccuracyIndicator } from '@/components/Navigation/GPSAccuracyIndicator';
-
-import { StatusBar } from '@/components/Navigation/StatusBar';
-import { SiteSelector } from '@/components/Navigation/SiteSelector';
-import { POIClearButton } from '@/components/Navigation/POIClearButton';
-import { WeatherWidget } from '@/components/Navigation/WeatherWidget';
-import { WeatherStrip } from '@/components/Navigation/WeatherStrip';
-import { CampingAlerts } from '@/components/Navigation/CampingAlerts';
-import { SwipeNavigationPanel } from '@/components/Map/SwipeNavigationPanel';
+import { SmartBottomDrawer } from '@/components/UI/SmartBottomDrawer';
+import { MinimalHeader } from '@/components/UI/MinimalHeader';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
@@ -44,6 +33,11 @@ export default function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
+  
+  // Smart Bottom Drawer state
+  const [drawerMode, setDrawerMode] = useState<'search' | 'poi-detail' | 'navigation' | 'camping-center'>('camping-center');
+  const [drawerHeight, setDrawerHeight] = useState<'peek' | 'half' | 'full'>('peek');
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -72,11 +66,22 @@ export default function Navigation() {
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    if (query.length > 0) {
+      setDrawerMode('search');
+      setDrawerHeight('half');
+    } else {
+      setDrawerMode('camping-center');
+      setDrawerHeight('peek');
+    }
   }, []);
 
   const handleFilter = useCallback(() => {
     setShowFilterModal(true);
   }, []);
+
+  const handleMenuToggle = useCallback(() => {
+    setShowHamburgerMenu(!showHamburgerMenu);
+  }, [showHamburgerMenu]);
 
   const handleZoomIn = useCallback(() => {
     setMapZoom(prev => Math.min(prev + 1, 19));
@@ -94,11 +99,22 @@ export default function Navigation() {
   const handlePOIClick = useCallback((poi: POI) => {
     setSelectedPOI(poi);
     setMapCenter(poi.coordinates);
+    setDrawerMode('poi-detail');
+    setDrawerHeight('half');
+  }, []);
+
+  const handlePOISelect = useCallback((poi: POI) => {
+    setSelectedPOI(poi);
+    setMapCenter(poi.coordinates);
+    setDrawerMode('poi-detail');
+    setDrawerHeight('half');
   }, []);
 
   const handleMapClick = useCallback(() => {
     if (selectedPOI) {
       setSelectedPOI(null);
+      setDrawerMode('camping-center');
+      setDrawerHeight('peek');
     }
   }, [selectedPOI]);
 
@@ -112,6 +128,8 @@ export default function Navigation() {
       setCurrentRoute(route);
       setIsNavigating(true);
       setSelectedPOI(null);
+      setDrawerMode('navigation');
+      setDrawerHeight('peek');
       
       toast({
         title: "Route Calculated",
@@ -129,6 +147,8 @@ export default function Navigation() {
   const handleEndNavigation = useCallback(() => {
     setCurrentRoute(null);
     setIsNavigating(false);
+    setDrawerMode('camping-center');
+    setDrawerHeight('peek');
     toast({
       title: "Navigation Ended",
       description: "Route has been cleared",
@@ -175,12 +195,24 @@ export default function Navigation() {
     setSearchQuery('');
     setFilteredCategories([]);
     setSelectedPOI(null);
+    setDrawerMode('camping-center');
+    setDrawerHeight('peek');
     
     toast({
       title: t('alerts.poisCleared'),
       description: t('alerts.poisHidden'),
     });
-  }, [toast]);
+  }, [toast, t]);
+
+  const handleDrawerClose = useCallback(() => {
+    setSelectedPOI(null);
+    setDrawerMode('camping-center');
+    setDrawerHeight('peek');
+  }, []);
+
+  const handleDrawerHeightChange = useCallback((height: 'peek' | 'half' | 'full') => {
+    setDrawerHeight(height);
+  }, []);
 
   // Gesture navigation handlers
   const handleNavigateLeft = useCallback(() => {
@@ -212,6 +244,7 @@ export default function Navigation() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
+      {/* Map Container - Full Screen */}
       <MapContainerComponent
         center={mapCenter}
         zoom={mapZoom}
@@ -224,26 +257,19 @@ export default function Navigation() {
         onMapClick={handleMapClick}
       />
 
-      <div className="absolute top-0 left-0 right-0 z-30 pt-safe-top">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex-1 max-w-xs">
-            <SearchBar onSearch={handleSearch} onFilter={handleFilter} />
-          </div>
-          <div className="flex space-x-2 ml-4">
-            <SiteSelector
-              currentSite={currentSite}
-              onSiteChange={handleSiteChange}
-            />
-            {shouldShowPOIs && (
-              <POIClearButton
-                onClear={handleClearPOIs}
-                disabled={false}
-              />
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Minimal Header - Replaces TopBar, SearchBar, SiteSelector, POIClearButton */}
+      <MinimalHeader
+        currentSite={currentSite}
+        searchQuery={searchQuery}
+        onSearch={handleSearch}
+        onFilter={handleFilter}
+        onSiteChange={handleSiteChange}
+        onMenuToggle={handleMenuToggle}
+        showClearButton={shouldShowPOIs}
+        onClear={handleClearPOIs}
+      />
 
+      {/* Map Controls - Simplified positioning */}
       <MapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -252,39 +278,29 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {currentRoute && (
-        <GroundNavigation
-          route={currentRoute}
-          currentPosition={currentPosition}
-          isVisible={isNavigating}
-          onEndNavigation={handleEndNavigation}
-        />
-      )}
-
-      <POIPanel
-        poi={selectedPOI}
-        isVisible={!!selectedPOI && !isNavigating}
-        onNavigate={handleNavigateToPOI}
-        onClose={handleClosePOIPanel}
-      />
-
+      {/* Contextual POI Icons - Preserved for quick access */}
       <QuickPOIIcons
         filteredCategories={filteredCategories}
         onToggleCategory={handleToggleCategory}
       />
 
-      <WeatherStrip coordinates={currentPosition} />
-
-      <StatusBar currentPosition={currentPosition} />
-      
-      <GPSAccuracyIndicator useRealGPS={useRealGPS} />
-
-      <SwipeNavigationPanel
-        currentPanel={currentPanel}
-        onNavigateLeft={handleNavigateLeft}
-        onNavigateRight={handleNavigateRight}
+      {/* Smart Bottom Drawer - Replaces POIPanel, WeatherStrip, StatusBar, GroundNavigation */}
+      <SmartBottomDrawer
+        mode={drawerMode}
+        height={drawerHeight}
+        selectedPOI={selectedPOI}
+        searchResults={poisWithDistance}
+        searchQuery={searchQuery}
+        currentRoute={currentRoute}
+        currentPosition={currentPosition}
+        weather={weather}
+        onPOINavigate={handleNavigateToPOI}
+        onPOISelect={handlePOISelect}
+        onClose={handleDrawerClose}
+        onHeightChange={handleDrawerHeightChange}
       />
 
+      {/* Filter Modal - Preserved */}
       <FilterModal
         isOpen={showFilterModal}
         onClose={() => setShowFilterModal(false)}
