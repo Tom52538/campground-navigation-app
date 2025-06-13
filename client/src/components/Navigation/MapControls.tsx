@@ -66,11 +66,11 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
         style={{
           width: '44px',
           height: '44px',
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(8px)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-          borderRadius: '50%'
+          borderRadius: '50%',
+          marginBottom: '8px'
         }}
       >
         <div 
@@ -84,82 +84,101 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
         <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs font-bold text-orange-600">N</div>
       </div>
 
-      {/* Transparent Zoom Controls - 44px each */}
-      <div 
-        className="overflow-hidden"
+      {/* Transparent Zoom In Button */}
+      <button 
+        onClick={onZoomIn}
         style={{
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(8px)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-          borderRadius: '50%'
+          borderRadius: '50%',
+          width: '44px',
+          height: '44px',
+          color: '#000000',
+          fontWeight: '600',
+          fontSize: '18px',
+          marginBottom: '8px',
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-11 h-11 p-0 rounded-t-full transition-all duration-200"
-          onClick={onZoomIn}
-          style={{
-            color: '#000000',
-            fontWeight: '500'
-          }}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
-        <div className="h-px bg-gray-300/50"></div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-11 h-11 p-0 rounded-b-full transition-all duration-200"
-          onClick={onZoomOut}
-          style={{
-            color: '#000000',
-            fontWeight: '500'
-          }}
-        >
-          <Minus className="w-4 h-4" />
-        </Button>
-      </div>
+        +
+      </button>
       
-      {/* Transparent Location Button - 44px */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-11 h-11 p-0 transition-all duration-200"
+      {/* Transparent Zoom Out Button */}
+      <button 
+        onClick={onZoomOut}
+        style={{
+          background: 'rgba(255, 255, 255, 0.75)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
+          borderRadius: '50%',
+          width: '44px',
+          height: '44px',
+          color: '#000000',
+          fontWeight: '600',
+          fontSize: '18px',
+          marginBottom: '8px',
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        −
+      </button>
+      
+      {/* Transparent Location Button */}
+      <button 
         onClick={onCenterOnLocation}
         style={{
-          background: 'rgba(255, 255, 255, 0.8)',
+          background: 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(8px)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
           borderRadius: '50%',
+          width: '44px',
+          height: '44px',
           color: '#000000',
-          fontWeight: '500'
+          fontWeight: '600',
+          fontSize: '16px',
+          marginBottom: '8px',
+          textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <Crosshair className="w-4 h-4" />
-      </Button>
+        📍
+      </button>
 
-      {/* Transparent GPS Toggle - 44px */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-11 h-11 p-0 transition-all duration-300"
+      {/* Transparent GPS Toggle Button */}
+      <button 
         onClick={onToggleGPS}
         title={useRealGPS ? 'Real GPS Active' : 'Demo Mode'}
         style={{
-          background: useRealGPS ? 'rgba(16, 185, 129, 0.9)' : 'rgba(255, 255, 255, 0.8)',
+          background: useRealGPS ? 'rgba(16, 185, 129, 0.8)' : 'rgba(255, 255, 255, 0.75)',
           backdropFilter: 'blur(8px)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
           borderRadius: '50%',
+          width: '44px',
+          height: '44px',
           color: useRealGPS ? '#ffffff' : '#000000',
-          fontWeight: '500'
+          fontWeight: '600',
+          fontSize: '16px',
+          textShadow: useRealGPS ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        <NavigationIcon className="w-4 h-4" />
-      </Button>
+        🧭
+      </button>
     </div>
   );
 };

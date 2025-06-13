@@ -122,17 +122,20 @@ export default function Navigation() {
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     try {
-      // 1. IMMEDIATELY hide POI info and clear all overlays
+      // 1. IMMEDIATELY hide POI info box - FIRST ACTION
       setSelectedPOI(null);
       setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
       
-      // 2. Calculate route directly
+      // 2. Show calculating state
+      setIsNavigating(false); // Clear any existing navigation
+      
+      // 3. Calculate route directly
       const route = await getRoute.mutateAsync({
         from: currentPosition,
         to: poi.coordinates
       });
       
-      // 3. Start navigation
+      // 4. Start navigation with panel at bottom
       setCurrentRoute(route);
       setIsNavigating(true);
       setUIMode('navigation');
@@ -279,10 +282,10 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {/* POI Info Compact Overlay */}
+      {/* POI Info Transparent Glass */}
       {selectedPOI && overlayStates.poiInfo && (
         <div 
-          className="fixed z-50 mx-auto transition-all duration-300"
+          className="fixed z-50 transition-all duration-300"
           style={{
             bottom: '100px',
             left: '20px',
@@ -290,7 +293,7 @@ export default function Navigation() {
             maxWidth: '280px',
             maxHeight: '140px',
             margin: '0 auto',
-            background: 'rgba(255, 255, 255, 0.75)',
+            background: 'rgba(255, 255, 255, 0.7)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
@@ -298,33 +301,44 @@ export default function Navigation() {
             padding: '12px'
           }}
         >
-          <div className="space-y-2">
-            <h3 className="text-base font-semibold text-black"
-                style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-              {selectedPOI.name}
-            </h3>
-            <p className="text-xs text-gray-600 font-medium"
-               style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-              {selectedPOI.category}
-            </p>
-            {selectedPOI.distance && (
-              <p className="text-xs text-gray-500 font-medium"
-                 style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                📍 {selectedPOI.distance} away
-              </p>
-            )}
-            
-            <button
-              onClick={() => handleNavigateToPOI(selectedPOI)}
-              className="w-full h-9 text-sm font-medium text-white rounded-lg transition-all duration-200"
-              style={{
-                background: 'rgba(45, 90, 39, 0.9)',
-                border: 'none'
-              }}
-            >
-              🧭 Navigate Here
-            </button>
-          </div>
+          <h3 style={{ 
+            color: '#000000', 
+            fontWeight: '600',
+            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            margin: '0 0 8px 0',
+            fontSize: '16px'
+          }}>
+            {selectedPOI.name}
+          </h3>
+          
+          <p style={{ 
+            color: '#333333', 
+            fontSize: '12px',
+            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+            margin: '0 0 12px 0'
+          }}>
+            {selectedPOI.category}{selectedPOI.distance && ` • ${selectedPOI.distance}`}
+          </p>
+          
+          <button
+            onClick={() => {
+              setSelectedPOI(null); // HIDE POI INFO IMMEDIATELY
+              handleNavigateToPOI(selectedPOI);
+            }}
+            style={{
+              background: 'rgba(45, 90, 39, 0.9)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              width: '100%',
+              height: '36px',
+              fontWeight: '600',
+              backdropFilter: 'blur(4px)',
+              cursor: 'pointer'
+            }}
+          >
+            🧭 Navigate Here
+          </button>
         </div>
       )}
 
