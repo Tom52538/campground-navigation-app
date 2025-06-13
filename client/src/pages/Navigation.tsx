@@ -293,10 +293,19 @@ export default function Navigation() {
                 <span className="text-white text-xl">🏕️</span>
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-800 mb-1">{selectedPOI.name}</h3>
-                <p className="text-gray-600 mb-2">{selectedPOI.category}</p>
+                <h3 className="text-xl font-bold text-black mb-1"
+                    style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                  {selectedPOI.name}
+                </h3>
+                <p className="text-gray-700 mb-2 font-medium"
+                   style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                  {selectedPOI.category}
+                </p>
                 {selectedPOI.distance && (
-                  <p className="text-sm text-gray-500">📍 {selectedPOI.distance} away</p>
+                  <p className="text-sm text-gray-600 font-medium"
+                     style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                    📍 {selectedPOI.distance} away
+                  </p>
                 )}
               </div>
             </div>
@@ -325,18 +334,32 @@ export default function Navigation() {
         {currentRoute && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">Navigation Active</h3>
+              <h3 className="text-lg font-semibold text-black"
+                  style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                Navigation Active
+              </h3>
               <button
                 onClick={handleEndNavigation}
-                className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg hover:bg-red-50"
+                className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg"
+                style={{
+                  background: 'rgba(255, 0, 0, 0.1)',
+                  backdropFilter: 'blur(4px)',
+                  border: '1px solid rgba(255, 0, 0, 0.2)'
+                }}
               >
                 End Navigation
               </button>
             </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <span>📍 {currentRoute.totalDistance}</span>
-              <span>⏱️ {currentRoute.estimatedTime}</span>
-              <span>🚗 ETA: {currentRoute.arrivalTime}</span>
+            <div className="flex items-center space-x-4 text-sm text-gray-700 font-medium">
+              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                📍 {currentRoute.totalDistance}
+              </span>
+              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                ⏱️ {currentRoute.estimatedTime}
+              </span>
+              <span style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                🚗 ETA: {currentRoute.arrivalTime}
+              </span>
             </div>
           </div>
         )}
@@ -344,15 +367,22 @@ export default function Navigation() {
 
       {/* Weather Widget - Bottom Right */}
       <div className="absolute bottom-4 right-4 z-30">
-        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-white/30 px-3 py-2 min-w-[120px]">
+        <div className="rounded-xl border border-white/20 px-3 py-2 min-w-[120px]"
+             style={{
+               background: 'rgba(255, 255, 255, 0.85)',
+               backdropFilter: 'blur(12px) saturate(180%)',
+               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+             }}>
           {weather && (
             <div className="flex flex-col space-y-1">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-gray-800">
+                <span className="text-sm font-semibold text-gray-800"
+                      style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
                   {Math.round(weather.temperature)}°C
                 </span>
               </div>
-              <div className="text-xs text-gray-600 capitalize">
+              <div className="text-xs text-gray-600 capitalize font-medium"
+                   style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
                 {weather.condition}
               </div>
             </div>
