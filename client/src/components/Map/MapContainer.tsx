@@ -82,6 +82,18 @@ const MapController = ({ center, zoom }: { center: Coordinates; zoom: number }) 
   return null;
 };
 
+const PopupController = ({ selectedPOI }: { selectedPOI: POI | null }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!selectedPOI) {
+      map.closePopup();
+    }
+  }, [selectedPOI, map]);
+  
+  return null;
+};
+
 export const MapContainerComponent = ({
   center,
   zoom,
@@ -135,6 +147,7 @@ export const MapContainerComponent = ({
         attributionControl={false}
       >
         <MapController center={center} zoom={zoom} />
+        <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
