@@ -280,66 +280,7 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {/* POI Info Transparent Glass */}
-      {selectedPOI && overlayStates.poiInfo && (
-        <div 
-          className="fixed z-50 transition-all duration-300"
-          style={{
-            bottom: '100px',
-            left: '20px',
-            right: '20px',
-            maxWidth: '280px',
-            maxHeight: '140px',
-            margin: '0 auto',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-            borderRadius: '12px',
-            padding: '12px'
-          }}
-        >
-          <h3 style={{ 
-            color: '#000000', 
-            fontWeight: '600',
-            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
-            margin: '0 0 8px 0',
-            fontSize: '16px'
-          }}>
-            {selectedPOI.name}
-          </h3>
-          
-          <p style={{ 
-            color: '#333333', 
-            fontSize: '12px',
-            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
-            margin: '0 0 12px 0'
-          }}>
-            {selectedPOI.category}{selectedPOI.distance && ` • ${selectedPOI.distance}`}
-          </p>
-          
-          <button
-            onClick={() => {
-              const poiToNavigate = selectedPOI;
-              setSelectedPOI(null); // HIDE POI INFO IMMEDIATELY
-              setOverlayStates(prev => ({ ...prev, poiInfo: false })); // ALSO HIDE OVERLAY
-              handleNavigateToPOI(poiToNavigate);
-            }}
-            style={{
-              background: 'rgba(45, 90, 39, 0.9)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              width: '100%',
-              height: '36px',
-              fontWeight: '600',
-              backdropFilter: 'blur(4px)',
-              cursor: 'pointer'
-            }}
-          >
-            🧭 Navigate Here
-          </button>
-        </div>
-      )}
+
 
       {/* Navigation Panel - Bottom Position, 60px Height */}
       {currentRoute && overlayStates.navigation && (
