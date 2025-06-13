@@ -14,11 +14,13 @@ export const TransparentPOIOverlay = ({ poi, onNavigate, onClose }: TransparentP
 
   return (
     <div 
-      className="absolute left-4 right-4 z-30"
+      className="absolute z-30"
       style={{
-        top: '180px', // Below the 2-row button layout
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
         maxWidth: '320px',
-        margin: '0 auto'
+        width: '90%'
       }}
     >
       <div style={{

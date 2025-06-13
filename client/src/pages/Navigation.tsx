@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
-import { POIQuickAccess } from '@/components/Navigation/POIQuickAccess';
+import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
 import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
@@ -284,10 +284,10 @@ export default function Navigation() {
         onClear={handleClearPOIs}
       />
 
-      {/* POI Quick Access Buttons */}
-      <POIQuickAccess 
+      {/* Lightweight POI Buttons - Left Side */}
+      <LightweightPOIButtons 
         onCategorySelect={handleCategoryFilter}
-        selectedCategories={filteredCategories}
+        activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
       />
 
       {/* Enhanced Map Controls - Right Side Vertical */}
