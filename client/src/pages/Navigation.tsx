@@ -314,15 +314,13 @@ export default function Navigation() {
       {/* Navigation Panel - Top Position */}
       {currentRoute && overlayStates.navigation && (
         <div 
-          className="absolute left-4 right-4 z-30 transition-all duration-300"
+          className="absolute z-30 transparent-nav-panel"
           style={{
             top: '80px',
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '12px',
-            padding: '12px 16px',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+            left: '16px',
+            right: '16px',
+            padding: '14px 18px',
+            transition: 'all 0.3s ease'
           }}
         >
           <div className="flex items-center justify-between">
