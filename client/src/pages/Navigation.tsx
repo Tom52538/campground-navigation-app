@@ -3,8 +3,7 @@ import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { QuickPOIIcons } from '@/components/Navigation/QuickPOIIcons';
-import { SmartBottomDrawer } from '@/components/UI/SmartBottomDrawer';
-import { MinimalHeader } from '@/components/UI/MinimalHeader';
+import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
@@ -34,10 +33,14 @@ export default function Navigation() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
   
-  // Smart Bottom Drawer state
-  const [drawerMode, setDrawerMode] = useState<'search' | 'poi-detail' | 'navigation' | 'camping-center'>('camping-center');
-  const [drawerHeight, setDrawerHeight] = useState<'peek' | 'half' | 'full'>('peek');
-  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  // Transparent Overlay UI state
+  const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
+  const [overlayStates, setOverlayStates] = useState({
+    search: false,
+    poiInfo: false,
+    routePlanning: false,
+    navigation: false
+  });
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -67,11 +70,11 @@ export default function Navigation() {
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.length > 0) {
-      setDrawerMode('search');
-      setDrawerHeight('half');
+      setUIMode('search');
+      setOverlayStates(prev => ({ ...prev, search: true }));
     } else {
-      setDrawerMode('camping-center');
-      setDrawerHeight('peek');
+      setUIMode('start');
+      setOverlayStates(prev => ({ ...prev, search: false }));
     }
   }, []);
 
@@ -79,9 +82,7 @@ export default function Navigation() {
     setShowFilterModal(true);
   }, []);
 
-  const handleMenuToggle = useCallback(() => {
-    setShowHamburgerMenu(!showHamburgerMenu);
-  }, [showHamburgerMenu]);
+  // Removed hamburger menu - using permanent header approach
 
   const handleZoomIn = useCallback(() => {
     setMapZoom(prev => Math.min(prev + 1, 19));
@@ -99,22 +100,22 @@ export default function Navigation() {
   const handlePOIClick = useCallback((poi: POI) => {
     setSelectedPOI(poi);
     setMapCenter(poi.coordinates);
-    setDrawerMode('poi-detail');
-    setDrawerHeight('half');
+    setUIMode('poi-info');
+    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
   }, []);
 
   const handlePOISelect = useCallback((poi: POI) => {
     setSelectedPOI(poi);
     setMapCenter(poi.coordinates);
-    setDrawerMode('poi-detail');
-    setDrawerHeight('half');
+    setUIMode('poi-info');
+    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
   }, []);
 
   const handleMapClick = useCallback(() => {
     if (selectedPOI) {
       setSelectedPOI(null);
-      setDrawerMode('camping-center');
-      setDrawerHeight('peek');
+      setUIMode('start');
+      setOverlayStates(prev => ({ ...prev, poiInfo: false }));
     }
   }, [selectedPOI]);
 
@@ -128,8 +129,8 @@ export default function Navigation() {
       setCurrentRoute(route);
       setIsNavigating(true);
       setSelectedPOI(null);
-      setDrawerMode('navigation');
-      setDrawerHeight('peek');
+      setUIMode('navigation');
+      setOverlayStates(prev => ({ ...prev, navigation: true, poiInfo: false }));
       
       toast({
         title: "Route Calculated",
@@ -147,8 +148,8 @@ export default function Navigation() {
   const handleEndNavigation = useCallback(() => {
     setCurrentRoute(null);
     setIsNavigating(false);
-    setDrawerMode('camping-center');
-    setDrawerHeight('peek');
+    setUIMode('start');
+    setOverlayStates(prev => ({ ...prev, navigation: false }));
     toast({
       title: "Navigation Ended",
       description: "Route has been cleared",
@@ -195,8 +196,8 @@ export default function Navigation() {
     setSearchQuery('');
     setFilteredCategories([]);
     setSelectedPOI(null);
-    setDrawerMode('camping-center');
-    setDrawerHeight('peek');
+    setUIMode('start');
+    setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false }));
     
     toast({
       title: t('alerts.poisCleared'),
@@ -204,14 +205,10 @@ export default function Navigation() {
     });
   }, [toast, t]);
 
-  const handleDrawerClose = useCallback(() => {
+  const handleCloseOverlay = useCallback(() => {
     setSelectedPOI(null);
-    setDrawerMode('camping-center');
-    setDrawerHeight('peek');
-  }, []);
-
-  const handleDrawerHeightChange = useCallback((height: 'peek' | 'half' | 'full') => {
-    setDrawerHeight(height);
+    setUIMode('start');
+    setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false, routePlanning: false }));
   }, []);
 
   // Gesture navigation handlers

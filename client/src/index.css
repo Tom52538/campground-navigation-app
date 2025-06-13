@@ -195,22 +195,44 @@
   }
 }
 
-/* Smart Bottom Drawer Styles */
-.smart-drawer {
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Transparent Overlay System */
+.transparent-overlay {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.smart-drawer.open {
-  transform: translateY(0);
+.camping-glass-effect {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.smart-drawer-handle {
-  width: 48px;
-  height: 6px;
-  background-color: rgb(209, 213, 219);
-  border-radius: 9999px;
-  margin: 0 auto;
+/* Camping-Themed Design Tokens */
+:root {
+  /* Camping Primary Colors */
+  --forest-green: #2d5a27;
+  --earth-brown: #8b4513;
+  --sky-blue: #87ceeb;
+  --sunset-orange: #ff6b35;
+  
+  /* Transparent Overlays */
+  --overlay-light: rgba(255, 255, 255, 0.9);
+  --overlay-dark: rgba(0, 0, 0, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  
+  /* Outdoor Visibility */
+  --high-contrast-text: #000000;
+  --emergency-red: #dc3545;
+  --success-green: #28a745;
 }
 
 /* Minimal Header Styles */
