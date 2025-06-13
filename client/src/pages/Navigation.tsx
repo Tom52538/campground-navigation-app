@@ -260,19 +260,26 @@ export default function Navigation() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* Map Container - 100% Visible, Always Interactive */}
-      <MapContainerComponent
-        center={mapCenter}
-        zoom={mapZoom}
-        currentPosition={currentPosition}
-        pois={poisWithDistance}
-        selectedPOI={selectedPOI}
-        route={currentRoute}
-        filteredCategories={filteredCategories}
-        onPOIClick={handlePOIClick}
-        onPOINavigate={handleNavigateToPOI}
-        onMapClick={handleMapClick}
-      />
+      {/* Map Container - Zone 3: Map Area (150px+) */}
+      <div 
+        className="absolute inset-0"
+        style={{ 
+          top: '150px'
+        }}
+      >
+        <MapContainerComponent
+          center={mapCenter}
+          zoom={mapZoom}
+          currentPosition={currentPosition}
+          pois={poisWithDistance}
+          selectedPOI={selectedPOI}
+          route={currentRoute}
+          filteredCategories={filteredCategories}
+          onPOIClick={handlePOIClick}
+          onPOINavigate={handleNavigateToPOI}
+          onMapClick={handleMapClick}
+        />
+      </div>
 
       {/* Permanent Header - Always Visible */}
       <PermanentHeader
@@ -311,71 +318,34 @@ export default function Navigation() {
         />
       )}
 
-      {/* Navigation Panel - Top Position */}
+      {/* Navigation Panel - Zone 2: Navigation (90-140px) */}
       {currentRoute && overlayStates.navigation && (
         <div 
           className="absolute z-30 transparent-nav-panel"
           style={{
-            top: '80px',
+            top: '90px',
             left: '16px',
             right: '16px',
-            padding: '14px 18px',
+            height: '50px',
+            padding: '8px 16px',
             transition: 'all 0.3s ease'
           }}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between h-full text-xs">
             {/* Distance */}
-            <div className="flex items-center space-x-2">
-              <span className="text-red-500 text-sm">📍</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                {currentRoute.totalDistance}
-              </span>
-            </div>
+            <span className="font-semibold text-black">📍 {currentRoute.totalDistance}</span>
             
             {/* Time */}
-            <div className="flex items-center space-x-2">
-              <span className="text-blue-500 text-sm">⏱️</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                {currentRoute.estimatedTime}
-              </span>
-            </div>
+            <span className="font-semibold text-black">⏱️ {currentRoute.estimatedTime}</span>
             
             {/* ETA */}
-            <div className="flex items-center space-x-2">
-              <span className="text-green-500 text-sm">🚗</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                ETA: {currentRoute.arrivalTime}
-              </span>
-            </div>
+            <span className="font-semibold text-black">🚗 {currentRoute.arrivalTime}</span>
             
             {/* End Button */}
             <button
               onClick={handleEndNavigation}
-              className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105"
-              style={{
-                background: 'rgba(239, 68, 68, 0.8)',
-                color: 'white',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                backdropFilter: 'blur(4px)'
-              }}
+              className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-medium"
+              style={{ minWidth: '40px', height: '24px' }}
             >
               End
             </button>

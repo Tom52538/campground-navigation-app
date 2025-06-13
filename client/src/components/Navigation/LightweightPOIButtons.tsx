@@ -23,10 +23,8 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
     <div 
       className="absolute left-4 z-20 flex flex-col space-y-3"
       style={{
-        top: '50%',
-        transform: 'translateY(-50%)', // Perfect vertical center
-        marginTop: '20px', // Small offset from true center
-        marginBottom: '20px' // Keep distance from top/bottom
+        top: '200px', // Position relative to map area starting at 150px
+        transform: 'none'
       }}
     >
       {poiCategories.map((poi, index) => (
