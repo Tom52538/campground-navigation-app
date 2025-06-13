@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
+import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
 import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
+import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
@@ -16,52 +18,75 @@ import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Navigation() {
-  // State management
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
+  const { currentPosition, useRealGPS, toggleGPS } = useLocation({ currentSite });
+  const { data: allPOIs = [], isLoading: poisLoading } = usePOI(currentSite);
+  const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
+  const { getRoute } = useRouting();
+  const { toast } = useToast();
+  const { t } = useLanguage();
+
+  // Map state
+  const [mapCenter, setMapCenter] = useState(TEST_SITES.kamperland.coordinates);
+  const [mapZoom, setMapZoom] = useState(16);
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [currentRoute, setCurrentRoute] = useState<NavigationRoute | null>(null);
-  const [mapCenter, setMapCenter] = useState(TEST_SITES[currentSite].coordinates);
-  const [mapZoom, setMapZoom] = useState(15);
-  const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'navigation'>('start');
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
+  
+  // Transparent Overlay UI state
+  const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
   const [overlayStates, setOverlayStates] = useState({
     search: false,
     poiInfo: false,
-    navigation: false,
-    routePlanning: false
+    routePlanning: false,
+    navigation: false
   });
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [useRealGPS, setUseRealGPS] = useState(false);
 
-  // Hooks
-  const { currentPosition } = useLocation({ currentSite });
-  const { data: pois = [], isLoading: poisLoading } = usePOI(currentSite);
-  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite);
-  const routing = useRouting();
-  const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
-  const { t } = useLanguage();
-  const { toast } = useToast();
+  // Search functionality - include category filter for search
+  const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
+  const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
+  
+  // Filter POIs based on search and category selection - only show when searched
+  let displayPOIs: POI[] = [];
+  
+  if (searchQuery.length > 0) {
+    // Use search results (already filtered by category if single category selected)
+    displayPOIs = searchResults;
+  } else if (filteredCategories.length > 0) {
+    // Apply category filtering to all POIs
+    displayPOIs = allPOIs.filter(poi => filteredCategories.includes(poi.category));
+  }
+  // Don't show POIs by default - only when searched or filtered
+  const shouldShowPOIs = displayPOIs.length > 0;
 
-  // Calculate POIs with distance
-  const poisWithDistance = pois.map(poi => ({
+  // Add distance to POIs
+  const poisWithDistance = displayPOIs.map(poi => ({
     ...poi,
     distance: formatDistance(calculateDistance(currentPosition, poi.coordinates))
   }));
 
-  const shouldShowPOIs = searchQuery.length > 0 || filteredCategories.length > 0;
 
-  // Event handlers
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.length > 0) {
       setUIMode('search');
-      setOverlayStates(prev => ({ ...prev, search: true, poiInfo: false }));
+      setOverlayStates(prev => ({ ...prev, search: true }));
     } else {
       setUIMode('start');
       setOverlayStates(prev => ({ ...prev, search: false }));
     }
   }, []);
+
+  const handleFilter = useCallback(() => {
+    setShowFilterModal(true);
+  }, []);
+
+  // Removed hamburger menu - using permanent header approach
 
   const handleZoomIn = useCallback(() => {
     setMapZoom(prev => Math.min(prev + 1, 19));
@@ -76,11 +101,14 @@ export default function Navigation() {
     setMapZoom(16);
   }, [currentPosition]);
 
-  const toggleGPS = useCallback(() => {
-    setUseRealGPS(prev => !prev);
+  const handlePOIClick = useCallback((poi: POI) => {
+    setSelectedPOI(poi);
+    setMapCenter(poi.coordinates);
+    setUIMode('poi-info');
+    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
   }, []);
 
-  const handlePOIClick = useCallback((poi: POI) => {
+  const handlePOISelect = useCallback((poi: POI) => {
     setSelectedPOI(poi);
     setMapCenter(poi.coordinates);
     setUIMode('poi-info');
@@ -96,51 +124,79 @@ export default function Navigation() {
   }, [selectedPOI]);
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
-    routing.getRoute.mutate({
-      from: currentPosition,
-      to: poi.coordinates
-    }, {
-      onSuccess: (route) => {
-        setCurrentRoute(route);
-        setUIMode('navigation');
-        setOverlayStates(prev => ({ ...prev, navigation: true, poiInfo: false }));
-        
-        toast({
-          title: t('navigation.routeCalculated'),
-          description: `${route.totalDistance} • ${route.estimatedTime}`,
-        });
-      },
-      onError: () => {
-        toast({
-          title: t('errors.routeCalculation'),
-          description: t('errors.tryAgain'),
-          variant: 'destructive',
-        });
-      }
-    });
-  }, [currentPosition, routing.getRoute, toast, t]);
+    try {
+      // 1. IMMEDIATELY hide POI info box - FIRST ACTION
+      setSelectedPOI(null);
+      setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
+      
+      // 2. Show calculating state
+      setIsNavigating(false); // Clear any existing navigation
+      
+      // 3. Calculate route directly
+      const route = await getRoute.mutateAsync({
+        from: currentPosition,
+        to: poi.coordinates
+      });
+      
+      // 4. Start navigation with panel at bottom
+      setCurrentRoute(route);
+      setIsNavigating(true);
+      setUIMode('navigation');
+      setOverlayStates(prev => ({ ...prev, navigation: true }));
+      
+      // Navigation started - no confirmation dialog needed
+    } catch (error) {
+      toast({
+        title: "Route Error",
+        description: "Failed to calculate route. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [currentPosition, getRoute, toast]);
 
   const handleEndNavigation = useCallback(() => {
     setCurrentRoute(null);
+    setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
-    
-    toast({
-      title: t('navigation.ended'),
-      description: t('navigation.backToExploring'),
+    // Toast removed - user can see route cleared visually
+  }, [toast]);
+
+
+
+  const handleClosePOIPanel = useCallback(() => {
+    setSelectedPOI(null);
+  }, []);
+
+  const handleToggleCategory = useCallback((category: string) => {
+    setFilteredCategories(prev => {
+      if (prev.includes(category)) {
+        return prev.filter(c => c !== category);
+      } else if (prev.length === 0) {
+        // If no categories selected, select only this one
+        return [category];
+      } else {
+        // Add to existing selection
+        return [...prev, category];
+      }
     });
-  }, [toast, t]);
+  }, []);
 
   const handleSiteChange = useCallback((site: TestSite) => {
     setCurrentSite(site);
     setMapCenter(TEST_SITES[site].coordinates);
+    setMapZoom(16);
     setSelectedPOI(null);
     setCurrentRoute(null);
+    setIsNavigating(false);
     setSearchQuery('');
     setFilteredCategories([]);
-    setUIMode('start');
-    setOverlayStates({ search: false, poiInfo: false, navigation: false, routePlanning: false });
-  }, []);
+    
+    toast({
+      title: t('alerts.siteChanged'),
+      description: `${t('alerts.siteSwitched')} ${TEST_SITES[site].name}`,
+    });
+  }, [toast]);
 
   const handleClearPOIs = useCallback(() => {
     setSearchQuery('');
@@ -155,22 +211,38 @@ export default function Navigation() {
     });
   }, [toast, t]);
 
+  const handleCloseOverlay = useCallback(() => {
+    setSelectedPOI(null);
+    setUIMode('start');
+    setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false, routePlanning: false }));
+  }, []);
+
+  // Gesture navigation handlers
+  const handleNavigateLeft = useCallback(() => {
+    const panels = ['search', 'map', 'navigation', 'settings'] as const;
+    const currentIndex = panels.indexOf(currentPanel);
+    if (currentIndex > 0) {
+      setCurrentPanel(panels[currentIndex - 1]);
+    }
+  }, [currentPanel]);
+
+  const handleNavigateRight = useCallback(() => {
+    const panels = ['search', 'map', 'navigation', 'settings'] as const;
+    const currentIndex = panels.indexOf(currentPanel);
+    if (currentIndex < panels.length - 1) {
+      setCurrentPanel(panels[currentIndex + 1]);
+    }
+  }, [currentPanel]);
+
+  // POI Category Filter Handler for Quick Access
   const handleCategoryFilter = useCallback((category: string) => {
     setFilteredCategories(prev => {
       if (prev.includes(category)) {
+        // Remove category if already selected
         return prev.filter(c => c !== category);
       } else {
+        // Replace with single category selection for "one touch" behavior
         return [category];
-      }
-    });
-  }, []);
-
-  const handleToggleCategory = useCallback((category: string) => {
-    setFilteredCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
       }
     });
   }, []);
@@ -187,156 +259,160 @@ export default function Navigation() {
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateRows: '80px 60px 1fr',
-      height: '100vh',
-      width: '100vw'
-    }}>
-      {/* Row 1: Header */}
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.9)',
-        backdropFilter: 'blur(8px)',
-        zIndex: 40,
-        padding: '0 16px',
-        display: 'flex',
-        alignItems: 'center'
-      }}>
-        <PermanentHeader
-          searchQuery={searchQuery}
-          onSearch={handleSearch}
-          currentSite={currentSite}
-          onSiteChange={handleSiteChange}
-          showClearButton={shouldShowPOIs}
-          onClear={handleClearPOIs}
-        />
-      </div>
+    <div className="relative h-screen w-full overflow-hidden">
+      {/* Map Container - 100% Visible, Always Interactive */}
+      <MapContainerComponent
+        center={mapCenter}
+        zoom={mapZoom}
+        currentPosition={currentPosition}
+        pois={poisWithDistance}
+        selectedPOI={selectedPOI}
+        route={currentRoute}
+        filteredCategories={filteredCategories}
+        onPOIClick={handlePOIClick}
+        onPOINavigate={handleNavigateToPOI}
+        onMapClick={handleMapClick}
+      />
 
-      {/* Row 2: Navigation (only when navigating) */}
-      <div style={{
-        background: currentRoute ? 'rgba(255, 255, 255, 0.85)' : 'transparent',
-        backdropFilter: currentRoute ? 'blur(10px)' : 'none',
-        zIndex: 30,
-        padding: '0 16px',
-        display: 'flex',
-        alignItems: 'center',
-        borderRadius: currentRoute ? '12px' : '0',
-        margin: currentRoute ? '8px 16px' : '0'
-      }}>
-        {currentRoute && overlayStates.navigation && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
-            height: '40px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#000' }}>
-                📍 {currentRoute.totalDistance}
-              </span>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#000' }}>
-                ⏱️ {currentRoute.estimatedTime}
-              </span>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#000' }}>
-                🚗 {currentRoute.arrivalTime}
+      {/* Permanent Header - Always Visible */}
+      <PermanentHeader
+        searchQuery={searchQuery}
+        onSearch={handleSearch}
+        currentSite={currentSite}
+        onSiteChange={handleSiteChange}
+        showClearButton={shouldShowPOIs}
+        onClear={handleClearPOIs}
+      />
+
+      {/* Lightweight POI Buttons - Left Side */}
+      <LightweightPOIButtons 
+        onCategorySelect={handleCategoryFilter}
+        activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+      />
+
+      {/* Enhanced Map Controls - Right Side Vertical */}
+      <EnhancedMapControls
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onCenterOnLocation={handleCenterOnLocation}
+        useRealGPS={useRealGPS}
+        onToggleGPS={toggleGPS}
+      />
+
+      {/* Camping Weather Widget */}
+      <CampingWeatherWidget coordinates={currentPosition} />
+
+      {/* POI Info Overlay - Positioned below button rows */}
+      {selectedPOI && (
+        <TransparentPOIOverlay 
+          poi={selectedPOI}
+          onNavigate={handleNavigateToPOI}
+          onClose={() => setSelectedPOI(null)}
+        />
+      )}
+
+      {/* Navigation Panel - Top Position */}
+      {currentRoute && overlayStates.navigation && (
+        <div 
+          className="absolute left-4 right-4 z-30 transition-all duration-300"
+          style={{
+            top: '80px',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <div className="flex items-center justify-between">
+            {/* Distance */}
+            <div className="flex items-center space-x-2">
+              <span className="text-red-500 text-sm">📍</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {currentRoute.totalDistance}
               </span>
             </div>
             
+            {/* Time */}
+            <div className="flex items-center space-x-2">
+              <span className="text-blue-500 text-sm">⏱️</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {currentRoute.estimatedTime}
+              </span>
+            </div>
+            
+            {/* ETA */}
+            <div className="flex items-center space-x-2">
+              <span className="text-green-500 text-sm">🚗</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                ETA: {currentRoute.arrivalTime}
+              </span>
+            </div>
+            
+            {/* End Button */}
             <button
               onClick={handleEndNavigation}
+              className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105"
               style={{
-                background: '#ef4444',
+                background: 'rgba(239, 68, 68, 0.8)',
                 color: 'white',
-                padding: '4px 12px',
-                borderRadius: '16px',
-                border: 'none',
-                fontSize: '12px',
-                fontWeight: '600'
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                backdropFilter: 'blur(4px)'
               }}
             >
               End
             </button>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Weather Widget - Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-30">
+        <div className="rounded-xl border border-white/20 px-3 py-2 min-w-[120px]"
+             style={{
+               background: 'rgba(255, 255, 255, 0.3)',
+               backdropFilter: 'blur(12px) saturate(180%)',
+               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+             }}>
+          {weather && (
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-gray-800"
+                      style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                  {Math.round(weather.temperature)}°C
+                </span>
+              </div>
+              <div className="text-xs text-gray-600 capitalize font-medium"
+                   style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
+                {weather.condition}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Row 3: Map Area */}
-      <div style={{ position: 'relative' }}>
-        <MapContainerComponent
-          center={mapCenter}
-          zoom={mapZoom}
-          currentPosition={currentPosition}
-          pois={poisWithDistance}
-          selectedPOI={selectedPOI}
-          route={currentRoute}
-          filteredCategories={filteredCategories}
-          onPOIClick={handlePOIClick}
-          onPOINavigate={handleNavigateToPOI}
-          onMapClick={handleMapClick}
-        />
-        
-        {/* Floating elements inside map area */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '16px',
-            top: '50%',
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <LightweightPOIButtons 
-            onCategorySelect={handleCategoryFilter}
-            activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
-          />
-        </div>
-        
-        <div
-          style={{
-            position: 'absolute',
-            right: '16px', 
-            top: '50%',
-            transform: 'translateY(-50%)'
-          }}
-        >
-          <EnhancedMapControls
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onCenterOnLocation={handleCenterOnLocation}
-            useRealGPS={useRealGPS}
-            onToggleGPS={toggleGPS}
-          />
-        </div>
-        
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '16px',
-            right: '16px'
-          }}
-        >
-          <CampingWeatherWidget coordinates={currentPosition} />
-        </div>
-        
-        {selectedPOI && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '80px',
-              left: '16px',
-              right: '16px'
-            }}
-          >
-            <TransparentPOIOverlay 
-              poi={selectedPOI}
-              onNavigate={handleNavigateToPOI}
-              onClose={() => setSelectedPOI(null)}
-            />
-          </div>
-        )}
-      </div>
 
-      {/* Filter Modal */}
+
+      {/* Filter Modal - Preserved */}
       <FilterModal
         isOpen={showFilterModal}
         onClose={() => setShowFilterModal(false)}
