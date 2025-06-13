@@ -47,7 +47,7 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerPro
       }}
     >
       {isSelected && (
-        <Popup>
+        <Popup autoOpen={true} closeOnClick={false}>
           <div className="p-2 min-w-[200px]">
             <h3 className="font-semibold text-gray-800 mb-1">{poi.name}</h3>
             <p className="text-sm text-gray-600 mb-2">{category?.label || poi.category}</p>
