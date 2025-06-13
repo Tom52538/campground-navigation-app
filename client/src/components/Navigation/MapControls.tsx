@@ -66,8 +66,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
         style={{
           width: '44px',
           height: '44px',
-          background: 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
           marginBottom: '8px'
@@ -158,8 +157,7 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
         onClick={onToggleGPS}
         title={useRealGPS ? 'Real GPS Active' : 'Demo Mode'}
         style={{
-          background: useRealGPS ? 'rgba(16, 185, 129, 0.8)' : 'rgba(255, 255, 255, 0.75)',
-          backdropFilter: 'blur(8px)',
+          backgroundColor: useRealGPS ? 'rgba(16, 185, 129, 0.8)' : 'rgba(255, 255, 255, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
           width: '44px',
