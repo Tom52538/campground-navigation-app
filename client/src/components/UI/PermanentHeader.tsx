@@ -35,7 +35,7 @@ export const PermanentHeader = ({
   return (
     <div className="fixed top-0 left-0 right-0 z-40" 
          style={{
-           background: 'rgba(255, 255, 255, 0.85)',
+           background: 'rgba(255, 255, 255, 0.3)',
            backdropFilter: 'blur(12px) saturate(180%)',
            borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
@@ -54,7 +54,7 @@ export const PermanentHeader = ({
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent
                          placeholder:text-gray-500 text-gray-900"
               style={{
-                background: 'rgba(255, 255, 255, 0.85)',
+                background: 'rgba(255, 255, 255, 0.3)',
                 backdropFilter: 'blur(8px)'
               }}
             />
@@ -71,7 +71,7 @@ export const PermanentHeader = ({
               onClick={onClear}
               className="text-xs px-3 h-8 text-gray-600 rounded-full"
               style={{
-                background: 'rgba(255, 255, 255, 0.85)',
+                background: 'rgba(255, 255, 255, 0.3)',
                 backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)'
               }}
@@ -88,7 +88,7 @@ export const PermanentHeader = ({
             className="h-8 px-3 border border-white/20 rounded-full
                        flex items-center space-x-1 min-w-[80px]"
             style={{
-              background: 'rgba(255, 255, 255, 0.85)',
+              background: 'rgba(255, 255, 255, 0.3)',
               backdropFilter: 'blur(8px)'
             }}
           >
@@ -105,7 +105,7 @@ export const PermanentHeader = ({
         <div className="flex items-center justify-center">
           <div className="text-xs text-gray-500 px-3 py-1 rounded-full border border-white/20"
                style={{
-                 background: 'rgba(255, 255, 255, 0.85)',
+                 background: 'rgba(255, 255, 255, 0.3)',
                  backdropFilter: 'blur(8px)'
                }}>
             📍 {TEST_SITES[currentSite].name}

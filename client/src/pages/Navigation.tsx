@@ -122,10 +122,9 @@ export default function Navigation() {
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     try {
-      // 1. Hide POI info immediately (no confirmation dialog)
+      // 1. IMMEDIATELY hide POI info and clear all overlays
       setSelectedPOI(null);
-      setUIMode('navigation');
-      setOverlayStates(prev => ({ ...prev, poiInfo: false, navigation: false }));
+      setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
       
       // 2. Calculate route directly
       const route = await getRoute.mutateAsync({
@@ -133,9 +132,10 @@ export default function Navigation() {
         to: poi.coordinates
       });
       
-      // 3. Start navigation with panel at bottom
+      // 3. Start navigation
       setCurrentRoute(route);
       setIsNavigating(true);
+      setUIMode('navigation');
       setOverlayStates(prev => ({ ...prev, navigation: true }));
       
       toast({
@@ -369,7 +369,7 @@ export default function Navigation() {
       <div className="absolute bottom-4 right-4 z-30">
         <div className="rounded-xl border border-white/20 px-3 py-2 min-w-[120px]"
              style={{
-               background: 'rgba(255, 255, 255, 0.85)',
+               background: 'rgba(255, 255, 255, 0.3)',
                backdropFilter: 'blur(12px) saturate(180%)',
                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
              }}>

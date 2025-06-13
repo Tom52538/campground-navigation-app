@@ -103,7 +103,7 @@ export const TransparentOverlay = ({
           getBackdropClasses()
         )}
         style={{
-          background: 'rgba(255, 255, 255, 0.85)',
+          background: 'rgba(255, 255, 255, 0.4)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           backdropFilter: 'blur(12px) saturate(180%)'
         }}
