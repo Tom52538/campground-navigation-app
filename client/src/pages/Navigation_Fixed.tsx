@@ -39,7 +39,7 @@ export default function Navigation() {
   const { currentPosition, updatePosition } = useLocation({ currentSite });
   const { data: pois = [], isLoading: poisLoading } = usePOI(currentSite);
   const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite);
-  const { mutateAsync: getRoute } = useRouting();
+  const { getRoute } = useRouting();
   const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -97,13 +97,11 @@ export default function Navigation() {
   }, [selectedPOI]);
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
-    try {
-      const route = await getRoute({
-        from: currentPosition,
-        to: poi.coordinates
-      });
-
-      if (route) {
+    getRoute.getRoute.mutate({
+      from: currentPosition,
+      to: poi.coordinates
+    }, {
+      onSuccess: (route) => {
         setCurrentRoute(route);
         setUIMode('navigation');
         setOverlayStates(prev => ({ ...prev, navigation: true, poiInfo: false }));
@@ -112,14 +110,15 @@ export default function Navigation() {
           title: t('navigation.routeCalculated'),
           description: `${route.totalDistance} • ${route.estimatedTime}`,
         });
+      },
+      onError: () => {
+        toast({
+          title: t('errors.routeCalculation'),
+          description: t('errors.tryAgain'),
+          variant: 'destructive',
+        });
       }
-    } catch (error) {
-      toast({
-        title: t('errors.routeCalculation'),
-        description: t('errors.tryAgain'),
-        variant: 'destructive',
-      });
-    }
+    });
   }, [currentPosition, getRoute, toast, t]);
 
   const handleEndNavigation = useCallback(() => {
