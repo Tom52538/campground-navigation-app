@@ -2,7 +2,9 @@ import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
-// QuickPOIIcons removed - integrated into permanent header
+import { POIQuickAccess } from '@/components/Navigation/POIQuickAccess';
+import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
+import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
@@ -230,6 +232,19 @@ export default function Navigation() {
       setCurrentPanel(panels[currentIndex + 1]);
     }
   }, [currentPanel]);
+
+  // POI Category Filter Handler for Quick Access
+  const handleCategoryFilter = useCallback((category: string) => {
+    setFilteredCategories(prev => {
+      if (prev.includes(category)) {
+        // Remove category if already selected
+        return prev.filter(c => c !== category);
+      } else {
+        // Replace with single category selection for "one touch" behavior
+        return [category];
+      }
+    });
+  }, []);
 
   if (poisLoading) {
     return (
