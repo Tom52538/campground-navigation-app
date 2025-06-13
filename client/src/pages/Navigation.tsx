@@ -156,10 +156,7 @@ export default function Navigation() {
     setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
-    toast({
-      title: "Navigation Ended",
-      description: "Route has been cleared",
-    });
+    // Toast removed - user can see route cleared visually
   }, [toast]);
 
 
