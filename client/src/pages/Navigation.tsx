@@ -122,20 +122,25 @@ export default function Navigation() {
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     try {
+      // 1. Hide POI info immediately (no confirmation dialog)
+      setSelectedPOI(null);
+      setUIMode('navigation');
+      setOverlayStates(prev => ({ ...prev, poiInfo: false, navigation: false }));
+      
+      // 2. Calculate route directly
       const route = await getRoute.mutateAsync({
         from: currentPosition,
         to: poi.coordinates
       });
       
+      // 3. Start navigation with panel at bottom
       setCurrentRoute(route);
       setIsNavigating(true);
-      setSelectedPOI(null);
-      setUIMode('navigation');
-      setOverlayStates(prev => ({ ...prev, navigation: true, poiInfo: false }));
+      setOverlayStates(prev => ({ ...prev, navigation: true }));
       
       toast({
-        title: "Route Calculated",
-        description: `Navigation started to ${poi.name}`,
+        title: "Navigation Started",
+        description: `Route to ${poi.name}`,
       });
     } catch (error) {
       toast({
@@ -310,11 +315,12 @@ export default function Navigation() {
         )}
       </TransparentOverlay>
 
-      {/* Navigation Overlay */}
+      {/* Navigation Overlay - Bottom Position */}
       <TransparentOverlay
         isVisible={overlayStates.navigation && !!currentRoute}
-        position="top"
-        animation="fade"
+        position="bottom"
+        animation="slide"
+        className="mb-20"
       >
         {currentRoute && (
           <div className="space-y-3">

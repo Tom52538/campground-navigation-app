@@ -33,7 +33,13 @@ export const PermanentHeader = ({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-white/20 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 z-40" 
+         style={{
+           background: 'rgba(255, 255, 255, 0.85)',
+           backdropFilter: 'blur(12px) saturate(180%)',
+           borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+         }}>
       <div className="flex items-center justify-between px-4 py-3 h-16">
         {/* Search Bar - Takes up most space */}
         <div className="flex-1 mr-4">
@@ -44,9 +50,13 @@ export const PermanentHeader = ({
               placeholder={t('search.placeholder')}
               value={searchQuery}
               onChange={handleInputChange}
-              className="pl-10 pr-4 py-2 w-full bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full 
+              className="pl-10 pr-4 py-2 w-full border border-white/20 rounded-full 
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent
                          placeholder:text-gray-500 text-gray-900"
+              style={{
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(8px)'
+              }}
             />
           </div>
         </div>
@@ -59,7 +69,12 @@ export const PermanentHeader = ({
               variant="ghost"
               size="sm"
               onClick={onClear}
-              className="text-xs px-3 h-8 text-gray-600 hover:bg-gray-100/80 rounded-full"
+              className="text-xs px-3 h-8 text-gray-600 rounded-full"
+              style={{
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
             >
               Clear
             </Button>
@@ -70,8 +85,12 @@ export const PermanentHeader = ({
             variant="outline"
             size="sm"
             onClick={handleSiteToggle}
-            className="h-8 px-3 bg-white/90 backdrop-blur-sm border border-gray-200 hover:bg-gray-50 rounded-full
+            className="h-8 px-3 border border-white/20 rounded-full
                        flex items-center space-x-1 min-w-[80px]"
+            style={{
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(8px)'
+            }}
           >
             <MapPin className="w-3 h-3 text-blue-600" />
             <span className="text-xs font-medium text-gray-800 capitalize">

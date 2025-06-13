@@ -52,13 +52,13 @@ export const TransparentOverlay = ({
   const getBackdropClasses = () => {
     switch (backdropBlur) {
       case 'light':
-        return 'backdrop-blur-sm';
+        return 'backdrop-blur-[8px]';
       case 'medium':
-        return 'backdrop-blur-md';
+        return 'backdrop-blur-[12px]';
       case 'heavy':
-        return 'backdrop-blur-lg';
+        return 'backdrop-blur-[16px]';
       default:
-        return 'backdrop-blur-md';
+        return 'backdrop-blur-[12px]';
     }
   };
 
@@ -96,15 +96,16 @@ export const TransparentOverlay = ({
         backgroundColor: `rgba(255, 255, 255, ${opacity})`,
       }}
     >
-      {/* Glassmorphism container */}
+      {/* CampCompass Transparent Container */}
       <div 
         className={cn(
-          'w-full rounded-2xl border border-white/20 shadow-2xl',
-          getBackdropClasses(),
-          'bg-gradient-to-br from-white/90 to-white/70'
+          'w-full rounded-2xl border border-white/20',
+          getBackdropClasses()
         )}
         style={{
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+          background: 'rgba(255, 255, 255, 0.85)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          backdropFilter: 'blur(12px) saturate(180%)'
         }}
       >
         {/* Close button for overlays that support it */}
