@@ -2,8 +2,9 @@ import { useState, useCallback } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
-import { QuickPOIIcons } from '@/components/Navigation/QuickPOIIcons';
+// QuickPOIIcons removed - integrated into permanent header
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
+import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
@@ -241,7 +242,7 @@ export default function Navigation() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* Map Container - Full Screen */}
+      {/* Map Container - 100% Visible, Always Interactive */}
       <MapContainerComponent
         center={mapCenter}
         zoom={mapZoom}
@@ -254,19 +255,17 @@ export default function Navigation() {
         onMapClick={handleMapClick}
       />
 
-      {/* Minimal Header - Replaces TopBar, SearchBar, SiteSelector, POIClearButton */}
-      <MinimalHeader
-        currentSite={currentSite}
+      {/* Permanent Header - Always Visible */}
+      <PermanentHeader
         searchQuery={searchQuery}
         onSearch={handleSearch}
-        onFilter={handleFilter}
+        currentSite={currentSite}
         onSiteChange={handleSiteChange}
-        onMenuToggle={handleMenuToggle}
         showClearButton={shouldShowPOIs}
         onClear={handleClearPOIs}
       />
 
-      {/* Map Controls - Simplified positioning */}
+      {/* Map Controls - Right Side Vertical */}
       <MapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -275,28 +274,85 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {/* Contextual POI Icons - Preserved for quick access */}
-      <QuickPOIIcons
-        filteredCategories={filteredCategories}
-        onToggleCategory={handleToggleCategory}
-      />
+      {/* POI Info Transparent Overlay */}
+      <TransparentOverlay
+        isVisible={overlayStates.poiInfo && !!selectedPOI}
+        position="bottom"
+        onClose={handleCloseOverlay}
+        animation="slide"
+      >
+        {selectedPOI && (
+          <div className="space-y-4">
+            <div className="flex items-start space-x-4">
+              <div className="bg-blue-600 rounded-xl p-3 flex-shrink-0">
+                <span className="text-white text-xl">🏕️</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-800 mb-1">{selectedPOI.name}</h3>
+                <p className="text-gray-600 mb-2">{selectedPOI.category}</p>
+                {selectedPOI.distance && (
+                  <p className="text-sm text-gray-500">📍 {selectedPOI.distance} away</p>
+                )}
+              </div>
+            </div>
+            
+            <button
+              onClick={() => handleNavigateToPOI(selectedPOI)}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-6 rounded-xl
+                         hover:from-blue-700 hover:to-blue-800 transition-all duration-200
+                         shadow-lg hover:shadow-xl transform hover:scale-[1.02]
+                         flex items-center justify-center space-x-2"
+            >
+              <span>🧭</span>
+              <span>Navigate Here</span>
+            </button>
+          </div>
+        )}
+      </TransparentOverlay>
 
-      {/* Smart Bottom Drawer - Replaces POIPanel, WeatherStrip, StatusBar, GroundNavigation */}
-      <SmartBottomDrawer
-        mode={drawerMode}
-        height={drawerHeight}
-        selectedPOI={selectedPOI}
-        searchResults={poisWithDistance}
-        searchQuery={searchQuery}
-        currentRoute={currentRoute}
-        currentPosition={currentPosition}
-        weather={weather}
-        onPOINavigate={handleNavigateToPOI}
-        onPOISelect={handlePOISelect}
-        onClose={handleDrawerClose}
-        onHeightChange={handleDrawerHeightChange}
-        onEndNavigation={handleEndNavigation}
-      />
+      {/* Navigation Overlay */}
+      <TransparentOverlay
+        isVisible={overlayStates.navigation && !!currentRoute}
+        position="top"
+        animation="fade"
+      >
+        {currentRoute && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-800">Navigation Active</h3>
+              <button
+                onClick={handleEndNavigation}
+                className="text-red-600 hover:text-red-700 font-medium text-sm px-3 py-1 rounded-lg hover:bg-red-50"
+              >
+                End Navigation
+              </button>
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>📍 {currentRoute.totalDistance}</span>
+              <span>⏱️ {currentRoute.estimatedTime}</span>
+              <span>🚗 ETA: {currentRoute.arrivalTime}</span>
+            </div>
+          </div>
+        )}
+      </TransparentOverlay>
+
+      {/* Weather Widget - Bottom Right */}
+      <div className="absolute bottom-4 right-4 z-30">
+        <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-white/30 px-3 py-2 min-w-[120px]">
+          {weather && (
+            <div className="flex flex-col space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-gray-800">
+                  {Math.round(weather.temperature)}°C
+                </span>
+              </div>
+              <div className="text-xs text-gray-600 capitalize">
+                {weather.condition}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Filter Modal - Preserved */}
       <FilterModal
