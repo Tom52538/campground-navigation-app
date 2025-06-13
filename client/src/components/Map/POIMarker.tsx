@@ -45,15 +45,7 @@ export const POIMarker = ({ poi, isSelected, onClick }: POIMarkerProps) => {
         click: onClick,
       }}
     >
-      <Popup>
-        <div className="p-2">
-          <h3 className="font-semibold text-gray-800 mb-1">{poi.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{category?.label || poi.category}</p>
-          {poi.distance && (
-            <p className="text-xs text-gray-500">{poi.distance} away</p>
-          )}
-        </div>
-      </Popup>
+      {/* Popup removed - using custom overlay system instead */}
     </Marker>
   );
 };
