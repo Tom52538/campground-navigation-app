@@ -141,10 +141,7 @@ export default function Navigation() {
       setUIMode('navigation');
       setOverlayStates(prev => ({ ...prev, navigation: true }));
       
-      toast({
-        title: "Navigation Started",
-        description: `Route to ${poi.name}`,
-      });
+      // Navigation started - no confirmation dialog needed
     } catch (error) {
       toast({
         title: "Route Error",

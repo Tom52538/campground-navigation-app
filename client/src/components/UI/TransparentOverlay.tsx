@@ -112,10 +112,14 @@ export const TransparentOverlay = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 hover:bg-white/90 
+            className="absolute top-4 right-4 w-8 h-8 rounded-full
                        backdrop-blur-sm border border-white/30 shadow-lg
                        flex items-center justify-center text-gray-600 hover:text-gray-800
                        transition-all duration-200 z-10"
+            style={{
+              background: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)'
+            }}
             aria-label="Close overlay"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

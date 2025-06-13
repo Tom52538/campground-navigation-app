@@ -11,6 +11,7 @@ interface POIPanelProps {
 }
 
 export const POIPanel = ({ poi, isVisible, onNavigate, onClose }: POIPanelProps) => {
+  console.log('RENDERING: POIPanel', { poi: poi?.name, isVisible });
   if (!poi) return null;
 
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
