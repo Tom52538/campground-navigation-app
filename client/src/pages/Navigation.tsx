@@ -314,42 +314,69 @@ export default function Navigation() {
       {/* Navigation Panel - Top Position */}
       {currentRoute && overlayStates.navigation && (
         <div 
-          className="absolute top-16 left-4 right-4 z-30 transition-all duration-300"
+          className="absolute left-4 right-4 z-30 transition-all duration-300"
           style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(8px)',
+            top: '80px',
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
             borderRadius: '12px',
             padding: '12px 16px',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
             boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
           }}
         >
           <div className="flex items-center justify-between">
             {/* Distance */}
             <div className="flex items-center space-x-2">
-              <span className="text-red-500">📍</span>
-              <span className="font-semibold text-gray-900">{currentRoute.totalDistance}</span>
+              <span className="text-red-500 text-sm">📍</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {currentRoute.totalDistance}
+              </span>
             </div>
             
             {/* Time */}
             <div className="flex items-center space-x-2">
-              <span className="text-blue-500">⏱️</span>
-              <span className="font-semibold text-gray-900">{currentRoute.estimatedTime}</span>
+              <span className="text-blue-500 text-sm">⏱️</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {currentRoute.estimatedTime}
+              </span>
             </div>
             
             {/* ETA */}
             <div className="flex items-center space-x-2">
-              <span className="text-green-500">🚗</span>
-              <span className="font-semibold text-gray-900">ETA: {currentRoute.arrivalTime}</span>
+              <span className="text-green-500 text-sm">🚗</span>
+              <span 
+                className="font-semibold text-sm"
+                style={{
+                  color: '#000000',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                ETA: {currentRoute.arrivalTime}
+              </span>
             </div>
             
             {/* End Button */}
             <button
               onClick={handleEndNavigation}
-              className="px-3 py-1 rounded-full text-red-600 font-medium hover:text-red-700 transition-colors"
+              className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105"
               style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)'
+                background: 'rgba(239, 68, 68, 0.8)',
+                color: 'white',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                backdropFilter: 'blur(4px)'
               }}
             >
               End
