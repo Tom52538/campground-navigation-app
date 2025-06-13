@@ -6,6 +6,7 @@ import { POIQuickAccess } from '@/components/Navigation/POIQuickAccess';
 import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
+import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
@@ -301,7 +302,14 @@ export default function Navigation() {
       {/* Camping Weather Widget */}
       <CampingWeatherWidget coordinates={currentPosition} />
 
-
+      {/* POI Info Overlay - Positioned below button rows */}
+      {selectedPOI && (
+        <TransparentPOIOverlay 
+          poi={selectedPOI}
+          onNavigate={handleNavigateToPOI}
+          onClose={() => setSelectedPOI(null)}
+        />
+      )}
 
       {/* Navigation Panel - Bottom Position, 60px Height */}
       {currentRoute && overlayStates.navigation && (

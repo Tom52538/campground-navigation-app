@@ -30,7 +30,7 @@ export const EnhancedMapControls = ({
   }, [onToggleGPS, onCenterOnLocation]);
 
   return (
-    <div className="absolute right-4 top-32 bottom-32 z-20 flex flex-col justify-center space-y-3">
+    <div className="absolute right-4 z-20 flex flex-col justify-center space-y-3" style={{ top: '200px', bottom: '120px' }}>
       {/* Compass */}
       <div 
         className="w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
