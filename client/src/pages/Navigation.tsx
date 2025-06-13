@@ -283,14 +283,23 @@ export default function Navigation() {
         onClear={handleClearPOIs}
       />
 
-      {/* Map Controls - Right Side Vertical */}
-      <MapControls
+      {/* POI Quick Access Buttons */}
+      <POIQuickAccess 
+        onCategorySelect={handleCategoryFilter}
+        selectedCategories={filteredCategories}
+      />
+
+      {/* Enhanced Map Controls - Right Side Vertical */}
+      <EnhancedMapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onCenterOnLocation={handleCenterOnLocation}
         useRealGPS={useRealGPS}
         onToggleGPS={toggleGPS}
       />
+
+      {/* Camping Weather Widget */}
+      <CampingWeatherWidget coordinates={currentPosition} />
 
 
 
