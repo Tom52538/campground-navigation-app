@@ -91,6 +91,7 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Changelog
 
+- June 14, 2025. Fixed UI layout overlapping issues - moved navigation panels from bottom to top positioning to prevent weather widget conflicts
 - June 13, 2025. Initial setup
 
 ## User Preferences

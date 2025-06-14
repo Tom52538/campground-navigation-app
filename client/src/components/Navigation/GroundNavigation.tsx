@@ -105,7 +105,7 @@ export const GroundNavigation = ({
   if (!isVisible || !currentInstruction) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-30">
+    <div className="absolute top-16 left-4 right-4 z-30">
       <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border-2 border-black/20 p-4">
         {/* Progress indicator */}
         <div className="flex items-center justify-between mb-3">
