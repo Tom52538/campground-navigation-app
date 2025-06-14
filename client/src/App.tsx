@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navigation from "@/pages/Navigation";
 import NotFound from "@/pages/not-found";
-import { LanguageDebug } from "@/components/UI/LanguageDebug";
 
 function Router() {
   return (
@@ -22,7 +21,6 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
-        <LanguageDebug />
       </TooltipProvider>
     </QueryClientProvider>
   );
