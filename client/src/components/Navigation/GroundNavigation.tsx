@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { NavigationRoute, Coordinates } from '@/types/navigation';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { RouteTracker, RouteProgress } from '@/lib/routeTracker';
+import { VoiceGuide } from '@/lib/voiceGuide';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
@@ -20,10 +21,12 @@ export const GroundNavigation = ({
 }: GroundNavigationProps) => {
   const [isNavigating, setIsNavigating] = useState(true);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [routeProgress, setRouteProgress] = useState<RouteProgress | null>(null);
   const [isOffRoute, setIsOffRoute] = useState(false);
   const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState<number>(0);
+
+  // Professional voice guide system
+  const voiceGuide = useMemo(() => new VoiceGuide(), []);
 
   // Continuous GPS tracking
   const { currentPosition, error: gpsError, isTracking } = useNavigationTracking(isNavigating, {
@@ -40,76 +43,18 @@ export const GroundNavigation = ({
       () => {
         // Route completed
         setIsNavigating(false);
-        speakInstruction("You have arrived at your destination");
+        voiceGuide.announceDestinationReached();
         setTimeout(() => onEndNavigation(), 2000);
       },
       (offRouteDistance) => {
         setIsOffRoute(true);
+        voiceGuide.announceOffRoute();
         console.log(`Off route detected: ${Math.round(offRouteDistance * 1000)}m from route`);
       }
     );
   }, [route, onEndNavigation]);
 
-  // Optimized voice synthesis with pre-loading and faster response
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
-  
-  // Pre-load voices when component mounts to reduce delay
-  useEffect(() => {
-    if (!window.speechSynthesis) return;
-    
-    const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        setVoicesLoaded(true);
-        console.log('Navigation voices loaded:', voices.length);
-      }
-    };
-    
-    // Load voices immediately if available
-    loadVoices();
-    
-    // Listen for voices changed event (some browsers load asynchronously)
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
 
-  const speakInstruction = useCallback((text: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
-    if (!voiceEnabled || !window.speechSynthesis) return;
-    
-    try {
-      // Cancel current speech for high priority
-      if (priority === 'high') {
-        window.speechSynthesis.cancel();
-      }
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9; // Slightly faster for navigation
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      utterance.lang = 'en-US';
-      
-      // Use a preferred voice if available (usually faster)
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(voice => 
-        voice.lang.startsWith('en') && voice.localService
-      ) || voices[0];
-      
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-      
-      // Reduced logging for faster performance
-      utterance.onstart = () => console.log(`🔊 "${text}"`);
-      utterance.onerror = (e) => console.error('Voice error:', e.error);
-      
-      window.speechSynthesis.speak(utterance);
-    } catch (error) {
-      console.error('Speech synthesis error:', error);
-    }
-  }, [voiceEnabled, voicesLoaded]);
 
   // Update route progress when position changes
   useEffect(() => {
@@ -121,16 +66,15 @@ export const GroundNavigation = ({
     // Update off-route status
     if (progress.isOffRoute && !isOffRoute) {
       setIsOffRoute(true);
-      speakInstruction("Off route detected", 'high');
     } else if (!progress.isOffRoute && isOffRoute) {
       setIsOffRoute(false);
     }
 
   }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
 
-  // Smart voice announcements based on distance with immediate testing
+  // Smart voice announcements based on distance
   useEffect(() => {
-    if (!routeProgress || !voiceEnabled || !currentPosition) return;
+    if (!routeProgress || !voiceGuide.isVoiceEnabled() || !currentPosition) return;
 
     const distance = routeProgress.distanceToNext;
     const currentInstruction = routeTracker.getCurrentInstruction();
@@ -146,59 +90,42 @@ export const GroundNavigation = ({
     );
 
     if (shouldAnnounce) {
-      let announcement = "";
-      if (distance > 0.1) {
-        announcement = `In ${Math.round(distance * 1000)} meters, ${currentInstruction.instruction}`;
-      } else if (distance > 0.02) {
-        announcement = `${currentInstruction.instruction} ahead`;
-      } else {
-        announcement = currentInstruction.instruction;
-      }
-      
-      speakInstruction(announcement, distance < 0.02 ? 'high' : 'medium');
+      voiceGuide.announceInstruction(currentInstruction.instruction, distance);
       setLastAnnouncedDistance(distance);
     }
-  }, [routeProgress, voiceEnabled, routeTracker, lastAnnouncedDistance, speakInstruction]);
+  }, [routeProgress, voiceGuide, routeTracker, lastAnnouncedDistance, currentPosition]);
 
   // Auto-announce when navigation starts
   useEffect(() => {
-    if (voiceEnabled && currentInstruction && isNavigating) {
-      setTimeout(() => {
-        speakInstruction(`Navigation started. ${currentInstruction.instruction}`, 'high');
-      }, 1000); // 1 second delay for initial announcement
+    if (voiceGuide.isVoiceEnabled() && isNavigating) {
+      const currentInstruction = routeTracker.getCurrentInstruction();
+      if (currentInstruction) {
+        setTimeout(() => {
+          voiceGuide.announceNavigationStart(currentInstruction.instruction);
+        }, 1000);
+      }
     }
-  }, [voiceEnabled, isNavigating]); // Only trigger when voice is enabled or navigation starts
+  }, [voiceGuide, isNavigating, routeTracker]);
 
   // Get current instruction from route tracker
   const currentInstruction = routeTracker.getCurrentInstruction();
   const nextInstruction = routeTracker.getNextInstruction();
 
   const toggleVoice = () => {
-    const newVoiceState = !voiceEnabled;
-    setVoiceEnabled(newVoiceState);
-    
-    try {
-      if (newVoiceState && currentInstruction) {
-        // Test voice when enabling
-        speakInstruction(`Navigation voice enabled. ${currentInstruction.instruction}`, 'high');
-      } else if (window.speechSynthesis) {
-        // Stop speech when disabling
-        window.speechSynthesis.cancel();
+    if (voiceGuide.isVoiceEnabled()) {
+      voiceGuide.disable();
+    } else {
+      voiceGuide.enable();
+      const currentInstruction = routeTracker.getCurrentInstruction();
+      if (currentInstruction) {
+        voiceGuide.speak(`Voice navigation enabled. ${currentInstruction.instruction}`, 'high');
       }
-    } catch (error) {
-      console.error('Voice toggle error:', error);
     }
   };
 
   const handleEndNavigation = () => {
     setIsNavigating(false);
-    try {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    } catch (error) {
-      console.error('Error stopping voice:', error);
-    }
+    voiceGuide.disable();
     onEndNavigation();
   };
 
@@ -306,34 +233,17 @@ export const GroundNavigation = ({
               onClick={toggleVoice}
               className="flex items-center space-x-2"
             >
-              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+              {voiceGuide.isVoiceEnabled() ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>{voiceGuide.isVoiceEnabled() ? 'Voice On' : 'Voice Off'}</span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                console.log('Testing voice synthesis...');
-                if (!window.speechSynthesis) {
-                  console.error('Speech synthesis not supported');
-                  alert('Speech synthesis not supported in this browser');
-                  return;
-                }
-                
-                try {
-                  const utterance = new SpeechSynthesisUtterance('Navigation voice test successful');
-                  utterance.volume = 1;
-                  utterance.rate = 0.8;
-                  utterance.pitch = 1;
-                  utterance.onstart = () => console.log('Voice test started');
-                  utterance.onend = () => console.log('Voice test completed');
-                  utterance.onerror = (e) => console.error('Voice test error:', e);
-                  
-                  window.speechSynthesis.speak(utterance);
-                } catch (error) {
-                  console.error('Voice test failed:', error);
-                  alert('Voice test failed: ' + String(error));
+              onClick={async () => {
+                const success = await voiceGuide.testVoice();
+                if (!success) {
+                  alert('Voice test failed. Please check your browser audio settings.');
                 }
               }}
               className="text-xs bg-green-50 hover:bg-green-100"
