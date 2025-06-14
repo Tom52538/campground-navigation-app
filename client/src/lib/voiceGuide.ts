@@ -43,6 +43,62 @@ export class VoiceGuide {
     this.synthesis.onvoiceschanged = loadVoices;
   }
 
+  setLanguage(language: SupportedLanguage) {
+    this.currentLanguage = language;
+    this.initializeVoices();
+  }
+
+  private translateInstruction(instruction: string): string {
+    const instructions = voiceInstructions[this.currentLanguage];
+    
+    // Map common navigation instructions to translated versions
+    const instructionMap: Record<string, keyof typeof instructions> = {
+      'turn left': 'turnLeft',
+      'turn right': 'turnRight',
+      'turn slight left': 'turnSlightLeft',
+      'turn slight right': 'turnSlightRight',
+      'turn sharp left': 'turnSharpLeft',
+      'turn sharp right': 'turnSharpRight',
+      'continue ahead': 'continueAhead',
+      'continue straight': 'continueStraight',
+      'keep left': 'keepLeft',
+      'keep right': 'keepRight',
+      'head north': 'headNorth',
+      'head south': 'headSouth',
+      'head east': 'headEast',
+      'head west': 'headWest',
+      'head northeast': 'headNortheast',
+      'head northwest': 'headNorthwest',
+      'head southeast': 'headSoutheast',
+      'head southwest': 'headSouthwest',
+      'arrive at your destination': 'arrive'
+    };
+
+    const lowerInstruction = instruction.toLowerCase();
+    
+    // Find matching instruction
+    for (const [key, translationKey] of Object.entries(instructionMap)) {
+      if (lowerInstruction.includes(key)) {
+        return instructions[translationKey];
+      }
+    }
+    
+    // Return original if no translation found
+    return instruction;
+  }
+
+  private getLanguageCode(): string {
+    const languageMap: Record<SupportedLanguage, string> = {
+      en: 'en-US',
+      de: 'de-DE',
+      fr: 'fr-FR',
+      nl: 'nl-NL',
+      it: 'it-IT',
+      es: 'es-ES'
+    };
+    return languageMap[this.currentLanguage] || 'en-US';
+  }
+
   enable() {
     this.isEnabled = true;
   }
@@ -72,11 +128,14 @@ export class VoiceGuide {
         this.stopCurrentSpeech();
       }
 
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Translate the text to current language
+      const translatedText = this.translateInstruction(text);
+      
+      const utterance = new SpeechSynthesisUtterance(translatedText);
       utterance.rate = 0.9;
       utterance.volume = 1;
       utterance.pitch = 1;
-      utterance.lang = 'en-US';
+      utterance.lang = this.getLanguageCode();
 
       // Use preferred voice if available
       if (this.preferredVoice) {

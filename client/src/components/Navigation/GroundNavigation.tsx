@@ -8,6 +8,8 @@ import { VoiceGuide } from '@/lib/voiceGuide';
 import { RerouteService } from '@/lib/rerouteService';
 import { NavigationPerformanceMonitor } from './NavigationPerformanceMonitor';
 import { offlineStorage } from '@/lib/offlineStorage';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getTranslation } from '@/lib/i18n';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
@@ -32,8 +34,15 @@ export const GroundNavigation = ({
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
-  // Professional voice guide system
-  const voiceGuide = useMemo(() => new VoiceGuide(), []);
+  // Language system
+  const { currentLanguage } = useLanguage();
+
+  // Professional voice guide system with language support
+  const voiceGuide = useMemo(() => {
+    const guide = new VoiceGuide();
+    guide.setLanguage(currentLanguage);
+    return guide;
+  }, [currentLanguage]);
   
   // Rerouting service
   const rerouteService = useMemo(() => new RerouteService(), []);
@@ -314,7 +323,7 @@ export const GroundNavigation = ({
               className="flex items-center space-x-2"
             >
               {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+              <span>{voiceEnabled ? getTranslation(currentLanguage, 'navigation.voiceOn') : getTranslation(currentLanguage, 'navigation.voiceOff')}</span>
             </Button>
             
             <Button
