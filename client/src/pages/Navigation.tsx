@@ -311,12 +311,12 @@ export default function Navigation() {
         />
       )}
 
-      {/* Navigation Panel - Top Position */}
+      {/* Navigation Panel - Bottom Position */}
       {currentRoute && overlayStates.navigation && (
         <div 
           className="absolute left-4 right-4 z-30 transition-all duration-300"
           style={{
-            top: '80px',
+            bottom: '80px',
             background: 'rgba(255, 255, 255, 0.85)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.3)',

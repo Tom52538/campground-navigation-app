@@ -136,7 +136,7 @@ export const CampingAlerts = ({ weather, coordinates }: CampingAlertsProps) => {
   if (activeAlerts.length === 0) return null;
 
   return (
-    <div className="absolute top-20 left-4 right-4 z-40 space-y-2">
+    <div className="absolute top-16 left-20 right-4 z-40 space-y-2">
       {activeAlerts.map((alert) => (
         <div
           key={alert.id}
