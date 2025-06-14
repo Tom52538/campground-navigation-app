@@ -281,16 +281,36 @@ export const GroundNavigation = ({
               <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
             </Button>
             
-            {voiceEnabled && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => speakInstruction("Voice test - navigation is working", 'high')}
-                className="text-xs"
-              >
-                Test Voice
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.log('Testing voice synthesis...');
+                if (!window.speechSynthesis) {
+                  console.error('Speech synthesis not supported');
+                  alert('Speech synthesis not supported in this browser');
+                  return;
+                }
+                
+                try {
+                  const utterance = new SpeechSynthesisUtterance('Navigation voice test successful');
+                  utterance.volume = 1;
+                  utterance.rate = 0.8;
+                  utterance.pitch = 1;
+                  utterance.onstart = () => console.log('Voice test started');
+                  utterance.onend = () => console.log('Voice test completed');
+                  utterance.onerror = (e) => console.error('Voice test error:', e);
+                  
+                  window.speechSynthesis.speak(utterance);
+                } catch (error) {
+                  console.error('Voice test failed:', error);
+                  alert('Voice test failed: ' + error.message);
+                }
+              }}
+              className="text-xs bg-green-50 hover:bg-green-100"
+            >
+              Test Voice
+            </Button>
           </div>
 
           <Button
