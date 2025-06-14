@@ -312,7 +312,7 @@ export default function Navigation() {
       )}
 
       {/* Navigation Panel - Top Position */}
-      {currentRoute && overlayStates.navigation && (
+      {currentRoute && (
         <div 
           className="absolute left-4 right-4 z-30 transition-all duration-300"
           style={{
