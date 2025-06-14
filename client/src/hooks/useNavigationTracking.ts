@@ -6,6 +6,7 @@ interface NavigationTrackingOptions {
   timeout?: number;
   maximumAge?: number;
   updateInterval?: number;
+  adaptiveTracking?: boolean;
 }
 
 interface NavigationPosition {
@@ -23,13 +24,34 @@ export const useNavigationTracking = (
   const [currentPosition, setCurrentPosition] = useState<NavigationPosition | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
+  const [adaptiveInterval, setAdaptiveInterval] = useState<number>(1000);
 
   const {
     enableHighAccuracy = true,
     timeout = 5000,
     maximumAge = 1000,
-    updateInterval = 1000
+    updateInterval = 1000,
+    adaptiveTracking = true
   } = options;
+
+  // Adaptive interval calculation based on speed and context
+  const calculateAdaptiveInterval = (speed: number | undefined, accuracy: number) => {
+    if (!adaptiveTracking) return updateInterval;
+    
+    const speedKmh = speed ? speed * 3.6 : 0; // Convert m/s to km/h
+    
+    // High speed (>30 km/h) - frequent updates for safety
+    if (speedKmh > 30) return 500;
+    
+    // Medium speed (10-30 km/h) - balanced updates
+    if (speedKmh > 10) return 1000;
+    
+    // Low speed/stationary - less frequent updates to save battery
+    if (speedKmh < 1) return 3000;
+    
+    // Default walking speed - normal updates
+    return 1500;
+  };
 
   useEffect(() => {
     if (!isNavigating) {
@@ -60,6 +82,12 @@ export const useNavigationTracking = (
 
         setCurrentPosition(navPosition);
         setError(null);
+        
+        // Update adaptive interval based on current speed
+        if (adaptiveTracking) {
+          const newInterval = calculateAdaptiveInterval(position.coords.speed || undefined, position.coords.accuracy);
+          setAdaptiveInterval(newInterval);
+        }
       },
       (geoError) => {
         console.error('GPS tracking error:', geoError);
