@@ -50,46 +50,66 @@ export const GroundNavigation = ({
     );
   }, [route, onEndNavigation]);
 
-  // Voice synthesis with improved browser compatibility
-  const speakInstruction = useCallback((text: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
-    if (!voiceEnabled) return;
+  // Optimized voice synthesis with pre-loading and faster response
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
+  
+  // Pre-load voices when component mounts to reduce delay
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
     
-    // Check browser support
-    if (!window.speechSynthesis) {
-      console.warn('Speech synthesis not supported in this browser');
-      return;
-    }
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        setVoicesLoaded(true);
+        console.log('Navigation voices loaded:', voices.length);
+      }
+    };
+    
+    // Load voices immediately if available
+    loadVoices();
+    
+    // Listen for voices changed event (some browsers load asynchronously)
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const speakInstruction = useCallback((text: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
+    if (!voiceEnabled || !window.speechSynthesis) return;
     
     try {
       // Cancel current speech for high priority
       if (priority === 'high') {
         window.speechSynthesis.cancel();
-        // Small delay to ensure cancellation completes
-        setTimeout(() => {
-          speakText(text);
-        }, 100);
-      } else {
-        speakText(text);
       }
-    } catch (error) {
-      console.error('Speech synthesis error:', error);
-    }
-    
-    function speakText(message: string) {
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.rate = 0.8;
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9; // Slightly faster for navigation
       utterance.pitch = 1;
       utterance.volume = 1;
       utterance.lang = 'en-US';
       
-      // Debug logging
-      utterance.onstart = () => console.log(`🔊 Speaking: "${message}"`);
-      utterance.onend = () => console.log('✅ Voice finished');
-      utterance.onerror = (e) => console.error('❌ Voice error:', e.error);
+      // Use a preferred voice if available (usually faster)
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && voice.localService
+      ) || voices[0];
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      // Reduced logging for faster performance
+      utterance.onstart = () => console.log(`🔊 "${text}"`);
+      utterance.onerror = (e) => console.error('Voice error:', e.error);
       
       window.speechSynthesis.speak(utterance);
+    } catch (error) {
+      console.error('Speech synthesis error:', error);
     }
-  }, [voiceEnabled]);
+  }, [voiceEnabled, voicesLoaded]);
 
   // Update route progress when position changes
   useEffect(() => {
@@ -108,7 +128,7 @@ export const GroundNavigation = ({
 
   }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
 
-  // Smart voice announcements based on distance
+  // Smart voice announcements based on distance with immediate testing
   useEffect(() => {
     if (!routeProgress || !voiceEnabled || !currentPosition) return;
 
@@ -139,6 +159,15 @@ export const GroundNavigation = ({
       setLastAnnouncedDistance(distance);
     }
   }, [routeProgress, voiceEnabled, routeTracker, lastAnnouncedDistance, speakInstruction]);
+
+  // Auto-announce when navigation starts
+  useEffect(() => {
+    if (voiceEnabled && currentInstruction && isNavigating) {
+      setTimeout(() => {
+        speakInstruction(`Navigation started. ${currentInstruction.instruction}`, 'high');
+      }, 1000); // 1 second delay for initial announcement
+    }
+  }, [voiceEnabled, isNavigating]); // Only trigger when voice is enabled or navigation starts
 
   // Get current instruction from route tracker
   const currentInstruction = routeTracker.getCurrentInstruction();
@@ -304,7 +333,7 @@ export const GroundNavigation = ({
                   window.speechSynthesis.speak(utterance);
                 } catch (error) {
                   console.error('Voice test failed:', error);
-                  alert('Voice test failed: ' + error.message);
+                  alert('Voice test failed: ' + String(error));
                 }
               }}
               className="text-xs bg-green-50 hover:bg-green-100"
