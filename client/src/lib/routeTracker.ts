@@ -1,5 +1,6 @@
 import { Coordinates, NavigationRoute, RouteInstruction } from '../types/navigation';
 import { calculateDistance } from './mapUtils';
+import { SpeedTracker, ETAUpdate } from './speedTracker';
 
 export interface RouteProgress {
   currentStep: number;
@@ -9,6 +10,9 @@ export interface RouteProgress {
   isOffRoute: boolean;
   percentComplete: number;
   estimatedTimeRemaining: number;
+  currentSpeed: number;
+  averageSpeed: number;
+  dynamicETA: ETAUpdate;
 }
 
 export class RouteTracker {

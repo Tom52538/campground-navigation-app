@@ -5,6 +5,7 @@ import { NavigationRoute, Coordinates } from '@/types/navigation';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { RouteTracker, RouteProgress } from '@/lib/routeTracker';
 import { VoiceGuide } from '@/lib/voiceGuide';
+import { RerouteService } from '@/lib/rerouteService';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
@@ -24,9 +25,14 @@ export const GroundNavigation = ({
   const [routeProgress, setRouteProgress] = useState<RouteProgress | null>(null);
   const [isOffRoute, setIsOffRoute] = useState(false);
   const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState<number>(0);
+  const [isRerouting, setIsRerouting] = useState(false);
+  const [offRouteCount, setOffRouteCount] = useState(0);
 
   // Professional voice guide system
   const voiceGuide = useMemo(() => new VoiceGuide(), []);
+  
+  // Rerouting service
+  const rerouteService = useMemo(() => new RerouteService(), []);
 
   // Continuous GPS tracking
   const { currentPosition, error: gpsError, isTracking } = useNavigationTracking(isNavigating, {
@@ -34,6 +40,49 @@ export const GroundNavigation = ({
     timeout: 5000,
     maximumAge: 1000
   });
+
+  // Automatic rerouting handler
+  const handleAutoReroute = useCallback(async (offRouteDistance: number) => {
+    if (isRerouting || !currentPosition || !onRouteUpdate) return;
+
+    setIsRerouting(true);
+    try {
+      // Extract destination from current route
+      const geometry = route.geometry;
+      if (!geometry || geometry.length === 0) {
+        throw new Error('No route geometry available');
+      }
+
+      const destination = {
+        lat: geometry[geometry.length - 1][1],
+        lng: geometry[geometry.length - 1][0]
+      };
+
+      voiceGuide.speak('Recalculating route...', 'high');
+      
+      const newRoute = await rerouteService.quickReroute(
+        currentPosition.position,
+        destination
+      );
+
+      // Update the route
+      onRouteUpdate(newRoute);
+      
+      // Reset tracking state
+      setCurrentStepIndex(0);
+      setOffRouteCount(0);
+      setLastAnnouncedDistance(0);
+      
+      voiceGuide.announceRerouting();
+      console.log('Route recalculated successfully');
+      
+    } catch (error) {
+      console.error('Rerouting failed:', error);
+      voiceGuide.speak('Unable to recalculate route. Continue to destination.', 'high');
+    } finally {
+      setIsRerouting(false);
+    }
+  }, [isRerouting, currentPosition, route.geometry, rerouteService, voiceGuide, onRouteUpdate]);
 
   // Route tracker instance
   const routeTracker = useMemo(() => {
@@ -48,11 +97,18 @@ export const GroundNavigation = ({
       },
       (offRouteDistance) => {
         setIsOffRoute(true);
-        voiceGuide.announceOffRoute();
+        setOffRouteCount(prev => prev + 1);
         console.log(`Off route detected: ${Math.round(offRouteDistance * 1000)}m from route`);
+        
+        // Trigger rerouting if significantly off course
+        if (rerouteService.shouldReroute(offRouteDistance, offRouteCount)) {
+          handleAutoReroute(offRouteDistance);
+        } else {
+          voiceGuide.announceOffRoute();
+        }
       }
     );
-  }, [route, onEndNavigation]);
+  }, [route, onEndNavigation, handleAutoReroute, rerouteService, voiceGuide, offRouteCount]);
 
 
 
@@ -68,6 +124,7 @@ export const GroundNavigation = ({
       setIsOffRoute(true);
     } else if (!progress.isOffRoute && isOffRoute) {
       setIsOffRoute(false);
+      setOffRouteCount(0); // Reset counter when back on route
     }
 
   }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
