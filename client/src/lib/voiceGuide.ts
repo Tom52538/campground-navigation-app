@@ -1,12 +1,16 @@
+import { detectBrowserLanguage, voiceInstructions, SupportedLanguage } from './i18n';
+
 export class VoiceGuide {
   private synthesis: SpeechSynthesis;
   private isEnabled: boolean = false;
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private voicesLoaded: boolean = false;
   private preferredVoice: SpeechSynthesisVoice | null = null;
+  private currentLanguage: SupportedLanguage;
 
   constructor() {
     this.synthesis = window.speechSynthesis;
+    this.currentLanguage = detectBrowserLanguage();
     this.initializeVoices();
   }
 
@@ -18,11 +22,14 @@ export class VoiceGuide {
       if (voices.length > 0) {
         this.voicesLoaded = true;
         
-        // Find the best English voice (prefer local service)
+        // Find the best voice for current language (prefer local service)
+        const languageCode = this.currentLanguage;
         this.preferredVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && voice.localService
+          voice.lang.toLowerCase().startsWith(languageCode) && voice.localService
         ) || voices.find(voice => 
-          voice.lang.startsWith('en')
+          voice.lang.toLowerCase().startsWith(languageCode)
+        ) || voices.find(voice => 
+          voice.lang.toLowerCase().includes('en') && voice.localService
         ) || voices[0];
 
         console.log(`VoiceGuide: Loaded ${voices.length} voices, using:`, this.preferredVoice?.name);
