@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Navigation, VolumeX, Volume2, Square, AlertTriangle } from 'lucide-react';
+import { Navigation, VolumeX, Volume2, Square, AlertTriangle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavigationRoute, Coordinates } from '@/types/navigation';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { RouteTracker, RouteProgress } from '@/lib/routeTracker';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RerouteService } from '@/lib/rerouteService';
+import { NavigationPerformanceMonitor } from './NavigationPerformanceMonitor';
+import { offlineStorage } from '@/lib/offlineStorage';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
@@ -27,6 +29,8 @@ export const GroundNavigation = ({
   const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState<number>(0);
   const [isRerouting, setIsRerouting] = useState(false);
   const [offRouteCount, setOffRouteCount] = useState(0);
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   // Professional voice guide system
   const voiceGuide = useMemo(() => new VoiceGuide(), []);
@@ -34,11 +38,12 @@ export const GroundNavigation = ({
   // Rerouting service
   const rerouteService = useMemo(() => new RerouteService(), []);
 
-  // Continuous GPS tracking
+  // Continuous GPS tracking with adaptive performance
   const { currentPosition, error: gpsError, isTracking } = useNavigationTracking(isNavigating, {
     enableHighAccuracy: true,
     timeout: 5000,
-    maximumAge: 1000
+    maximumAge: 1000,
+    adaptiveTracking: true
   });
 
   // Automatic rerouting handler
@@ -169,6 +174,7 @@ export const GroundNavigation = ({
   const nextInstruction = routeTracker.getNextInstruction();
 
   const toggleVoice = () => {
+    setVoiceEnabled(!voiceEnabled);
     if (voiceGuide.isVoiceEnabled()) {
       voiceGuide.disable();
     } else {
@@ -179,6 +185,17 @@ export const GroundNavigation = ({
       }
     }
   };
+
+  // Save route for offline access
+  const saveRouteOffline = useCallback(async () => {
+    try {
+      const routeId = `route_${Date.now()}`;
+      await offlineStorage.saveRoute(routeId, route, `Navigation to ${route.instructions[route.instructions.length - 1]?.instruction || 'destination'}`);
+      console.log('Route saved offline successfully');
+    } catch (error) {
+      console.error('Failed to save route offline:', error);
+    }
+  }, [route]);
 
   const handleEndNavigation = () => {
     setIsNavigating(false);
