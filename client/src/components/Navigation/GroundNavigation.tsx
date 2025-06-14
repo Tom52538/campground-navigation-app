@@ -50,20 +50,45 @@ export const GroundNavigation = ({
     );
   }, [route, onEndNavigation]);
 
-  // Voice synthesis
+  // Voice synthesis with improved browser compatibility
   const speakInstruction = useCallback((text: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
-    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    if (!voiceEnabled) return;
     
-    // Cancel current speech for high priority
-    if (priority === 'high') {
-      window.speechSynthesis.cancel();
+    // Check browser support
+    if (!window.speechSynthesis) {
+      console.warn('Speech synthesis not supported in this browser');
+      return;
     }
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
-    window.speechSynthesis.speak(utterance);
+    try {
+      // Cancel current speech for high priority
+      if (priority === 'high') {
+        window.speechSynthesis.cancel();
+        // Small delay to ensure cancellation completes
+        setTimeout(() => {
+          speakText(text);
+        }, 100);
+      } else {
+        speakText(text);
+      }
+    } catch (error) {
+      console.error('Speech synthesis error:', error);
+    }
+    
+    function speakText(message: string) {
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.rate = 0.8;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.lang = 'en-US';
+      
+      // Debug logging
+      utterance.onstart = () => console.log(`🔊 Speaking: "${message}"`);
+      utterance.onend = () => console.log('✅ Voice finished');
+      utterance.onerror = (e) => console.error('❌ Voice error:', e.error);
+      
+      window.speechSynthesis.speak(utterance);
+    }
   }, [voiceEnabled]);
 
   // Update route progress when position changes
@@ -120,17 +145,31 @@ export const GroundNavigation = ({
   const nextInstruction = routeTracker.getNextInstruction();
 
   const toggleVoice = () => {
-    setVoiceEnabled(!voiceEnabled);
-    if (!voiceEnabled && currentInstruction) {
-      speakInstruction(`Navigation started. ${currentInstruction.instruction}`);
-    } else {
-      window.speechSynthesis.cancel();
+    const newVoiceState = !voiceEnabled;
+    setVoiceEnabled(newVoiceState);
+    
+    try {
+      if (newVoiceState && currentInstruction) {
+        // Test voice when enabling
+        speakInstruction(`Navigation voice enabled. ${currentInstruction.instruction}`, 'high');
+      } else if (window.speechSynthesis) {
+        // Stop speech when disabling
+        window.speechSynthesis.cancel();
+      }
+    } catch (error) {
+      console.error('Voice toggle error:', error);
     }
   };
 
   const handleEndNavigation = () => {
     setIsNavigating(false);
-    window.speechSynthesis.cancel();
+    try {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    } catch (error) {
+      console.error('Error stopping voice:', error);
+    }
     onEndNavigation();
   };
 
@@ -231,15 +270,28 @@ export const GroundNavigation = ({
 
         {/* Controls */}
         <div className="flex justify-between items-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleVoice}
-            className="flex items-center space-x-2"
-          >
-            {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleVoice}
+              className="flex items-center space-x-2"
+            >
+              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+            </Button>
+            
+            {voiceEnabled && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => speakInstruction("Voice test - navigation is working", 'high')}
+                className="text-xs"
+              >
+                Test Voice
+              </Button>
+            )}
+          </div>
 
           <Button
             variant="destructive"
