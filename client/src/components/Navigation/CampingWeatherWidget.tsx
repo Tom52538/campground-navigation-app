@@ -48,6 +48,7 @@ const getCampingAlerts = (weather: any) => {
 
 export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps) => {
   const { data: weather, isLoading } = useWeather(coordinates.lat, coordinates.lng);
+  const { t } = useLanguage();
   
   if (isLoading) {
     return (
@@ -104,7 +105,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
           textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
         }}
       >
-        {weather.condition}
+{t(`weather.conditions.${weather.condition}`) || weather.condition}
       </div>
       
       {/* Camping-specific alerts */}

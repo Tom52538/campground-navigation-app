@@ -9,7 +9,7 @@ import { RerouteService } from '@/lib/rerouteService';
 import { NavigationPerformanceMonitor } from './NavigationPerformanceMonitor';
 import { offlineStorage } from '@/lib/offlineStorage';
 import { useLanguage } from '@/hooks/useLanguage';
-import { getTranslation } from '@/lib/i18n';
+import { getTranslation, translateInstruction } from '@/lib/i18n';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
@@ -276,14 +276,14 @@ export const GroundNavigation = ({
         {/* Current instruction */}
         <div className="mb-3">
           <div className="text-lg font-bold text-gray-900 mb-1">
-            {currentInstruction.instruction}
+            {translateInstruction(currentInstruction.instruction, currentLanguage)}
           </div>
           <div className="text-sm text-gray-600">
-            Distance: {currentInstruction.distance} • Duration: {currentInstruction.duration}
+            {getTranslation(currentLanguage, 'navigation.distance')}: {currentInstruction.distance} • {getTranslation(currentLanguage, 'navigation.duration')}: {currentInstruction.duration}
           </div>
           {routeProgress && routeProgress.distanceToNext < 0.1 && (
             <div className="text-sm font-medium text-orange-600 mt-1">
-              Approaching turn in {Math.round(routeProgress.distanceToNext * 1000)}m
+              {getTranslation(currentLanguage, 'navigation.approaching')} {Math.round(routeProgress.distanceToNext * 1000)}{getTranslation(currentLanguage, 'navigation.meters')}
             </div>
           )}
         </div>
@@ -308,7 +308,7 @@ export const GroundNavigation = ({
         {nextInstruction && (
           <div className="mb-3 p-2 bg-gray-50 rounded-lg">
             <div className="text-sm text-gray-700">
-              <span className="font-medium">Next:</span> {nextInstruction.instruction}
+              <span className="font-medium">{getTranslation(currentLanguage, 'navigation.next')}:</span> {translateInstruction(nextInstruction.instruction, currentLanguage)}
             </div>
           </div>
         )}

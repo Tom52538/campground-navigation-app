@@ -314,7 +314,19 @@ export const translations = {
       eta: 'Ankunft',
       next: 'Nächste',
       speed: 'Geschwindigkeit',
-      avg: 'Durchschn.'
+      avg: 'Durchschn.',
+      distance: 'Entfernung',
+      duration: 'Dauer',
+      approaching: 'Abbiegen in',
+      meters: 'm',
+      minutes: 'Min',
+      headNorthOn: 'Richtung Norden auf',
+      headSouthOn: 'Richtung Süden auf',
+      headEastOn: 'Richtung Osten auf',
+      headWestOn: 'Richtung Westen auf',
+      turnLeftOn: 'Links abbiegen auf',
+      turnRightOn: 'Rechts abbiegen auf',
+      continueOn: 'Weiter auf'
     },
     categories: {
       'campsites': 'Campingplätze',
@@ -611,4 +623,37 @@ export const getTranslation = (lang: SupportedLanguage, key: string): string => 
   }
   
   return typeof current === 'string' ? current : key;
+};
+
+// Function to translate routing instructions from English to German
+export const translateInstruction = (instruction: string, lang: SupportedLanguage): string => {
+  if (lang === 'en') return instruction;
+  
+  const lowerInstruction = instruction.toLowerCase();
+  
+  // German translation mappings
+  const translations: Record<string, string> = {
+    'head north': 'Richtung Norden',
+    'head south': 'Richtung Süden', 
+    'head east': 'Richtung Osten',
+    'head west': 'Richtung Westen',
+    'turn left': 'Links abbiegen',
+    'turn right': 'Rechts abbiegen',
+    'continue straight': 'Geradeaus weiter',
+    'arrive at': 'Ankunft bei',
+    'distance:': 'Entfernung:',
+    'duration:': 'Dauer:',
+    'approaching turn in': 'Abbiegen in',
+    'next:': 'Nächste:',
+    ' on ': ' auf '
+  };
+  
+  let translatedInstruction = instruction;
+  
+  for (const [english, german] of Object.entries(translations)) {
+    const regex = new RegExp(english, 'gi');
+    translatedInstruction = translatedInstruction.replace(regex, german);
+  }
+  
+  return translatedInstruction;
 };
