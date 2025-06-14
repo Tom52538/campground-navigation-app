@@ -313,8 +313,17 @@ export const GroundNavigation = ({
               onClick={toggleVoice}
               className="flex items-center space-x-2"
             >
-              {voiceGuide.isVoiceEnabled() ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              <span>{voiceGuide.isVoiceEnabled() ? 'Voice On' : 'Voice Off'}</span>
+              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>{voiceEnabled ? 'Voice On' : 'Voice Off'}</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
+              className="p-2"
+            >
+              <Settings className="w-4 h-4" />
             </Button>
             
             <Button
@@ -343,6 +352,13 @@ export const GroundNavigation = ({
           </Button>
         </div>
       </div>
+
+      {/* Performance Monitor */}
+      <NavigationPerformanceMonitor
+        gpsAccuracy={currentPosition?.accuracy || 0}
+        adaptiveInterval={1000}
+        isVisible={showPerformanceMonitor}
+      />
     </div>
   );
 };
