@@ -23,6 +23,7 @@ export class RouteTracker {
   private onOffRoute: (distance: number) => void;
   private totalDistance: number;
   private completedDistance: number = 0;
+  private speedTracker: SpeedTracker;
 
   // Thresholds for navigation decisions
   private readonly STEP_ADVANCE_THRESHOLD = 0.02; // 20 meters
@@ -40,6 +41,7 @@ export class RouteTracker {
     this.onRouteComplete = onRouteComplete;
     this.onOffRoute = onOffRoute;
     this.totalDistance = this.calculateTotalDistance();
+    this.speedTracker = new SpeedTracker();
   }
 
   private calculateTotalDistance(): number {
@@ -137,6 +139,9 @@ export class RouteTracker {
       return this.createDefaultProgress();
     }
 
+    // Add position to speed tracker
+    this.speedTracker.addPosition(position);
+
     // Find closest point on route
     const routeInfo = this.findClosestPointOnRoute(position);
     const isOffRoute = routeInfo.distance > this.OFF_ROUTE_THRESHOLD;
@@ -186,8 +191,12 @@ export class RouteTracker {
       100
     );
 
-    // Estimate remaining time based on average walking speed (4 km/h)
-    const estimatedTimeRemaining = (distanceRemaining / 4) * 3600; // seconds
+    // Get speed data and dynamic ETA
+    const speedData = this.speedTracker.getSpeedData();
+    const dynamicETA = this.speedTracker.calculateUpdatedETA(distanceRemaining);
+
+    // Estimate remaining time based on speed tracking
+    const estimatedTimeRemaining = dynamicETA.estimatedTimeRemaining;
 
     return {
       currentStep: this.currentStepIndex,
@@ -196,7 +205,10 @@ export class RouteTracker {
       shouldAdvance,
       isOffRoute,
       percentComplete,
-      estimatedTimeRemaining
+      estimatedTimeRemaining,
+      currentSpeed: speedData.currentSpeed,
+      averageSpeed: speedData.averageSpeed,
+      dynamicETA
     };
   }
 
@@ -235,6 +247,13 @@ export class RouteTracker {
   }
 
   private createDefaultProgress(): RouteProgress {
+    const defaultETA: ETAUpdate = {
+      estimatedTimeRemaining: 0,
+      estimatedArrival: new Date(),
+      speedBasedETA: 0,
+      distanceRemaining: 0
+    };
+
     return {
       currentStep: 0,
       distanceToNext: 0,
@@ -242,7 +261,10 @@ export class RouteTracker {
       shouldAdvance: false,
       isOffRoute: false,
       percentComplete: 0,
-      estimatedTimeRemaining: 0
+      estimatedTimeRemaining: 0,
+      currentSpeed: 0,
+      averageSpeed: 0,
+      dynamicETA: defaultETA
     };
   }
 
@@ -264,6 +286,7 @@ export class RouteTracker {
   reset(): void {
     this.currentStepIndex = 0;
     this.completedDistance = 0;
+    this.speedTracker.reset();
   }
 
   // Get current step progress for UI

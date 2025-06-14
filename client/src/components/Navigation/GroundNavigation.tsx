@@ -223,6 +223,11 @@ export const GroundNavigation = ({
             {routeProgress ? (
               <>
                 {formatDistance(routeProgress.distanceRemaining)} • {formatDuration(routeProgress.estimatedTimeRemaining)}
+                {routeProgress.currentSpeed > 0 && (
+                  <div className="text-xs text-blue-600 mt-1">
+                    Speed: {routeProgress.currentSpeed.toFixed(1)} km/h • Avg: {routeProgress.averageSpeed.toFixed(1)} km/h
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -257,17 +262,18 @@ export const GroundNavigation = ({
           )}
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar with ETA */}
         {routeProgress && (
           <div className="mb-3">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
+              <span>{Math.round(routeProgress.percentComplete)}% complete</span>
+              <span>ETA: {routeProgress.dynamicETA.estimatedArrival.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
                 style={{ width: `${routeProgress.percentComplete}%` }}
               />
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {Math.round(routeProgress.percentComplete)}% complete
             </div>
           </div>
         )}
