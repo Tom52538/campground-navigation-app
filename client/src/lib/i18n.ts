@@ -10,16 +10,33 @@ export const SUPPORTED_LANGUAGES: Record<SupportedLanguage, string> = {
 };
 
 export const detectBrowserLanguage = (): SupportedLanguage => {
-  const browserLang = navigator.language.toLowerCase();
+  // Check multiple language sources for better detection
+  const languages = [
+    navigator.language,
+    ...navigator.languages,
+    (navigator as any).userLanguage,
+    (navigator as any).browserLanguage,
+    (navigator as any).systemLanguage
+  ].filter(Boolean);
+
+  console.log('Detected languages:', languages);
   
-  // Check for exact matches first
-  if (browserLang.startsWith('de')) return 'de';
-  if (browserLang.startsWith('fr')) return 'fr';
-  if (browserLang.startsWith('nl')) return 'nl';
-  if (browserLang.startsWith('it')) return 'it';
-  if (browserLang.startsWith('es')) return 'es';
+  for (const lang of languages) {
+    const lowerLang = lang.toLowerCase();
+    
+    // Check for German variants
+    if (lowerLang.startsWith('de') || lowerLang.includes('german')) {
+      console.log('German detected:', lang);
+      return 'de';
+    }
+    if (lowerLang.startsWith('fr') || lowerLang.includes('french')) return 'fr';
+    if (lowerLang.startsWith('nl') || lowerLang.includes('dutch')) return 'nl';
+    if (lowerLang.startsWith('it') || lowerLang.includes('italian')) return 'it';
+    if (lowerLang.startsWith('es') || lowerLang.includes('spanish')) return 'es';
+  }
   
   // Default to English
+  console.log('Defaulting to English');
   return 'en';
 };
 
