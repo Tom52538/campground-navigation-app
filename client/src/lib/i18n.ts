@@ -248,6 +248,17 @@ export const translations = {
       humidity: 'Humidity',
       windSpeed: 'Wind Speed',
       loading: 'Loading weather...',
+      conditions: {
+        'Clear': 'Clear',
+        'Clouds': 'Clouds',
+        'Rain': 'Rain',
+        'Snow': 'Snow',
+        'Thunderstorm': 'Thunderstorm',
+        'Drizzle': 'Drizzle',
+        'Mist': 'Mist',
+        'Fog': 'Fog',
+        'Haze': 'Haze'
+      },
       alerts: {
         cold: 'Cold weather - check gear',
         rain: 'Rain expected - secure equipment',
@@ -318,6 +329,17 @@ export const translations = {
       humidity: 'Luftfeuchtigkeit',
       windSpeed: 'Windgeschwindigkeit',
       loading: 'Wetter wird geladen...',
+      conditions: {
+        'Clear': 'Klar',
+        'Clouds': 'Wolken',
+        'Rain': 'Regen',
+        'Snow': 'Schnee',
+        'Thunderstorm': 'Gewitter',
+        'Drizzle': 'Nieselregen',
+        'Mist': 'Nebel',
+        'Fog': 'Nebel',
+        'Haze': 'Dunst'
+      },
       alerts: {
         cold: 'Kaltes Wetter - Ausrüstung prüfen',
         rain: 'Regen erwartet - Ausrüstung sichern',

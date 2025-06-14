@@ -340,7 +340,7 @@ export default function Navigation() {
               </div>
               <div className="text-xs text-gray-600 capitalize font-medium"
                    style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                {weather.condition}
+                {t(`weather.conditions.${weather.condition}`) || weather.condition}
               </div>
             </div>
           )}

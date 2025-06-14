@@ -1,5 +1,6 @@
 import { useWeather } from '@/hooks/useWeather';
 import { Coordinates } from '@/types/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface CampingWeatherWidgetProps {
   coordinates: Coordinates;
