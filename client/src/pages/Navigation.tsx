@@ -7,6 +7,7 @@ import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
+import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
@@ -311,78 +312,14 @@ export default function Navigation() {
         />
       )}
 
-      {/* Navigation Panel - Top Position */}
+      {/* Live Navigation with GPS Tracking */}
       {currentRoute && (
-        <div 
-          className="absolute left-4 right-4 z-30 transition-all duration-300"
-          style={{
-            top: '130px',
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '12px',
-            padding: '12px 16px',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          <div className="flex items-center justify-between">
-            {/* Distance */}
-            <div className="flex items-center space-x-2">
-              <span className="text-red-500 text-sm">📍</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                {currentRoute.totalDistance}
-              </span>
-            </div>
-            
-            {/* Time */}
-            <div className="flex items-center space-x-2">
-              <span className="text-blue-500 text-sm">⏱️</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                {currentRoute.estimatedTime}
-              </span>
-            </div>
-            
-            {/* ETA */}
-            <div className="flex items-center space-x-2">
-              <span className="text-green-500 text-sm">🚗</span>
-              <span 
-                className="font-semibold text-sm"
-                style={{
-                  color: '#000000',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-                }}
-              >
-                ETA: {currentRoute.arrivalTime}
-              </span>
-            </div>
-            
-            {/* End Button */}
-            <button
-              onClick={handleEndNavigation}
-              className="px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105"
-              style={{
-                background: 'rgba(239, 68, 68, 0.8)',
-                color: 'white',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                backdropFilter: 'blur(4px)'
-              }}
-            >
-              End
-            </button>
-          </div>
-        </div>
+        <GroundNavigation
+          route={currentRoute}
+          onEndNavigation={handleEndNavigation}
+          onRouteUpdate={setCurrentRoute}
+          isVisible={true}
+        />
       )}
 
       {/* Weather Widget - Bottom Right */}
