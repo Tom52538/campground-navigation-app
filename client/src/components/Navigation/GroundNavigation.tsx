@@ -1,80 +1,123 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Navigation, VolumeX, Volume2, Square } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Navigation, VolumeX, Volume2, Square, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavigationRoute, Coordinates } from '@/types/navigation';
-import { calculateDistance } from '@/lib/mapUtils';
+import { useNavigationTracking } from '@/hooks/useNavigationTracking';
+import { RouteTracker, RouteProgress } from '@/lib/routeTracker';
 
 interface GroundNavigationProps {
   route: NavigationRoute;
-  currentPosition: Coordinates;
   onEndNavigation: () => void;
+  onRouteUpdate?: (newRoute: NavigationRoute) => void;
   isVisible: boolean;
 }
 
 export const GroundNavigation = ({ 
   route, 
-  currentPosition, 
   onEndNavigation,
+  onRouteUpdate,
   isVisible 
 }: GroundNavigationProps) => {
+  const [isNavigating, setIsNavigating] = useState(true);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [lastSpokenInstruction, setLastSpokenInstruction] = useState('');
+  const [routeProgress, setRouteProgress] = useState<RouteProgress | null>(null);
+  const [isOffRoute, setIsOffRoute] = useState(false);
+  const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState<number>(0);
 
-  const currentInstruction = route.instructions[currentStepIndex];
-  const nextInstruction = route.instructions[currentStepIndex + 1];
+  // Continuous GPS tracking
+  const { currentPosition, error: gpsError, isTracking } = useNavigationTracking(isNavigating, {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 1000
+  });
+
+  // Route tracker instance
+  const routeTracker = useMemo(() => {
+    return new RouteTracker(
+      route,
+      (stepIndex) => setCurrentStepIndex(stepIndex),
+      () => {
+        // Route completed
+        setIsNavigating(false);
+        speakInstruction("You have arrived at your destination");
+        setTimeout(() => onEndNavigation(), 2000);
+      },
+      (offRouteDistance) => {
+        setIsOffRoute(true);
+        console.log(`Off route detected: ${Math.round(offRouteDistance * 1000)}m from route`);
+      }
+    );
+  }, [route, onEndNavigation]);
 
   // Voice synthesis
-  const speakInstruction = useCallback((text: string) => {
+  const speakInstruction = useCallback((text: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
     if (!voiceEnabled || !('speechSynthesis' in window)) return;
     
-    window.speechSynthesis.cancel();
+    // Cancel current speech for high priority
+    if (priority === 'high') {
+      window.speechSynthesis.cancel();
+    }
+    
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.8;
+    utterance.rate = 0.9;
     utterance.pitch = 1;
     utterance.volume = 0.8;
     window.speechSynthesis.speak(utterance);
   }, [voiceEnabled]);
 
-  // Calculate distance to next turn point
-  const getDistanceToNextStep = useCallback(() => {
-    if (!route.geometry || currentStepIndex >= route.geometry.length - 1) return 0;
-    
-    const nextStepCoord = route.geometry[currentStepIndex + 1];
-    if (!nextStepCoord || nextStepCoord.length < 2) return 0;
-    
-    return calculateDistance(currentPosition, {
-      lat: nextStepCoord[1],
-      lng: nextStepCoord[0]
-    });
-  }, [currentPosition, route.geometry, currentStepIndex]);
-
-  // Progress tracking
+  // Update route progress when position changes
   useEffect(() => {
-    const distanceToNext = getDistanceToNextStep();
-    
-    // If within 20 meters of next step, advance to next instruction
-    if (distanceToNext < 0.02 && currentStepIndex < route.instructions.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
-  }, [currentPosition, getDistanceToNextStep, currentStepIndex, route.instructions.length]);
+    if (!currentPosition || !isNavigating) return;
 
-  // Voice announcements
-  useEffect(() => {
-    if (!currentInstruction || !voiceEnabled) return;
-    
-    const distanceToNext = getDistanceToNextStep();
-    const instructionText = currentInstruction.instruction;
-    
-    // Announce new instruction or distance warnings
-    if (instructionText !== lastSpokenInstruction) {
-      speakInstruction(`In ${currentInstruction.distance}, ${instructionText}`);
-      setLastSpokenInstruction(instructionText);
-    } else if (distanceToNext < 0.05 && distanceToNext > 0.02) {
-      // Announce when approaching turn (50m to 20m)
-      speakInstruction(`In 50 meters, ${instructionText}`);
+    const progress = routeTracker.updatePosition(currentPosition.position);
+    setRouteProgress(progress);
+
+    // Update off-route status
+    if (progress.isOffRoute && !isOffRoute) {
+      setIsOffRoute(true);
+      speakInstruction("Off route detected", 'high');
+    } else if (!progress.isOffRoute && isOffRoute) {
+      setIsOffRoute(false);
     }
-  }, [currentInstruction, speakInstruction, getDistanceToNextStep, lastSpokenInstruction, voiceEnabled]);
+
+  }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
+
+  // Smart voice announcements based on distance
+  useEffect(() => {
+    if (!routeProgress || !voiceEnabled || !currentPosition) return;
+
+    const distance = routeProgress.distanceToNext;
+    const currentInstruction = routeTracker.getCurrentInstruction();
+    
+    if (!currentInstruction) return;
+
+    // Announce at specific distance thresholds
+    const shouldAnnounce = (
+      (distance < 0.2 && lastAnnouncedDistance >= 0.2) || // 200m
+      (distance < 0.1 && lastAnnouncedDistance >= 0.1) || // 100m
+      (distance < 0.05 && lastAnnouncedDistance >= 0.05) || // 50m
+      (distance < 0.02 && lastAnnouncedDistance >= 0.02)   // 20m
+    );
+
+    if (shouldAnnounce) {
+      let announcement = "";
+      if (distance > 0.1) {
+        announcement = `In ${Math.round(distance * 1000)} meters, ${currentInstruction.instruction}`;
+      } else if (distance > 0.02) {
+        announcement = `${currentInstruction.instruction} ahead`;
+      } else {
+        announcement = currentInstruction.instruction;
+      }
+      
+      speakInstruction(announcement, distance < 0.02 ? 'high' : 'medium');
+      setLastAnnouncedDistance(distance);
+    }
+  }, [routeProgress, voiceEnabled, routeTracker, lastAnnouncedDistance, speakInstruction]);
+
+  // Get current instruction from route tracker
+  const currentInstruction = routeTracker.getCurrentInstruction();
+  const nextInstruction = routeTracker.getNextInstruction();
 
   const toggleVoice = () => {
     setVoiceEnabled(!voiceEnabled);
@@ -85,21 +128,24 @@ export const GroundNavigation = ({
     }
   };
 
-  const getRemainingDistance = () => {
-    const remainingSteps = route.instructions.slice(currentStepIndex);
-    return remainingSteps.reduce((total, step) => {
-      const distance = parseFloat(step.distance.replace(/[^\d.]/g, ''));
-      return total + (isNaN(distance) ? 0 : distance);
-    }, 0);
+  const handleEndNavigation = () => {
+    setIsNavigating(false);
+    window.speechSynthesis.cancel();
+    onEndNavigation();
   };
 
-  const getRemainingTime = () => {
-    const remainingSteps = route.instructions.slice(currentStepIndex);
-    const totalMinutes = remainingSteps.reduce((total, step) => {
-      const duration = parseFloat(step.duration.replace(/[^\d.]/g, ''));
-      return total + (isNaN(duration) ? 0 : duration);
-    }, 0);
-    return `${Math.ceil(totalMinutes)} min`;
+  // Format remaining distance and time from route progress
+  const formatDistance = (km: number) => {
+    if (km < 1) return `${Math.round(km * 1000)}m`;
+    return `${km.toFixed(1)}km`;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.ceil(seconds / 60);
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
   };
 
   if (!isVisible || !currentInstruction) return null;
@@ -107,18 +153,42 @@ export const GroundNavigation = ({
   return (
     <div className="absolute top-16 left-4 right-4 z-30">
       <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border-2 border-black/20 p-4">
-        {/* Progress indicator */}
+        {/* GPS Status & Off-Route Warning */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <Navigation className="w-5 h-5 text-blue-500" />
+            <Navigation className={`w-5 h-5 ${isTracking ? 'text-green-500' : 'text-gray-400'}`} />
             <span className="text-sm font-medium">
               Step {currentStepIndex + 1} of {route.instructions.length}
             </span>
+            {isOffRoute && (
+              <div className="flex items-center space-x-1 text-red-600">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-xs font-medium">Off Route</span>
+              </div>
+            )}
           </div>
           <div className="text-sm text-gray-600">
-            {getRemainingDistance().toFixed(0)}m • {getRemainingTime()}
+            {routeProgress ? (
+              <>
+                {formatDistance(routeProgress.distanceRemaining)} • {formatDuration(routeProgress.estimatedTimeRemaining)}
+              </>
+            ) : (
+              <>
+                {route.totalDistance} • {route.estimatedTime}
+              </>
+            )}
           </div>
         </div>
+
+        {/* GPS Error Warning */}
+        {gpsError && (
+          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+            <div className="text-sm text-red-800">
+              <AlertTriangle className="w-4 h-4 inline mr-1" />
+              {gpsError}
+            </div>
+          </div>
+        )}
 
         {/* Current instruction */}
         <div className="mb-3">
@@ -128,12 +198,27 @@ export const GroundNavigation = ({
           <div className="text-sm text-gray-600">
             Distance: {currentInstruction.distance} • Duration: {currentInstruction.duration}
           </div>
-          {getDistanceToNextStep() < 0.1 && (
+          {routeProgress && routeProgress.distanceToNext < 0.1 && (
             <div className="text-sm font-medium text-orange-600 mt-1">
-              Approaching turn in {Math.round(getDistanceToNextStep() * 1000)}m
+              Approaching turn in {Math.round(routeProgress.distanceToNext * 1000)}m
             </div>
           )}
         </div>
+
+        {/* Progress bar */}
+        {routeProgress && (
+          <div className="mb-3">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${routeProgress.percentComplete}%` }}
+              />
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              {Math.round(routeProgress.percentComplete)}% complete
+            </div>
+          </div>
+        )}
 
         {/* Next instruction preview */}
         {nextInstruction && (
@@ -159,7 +244,7 @@ export const GroundNavigation = ({
           <Button
             variant="destructive"
             size="sm"
-            onClick={onEndNavigation}
+            onClick={handleEndNavigation}
             className="flex items-center space-x-2"
           >
             <Square className="w-4 h-4" />
@@ -169,4 +254,4 @@ export const GroundNavigation = ({
       </div>
     </div>
   );
-};
+};;
