@@ -106,8 +106,7 @@ export const EnhancedMapControls = ({
         }}
       >
         <button 
-          onClick={() => !useRealGPS && onToggleGPS()}
-          disabled={useRealGPS}
+          onClick={handleGPSToggle}
           className="w-12 h-8 flex items-center justify-center text-xs font-medium transition-all duration-200 hover:bg-white/20 active:bg-white/40"
           style={{
             background: useRealGPS ? 'rgba(34, 197, 94, 0.9)' : 'transparent',
@@ -118,7 +117,7 @@ export const EnhancedMapControls = ({
             minWidth: '48px',
             minHeight: '32px'
           }}
-          title="Real GPS"
+          title="Toggle to Real GPS"
         >
           Real
         </button>
@@ -127,8 +126,7 @@ export const EnhancedMapControls = ({
           style={{ background: 'rgba(156, 163, 175, 0.3)' }}
         ></div>
         <button 
-          onClick={() => useRealGPS && onToggleGPS()}
-          disabled={!useRealGPS}
+          onClick={handleGPSToggle}
           className="w-12 h-8 flex items-center justify-center text-xs font-medium transition-all duration-200 hover:bg-white/20 active:bg-white/40"
           style={{
             background: !useRealGPS ? 'rgba(59, 130, 246, 0.9)' : 'transparent',
@@ -139,7 +137,7 @@ export const EnhancedMapControls = ({
             minWidth: '48px',
             minHeight: '32px'
           }}
-          title="Mock GPS"
+          title="Toggle to Mock GPS"
         >
           Mock
         </button>
