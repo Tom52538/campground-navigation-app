@@ -439,7 +439,7 @@ export default function Navigation() {
           {/* Top: Current Maneuver */}
           <TopManeuverPanel
             instruction={currentInstruction || currentRoute.instructions[0].instruction}
-            distance={typeof nextDistance === 'number' ? formatDistance(nextDistance / 1000) : (nextDistance || currentRoute.instructions[0].distance)}
+            distance={nextDistance || currentRoute.instructions[0].distance}
           />
 
           {/* Floating Voice Controls */}
