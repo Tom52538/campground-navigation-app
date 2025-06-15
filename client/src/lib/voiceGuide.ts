@@ -121,45 +121,61 @@ export class VoiceGuide {
     }
   }
 
+  private processQueue() {
+    if (this.isSpeaking || this.announcementQueue.length === 0 || !this.isEnabled) {
+      return;
+    }
+
+    this.isSpeaking = true;
+    const announcement = this.announcementQueue.shift()!;
+    const translatedText = this.translateInstruction(announcement.text);
+    
+    const utterance = new SpeechSynthesisUtterance(translatedText);
+    utterance.rate = 0.9;
+    utterance.volume = 1;
+    utterance.pitch = 1;
+    utterance.lang = this.getLanguageCode();
+
+    if (this.preferredVoice) {
+      utterance.voice = this.preferredVoice;
+    }
+
+    utterance.onstart = () => {
+      this.currentUtterance = utterance;
+      console.log(`🔊 Navigation: "${announcement.text}" (${announcement.priority})`);
+    };
+
+    utterance.onend = () => {
+      this.isSpeaking = false;
+      this.currentUtterance = null;
+      this.processQueue(); // Process next item in queue
+    };
+
+    utterance.onerror = () => {
+      this.isSpeaking = false;
+      this.currentUtterance = null;
+      this.processQueue(); // Try next item on error
+    };
+
+    this.synthesis.speak(utterance);
+  }
+
   speak(text: string, priority: 'low' | 'medium' | 'high' = 'medium') {
     if (!this.isEnabled || !this.synthesis) return;
 
     try {
-      // Cancel current speech for high priority
       if (priority === 'high') {
-        this.stopCurrentSpeech();
+        // High priority: clear queue and current speech
+        this.synthesis.cancel();
+        this.announcementQueue = [];
+        this.isSpeaking = false;
+        this.announcementQueue.push({ text, priority });
+      } else {
+        // Add to queue
+        this.announcementQueue.push({ text, priority });
       }
-
-      // Translate the text to current language
-      const translatedText = this.translateInstruction(text);
       
-      const utterance = new SpeechSynthesisUtterance(translatedText);
-      utterance.rate = 0.9;
-      utterance.volume = 1;
-      utterance.pitch = 1;
-      utterance.lang = this.getLanguageCode();
-
-      // Use preferred voice if available
-      if (this.preferredVoice) {
-        utterance.voice = this.preferredVoice;
-      }
-
-      // Event handlers
-      utterance.onstart = () => {
-        this.currentUtterance = utterance;
-        console.log(`🔊 Navigation: "${text}"`);
-      };
-
-      utterance.onend = () => {
-        this.currentUtterance = null;
-      };
-
-      utterance.onerror = (event) => {
-        console.error('VoiceGuide error:', event.error);
-        this.currentUtterance = null;
-      };
-
-      this.synthesis.speak(utterance);
+      this.processQueue();
     } catch (error) {
       console.error('VoiceGuide speak error:', error);
     }
