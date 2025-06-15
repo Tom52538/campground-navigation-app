@@ -25,20 +25,32 @@ export class VoiceGuide {
   };
 
   constructor() {
+    // Check if speech synthesis is available
+    if (!window.speechSynthesis) {
+      console.warn('Speech synthesis not available in this browser');
+      this.synthesis = null as any;
+      this.currentLanguage = detectUserLanguage() as SupportedLanguage;
+      return;
+    }
+
     this.synthesis = window.speechSynthesis;
     this.currentLanguage = detectUserLanguage() as SupportedLanguage;
     console.log(`🎙️ Voice guidance language: ${this.currentLanguage}`);
     
-    // Force voice loading by speaking empty text
-    this.synthesis.speak(new SpeechSynthesisUtterance(''));
-    this.synthesis.cancel();
-    
-    this.initializeVoices();
-    
-    // Re-initialize voices after a delay to ensure they're loaded
-    setTimeout(() => {
+    try {
+      // Force voice loading by speaking empty text
+      this.synthesis.speak(new SpeechSynthesisUtterance(''));
+      this.synthesis.cancel();
+      
       this.initializeVoices();
-    }, 100);
+      
+      // Re-initialize voices after a delay to ensure they're loaded
+      setTimeout(() => {
+        this.initializeVoices();
+      }, 100);
+    } catch (error) {
+      console.error('Voice guide initialization error:', error);
+    }
   }
 
   private initializeVoices() {
@@ -142,50 +154,61 @@ export class VoiceGuide {
   }
 
   private stopCurrentSpeech() {
-    if (this.synthesis) {
-      this.synthesis.cancel();
-      this.currentUtterance = null;
+    try {
+      if (this.synthesis) {
+        this.synthesis.cancel();
+        this.currentUtterance = null;
+      }
+    } catch (error) {
+      console.error('Error stopping speech:', error);
     }
   }
 
   private processQueue() {
-    if (this.isSpeaking || this.announcementQueue.length === 0 || !this.isEnabled) {
+    if (this.isSpeaking || this.announcementQueue.length === 0 || !this.isEnabled || !this.synthesis) {
       return;
     }
 
-    this.isSpeaking = true;
-    const announcement = this.announcementQueue.shift()!;
-    const translatedText = this.translateInstruction(announcement.text);
-    
-    const utterance = new SpeechSynthesisUtterance(translatedText);
-    utterance.rate = 0.9;
-    utterance.volume = 1;
-    utterance.pitch = 1;
-    utterance.lang = this.getLanguageCode();
+    try {
+      this.isSpeaking = true;
+      const announcement = this.announcementQueue.shift()!;
+      const translatedText = this.translateInstruction(announcement.text);
+      
+      const utterance = new SpeechSynthesisUtterance(translatedText);
+      utterance.rate = 0.9;
+      utterance.volume = 1;
+      utterance.pitch = 1;
+      utterance.lang = this.getLanguageCode();
 
-    if (this.preferredVoice) {
-      utterance.voice = this.preferredVoice;
+      if (this.preferredVoice) {
+        utterance.voice = this.preferredVoice;
+      }
+
+      utterance.onstart = () => {
+        this.currentUtterance = utterance;
+        console.log(`🔊 Speaking German: "${translatedText}" | Original: "${announcement.text}"`);
+        console.log(`🔊 Voice: ${utterance.voice?.name} | Lang: ${utterance.lang}`);
+      };
+
+      utterance.onend = () => {
+        this.isSpeaking = false;
+        this.currentUtterance = null;
+        this.processQueue(); // Process next item in queue
+      };
+
+      utterance.onerror = (error) => {
+        console.error('Speech synthesis error:', error);
+        this.isSpeaking = false;
+        this.currentUtterance = null;
+        this.processQueue(); // Try next item on error
+      };
+
+      this.synthesis.speak(utterance);
+    } catch (error) {
+      console.error('Error in processQueue:', error);
+      this.isSpeaking = false;
+      this.processQueue();
     }
-
-    utterance.onstart = () => {
-      this.currentUtterance = utterance;
-      console.log(`🔊 Speaking German: "${translatedText}" | Original: "${announcement.text}"`);
-      console.log(`🔊 Voice: ${utterance.voice?.name} | Lang: ${utterance.lang}`);
-    };
-
-    utterance.onend = () => {
-      this.isSpeaking = false;
-      this.currentUtterance = null;
-      this.processQueue(); // Process next item in queue
-    };
-
-    utterance.onerror = () => {
-      this.isSpeaking = false;
-      this.currentUtterance = null;
-      this.processQueue(); // Try next item on error
-    };
-
-    this.synthesis.speak(utterance);
   }
 
   speak(text: string, priority: 'low' | 'medium' | 'high' = 'medium') {
@@ -225,25 +248,34 @@ export class VoiceGuide {
 
   // Test method to check available German voices
   testGermanVoice() {
-    const voices = this.synthesis.getVoices();
-    const germanVoices = voices.filter(voice => 
-      voice.lang.toLowerCase().startsWith('de')
-    );
-    
-    console.log(`🔍 Available German voices:`, germanVoices.map(v => ({
-      name: v.name,
-      lang: v.lang,
-      localService: v.localService
-    })));
-    
-    if (germanVoices.length > 0) {
-      const testUtterance = new SpeechSynthesisUtterance('Links abbiegen');
-      testUtterance.voice = germanVoices[0];
-      testUtterance.lang = 'de-DE';
-      console.log(`🧪 Testing German voice: ${germanVoices[0].name}`);
-      this.synthesis.speak(testUtterance);
-    } else {
-      console.warn('⚠️ No German voices available on this device');
+    if (!this.synthesis) {
+      console.warn('Speech synthesis not available');
+      return;
+    }
+
+    try {
+      const voices = this.synthesis.getVoices();
+      const germanVoices = voices.filter(voice => 
+        voice.lang.toLowerCase().startsWith('de')
+      );
+      
+      console.log(`🔍 Available German voices:`, germanVoices.map(v => ({
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService
+      })));
+      
+      if (germanVoices.length > 0) {
+        const testUtterance = new SpeechSynthesisUtterance('Links abbiegen');
+        testUtterance.voice = germanVoices[0];
+        testUtterance.lang = 'de-DE';
+        console.log(`🧪 Testing German voice: ${germanVoices[0].name}`);
+        this.synthesis.speak(testUtterance);
+      } else {
+        console.warn('⚠️ No German voices available on this device');
+      }
+    } catch (error) {
+      console.error('Error testing German voice:', error);
     }
   }
 

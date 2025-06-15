@@ -289,19 +289,28 @@ export default function Navigation() {
 
   // Initialize voice guide when component mounts
   useEffect(() => {
-    if (!voiceGuideRef.current) {
-      voiceGuideRef.current = new VoiceGuide();
+    try {
+      if (!voiceGuideRef.current) {
+        voiceGuideRef.current = new VoiceGuide();
+      }
+    } catch (error) {
+      console.error('Voice guide initialization failed:', error);
+      voiceGuideRef.current = null;
     }
   }, []);
 
   // Update voice enabled state
   useEffect(() => {
-    if (voiceGuideRef.current) {
-      if (voiceEnabled) {
-        voiceGuideRef.current.enable();
-      } else {
-        voiceGuideRef.current.disable();
+    try {
+      if (voiceGuideRef.current) {
+        if (voiceEnabled) {
+          voiceGuideRef.current.enable();
+        } else {
+          voiceGuideRef.current.disable();
+        }
       }
+    } catch (error) {
+      console.error('Voice guide control failed:', error);
     }
   }, [voiceEnabled]);
 
