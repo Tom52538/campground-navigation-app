@@ -282,23 +282,31 @@ export default function Navigation() {
         onMapClick={handleMapClick}
       />
 
-      {/* Permanent Header - Always Visible */}
-      <PermanentHeader
-        searchQuery={searchQuery}
-        onSearch={handleSearch}
-        currentSite={currentSite}
-        onSiteChange={handleSiteChange}
-        showClearButton={shouldShowPOIs}
-        onClear={handleClearPOIs}
-      />
+      {/* EXPLORATION MODE - Only visible when NOT navigating */}
+      {!isNavigating && (
+        <>
+          {/* Permanent Header - Search and Location Selection */}
+          <PermanentHeader
+            searchQuery={searchQuery}
+            onSearch={handleSearch}
+            currentSite={currentSite}
+            onSiteChange={handleSiteChange}
+            showClearButton={shouldShowPOIs}
+            onClear={handleClearPOIs}
+          />
 
-      {/* Lightweight POI Buttons - Left Side */}
-      <LightweightPOIButtons 
-        onCategorySelect={handleCategoryFilter}
-        activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
-      />
+          {/* Lightweight POI Buttons - Left Side */}
+          <LightweightPOIButtons 
+            onCategorySelect={handleCategoryFilter}
+            activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+          />
 
-      {/* Enhanced Map Controls - Right Side Vertical */}
+          {/* Camping Weather Widget */}
+          <CampingWeatherWidget coordinates={currentPosition} />
+        </>
+      )}
+
+      {/* Enhanced Map Controls - Always Visible (Right Side) */}
       <EnhancedMapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -306,9 +314,6 @@ export default function Navigation() {
         useRealGPS={useRealGPS}
         onToggleGPS={toggleGPS}
       />
-
-      {/* Camping Weather Widget */}
-      <CampingWeatherWidget coordinates={currentPosition} />
 
       {/* POI Info Overlay - Positioned below button rows */}
       {selectedPOI && (
@@ -319,8 +324,8 @@ export default function Navigation() {
         />
       )}
 
-      {/* Live Navigation - Decomposed UI */}
-      {currentRoute && currentRoute.instructions.length > 0 && (
+      {/* NAVIGATION MODE - Only visible when actively navigating */}
+      {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
         <>
           {/* Top: Current Maneuver */}
           <TopManeuverPanel
@@ -373,30 +378,7 @@ export default function Navigation() {
         </>
       )}
 
-      {/* Weather Widget - Bottom Right */}
-      <div className="absolute bottom-4 right-4 z-30">
-        <div className="rounded-xl border border-white/20 px-3 py-2 min-w-[120px]"
-             style={{
-               background: 'rgba(255, 255, 255, 0.3)',
-               backdropFilter: 'blur(12px) saturate(180%)',
-               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-             }}>
-          {weather && (
-            <div className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-gray-800"
-                      style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                  {Math.round(weather.temperature)}°C
-                </span>
-              </div>
-              <div className="text-xs text-gray-600 capitalize font-medium"
-                   style={{ textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>
-                {t(`weather.conditions.${weather.condition}`) || weather.condition}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+
 
 
 
