@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Navigation, VolumeX, Volume2, Square, AlertTriangle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NavigationRoute, Coordinates } from '@/types/navigation';
@@ -28,7 +28,7 @@ export const GroundNavigation = ({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [routeProgress, setRouteProgress] = useState<RouteProgress | null>(null);
   const [isOffRoute, setIsOffRoute] = useState(false);
-  const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState<number>(0);
+  const [hasAnnouncedStart, setHasAnnouncedStart] = useState(false);
   const [isRerouting, setIsRerouting] = useState(false);
   const [offRouteCount, setOffRouteCount] = useState(0);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
@@ -143,40 +143,72 @@ export const GroundNavigation = ({
 
   }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
 
+  // Voice announcement timer ref to prevent loops
+  const announcementTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastAnnouncementRef = useRef<{ step: number; distance: number; time: number }>({ step: -1, distance: 999, time: 0 });
+
   // Smart voice announcements based on distance
   useEffect(() => {
     if (!routeProgress || !voiceGuide.isVoiceEnabled() || !currentPosition) return;
 
     const distance = routeProgress.distanceToNext;
+    const currentStep = routeProgress.currentStep;
     const currentInstruction = routeTracker.getCurrentInstruction();
+    const now = Date.now();
     
     if (!currentInstruction) return;
 
-    // Announce at specific distance thresholds
-    const shouldAnnounce = (
-      (distance < 0.2 && lastAnnouncedDistance >= 0.2) || // 200m
-      (distance < 0.1 && lastAnnouncedDistance >= 0.1) || // 100m
-      (distance < 0.05 && lastAnnouncedDistance >= 0.05) || // 50m
-      (distance < 0.02 && lastAnnouncedDistance >= 0.02)   // 20m
+    // Clear any pending announcements
+    if (announcementTimerRef.current) {
+      clearTimeout(announcementTimerRef.current);
+      announcementTimerRef.current = null;
+    }
+
+    // Check if this is a new step
+    const isNewStep = currentStep !== lastAnnouncementRef.current.step;
+    
+    // Check distance thresholds (only announce once per threshold per step)
+    const shouldAnnounce = isNewStep || (
+      (distance <= 0.2 && lastAnnouncementRef.current.distance > 0.2) || // 200m
+      (distance <= 0.1 && lastAnnouncementRef.current.distance > 0.1) || // 100m
+      (distance <= 0.05 && lastAnnouncementRef.current.distance > 0.05) // 50m
     );
 
-    if (shouldAnnounce) {
-      voiceGuide.announceInstruction(currentInstruction.instruction, distance);
-      setLastAnnouncedDistance(distance);
-    }
-  }, [routeProgress, voiceGuide, routeTracker, lastAnnouncedDistance, currentPosition]);
+    // Prevent announcements within 3 seconds of each other
+    const timeSinceLastAnnouncement = now - lastAnnouncementRef.current.time;
+    const canAnnounce = shouldAnnounce && timeSinceLastAnnouncement > 3000;
 
-  // Auto-announce when navigation starts
+    if (canAnnounce) {
+      // Delay announcement slightly to prevent rapid-fire speech
+      announcementTimerRef.current = setTimeout(() => {
+        voiceGuide.announceInstruction(currentInstruction.instruction, distance);
+        lastAnnouncementRef.current = { step: currentStep, distance, time: Date.now() };
+      }, 500);
+    }
+  }, [routeProgress?.distanceToNext, routeProgress?.currentStep, voiceGuide, routeTracker, currentPosition]);
+
+  // Navigation start announcement (only once when voice is first enabled)
   useEffect(() => {
-    if (voiceGuide.isVoiceEnabled() && isNavigating) {
+    if (voiceGuide.isVoiceEnabled() && isNavigating && !hasAnnouncedStart) {
+      setHasAnnouncedStart(true);
       const currentInstruction = routeTracker.getCurrentInstruction();
       if (currentInstruction) {
         setTimeout(() => {
           voiceGuide.announceNavigationStart(currentInstruction.instruction);
-        }, 1000);
+          lastAnnouncementRef.current = { step: 0, distance: 999, time: Date.now() };
+        }, 1500);
       }
     }
-  }, [voiceGuide, isNavigating, routeTracker]);
+  }, [voiceGuide, isNavigating, routeTracker, hasAnnouncedStart]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (announcementTimerRef.current) {
+        clearTimeout(announcementTimerRef.current);
+      }
+    };
+  }, []);
 
   // Get current instruction from route tracker
   const currentInstruction = routeTracker.getCurrentInstruction();
