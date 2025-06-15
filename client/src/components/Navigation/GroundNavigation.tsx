@@ -131,6 +131,7 @@ export const GroundNavigation = ({
   useEffect(() => {
     if (!currentPosition || !isNavigating) return;
 
+    // Single call to route tracker - prevents multiple rapid updates
     const progress = routeTracker.updatePosition(currentPosition.position);
     setRouteProgress(progress);
 
@@ -150,16 +151,7 @@ export const GroundNavigation = ({
     // Increment GPS update counter for performance monitoring
     setGpsUpdateCount(prev => prev + 1);
 
-    // Debug logging for testing
-    console.log('Navigation Update:', {
-      step: progress.currentStep,
-      distanceToNext: Math.round(progress.distanceToNext * 1000) + 'm',
-      percentComplete: Math.round(progress.percentComplete) + '%',
-      isOffRoute: progress.isOffRoute,
-      updateCount: gpsUpdateCount + 1
-    });
-
-  }, [currentPosition, isNavigating, routeTracker, isOffRoute, currentStepIndex]);
+  }, [currentPosition?.timestamp, isNavigating, routeTracker, isOffRoute, currentStepIndex]);
 
   // Voice announcement timer ref to prevent loops
   const announcementTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -280,136 +272,80 @@ export const GroundNavigation = ({
   if (!isVisible || !currentInstruction) return null;
 
   return (
-    <div className="absolute top-16 left-4 right-4 z-30">
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border-2 border-black/20 p-4">
-        {/* GPS Status & Off-Route Warning */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <Navigation className={`w-5 h-5 ${isTracking ? 'text-green-500' : 'text-gray-400'}`} />
-            <span className="text-sm font-medium">
-              Step {currentStepIndex + 1} of {route.instructions.length}
-            </span>
-            {isOffRoute && (
-              <div className="flex items-center space-x-1 text-red-600">
-                <AlertTriangle className="w-4 h-4" />
-                <span className="text-xs font-medium">Off Route</span>
-              </div>
-            )}
+    <div className="absolute top-20 left-4 right-4 z-30">
+      <div className="glass-panel p-4">
+        {/* Primary Instruction with Icon */}
+        <div className="flex items-center gap-4 mb-4">
+          <div className="bg-blue-600 text-white rounded-lg p-3 flex-shrink-0">
+            <Navigation className="w-6 h-6" />
           </div>
-          <div className="text-sm text-gray-600">
-            {routeProgress ? (
-              <>
-                {formatDistance(routeProgress.distanceRemaining)} • {formatDuration(routeProgress.estimatedTimeRemaining)}
-                {routeProgress.currentSpeed > 0 && (
-                  <div className="text-xs text-blue-600 mt-1">
-                    {getTranslation(currentLanguage, 'navigation.speed')}: {routeProgress.currentSpeed.toFixed(1)} km/h • {getTranslation(currentLanguage, 'navigation.avg')}: {routeProgress.averageSpeed.toFixed(1)} km/h
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {route.totalDistance} • {route.estimatedTime}
-              </>
-            )}
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900 leading-tight">
+              {translateInstruction(currentInstruction.instruction, currentLanguage)}
+            </h2>
+            <p className="text-lg text-gray-700 font-medium">
+              {routeProgress ? formatDistance(routeProgress.distanceToNext) : currentInstruction.distance}
+            </p>
           </div>
+          {isOffRoute && (
+            <div className="flex items-center space-x-1 text-red-600 bg-red-50 px-2 py-1 rounded-lg">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="text-xs font-medium">Off Route</span>
+            </div>
+          )}
         </div>
 
         {/* GPS Error Warning */}
         {gpsError && (
-          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-            <div className="text-sm text-red-800">
-              <AlertTriangle className="w-4 h-4 inline mr-1" />
+          <div className="mb-3 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-lg">
+            <div className="text-sm text-red-800 flex items-center">
+              <AlertTriangle className="w-4 h-4 mr-2" />
               {gpsError}
             </div>
           </div>
         )}
 
-        {/* Current instruction */}
-        <div className="mb-3">
-          <div className="text-lg font-bold text-gray-900 mb-1">
-            {translateInstruction(currentInstruction.instruction, currentLanguage)}
-          </div>
-          <div className="text-sm text-gray-600">
-            {getTranslation(currentLanguage, 'navigation.distance')}: {currentInstruction.distance} • {getTranslation(currentLanguage, 'navigation.duration')}: {currentInstruction.duration}
-          </div>
-          {routeProgress && routeProgress.distanceToNext < 0.1 && (
-            <div className="text-sm font-medium text-orange-600 mt-1">
-              {getTranslation(currentLanguage, 'navigation.approaching')} {Math.round(routeProgress.distanceToNext * 1000)}{getTranslation(currentLanguage, 'navigation.meters')}
-            </div>
-          )}
-        </div>
-
-        {/* Progress bar with ETA */}
+        {/* Progress Bar & ETA */}
         {routeProgress && (
-          <div className="mb-3">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>{Math.round(routeProgress.percentComplete)}% {getTranslation(currentLanguage, 'navigation.complete')}</span>
-              <span>{getTranslation(currentLanguage, 'navigation.eta')}: {routeProgress.dynamicETA.estimatedArrival.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <div className="mb-4">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span className="font-medium">{route.totalDistance}</span>
+              <span>ETA: {routeProgress.dynamicETA.estimatedArrival.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200/50 rounded-full h-1.5">
               <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                className="bg-blue-600 h-1.5 rounded-full transition-all duration-500" 
                 style={{ width: `${routeProgress.percentComplete}%` }}
               />
             </div>
           </div>
         )}
 
-        {/* Next instruction preview */}
-        {nextInstruction && (
-          <div className="mb-3 p-2 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-700">
-              <span className="font-medium">{getTranslation(currentLanguage, 'navigation.next')}:</span> {translateInstruction(nextInstruction.instruction, currentLanguage)}
-            </div>
-          </div>
-        )}
-
-        {/* Controls */}
+        {/* Control Buttons */}
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center space-x-3">
+            <button
               onClick={toggleVoice}
-              className="flex items-center space-x-2"
+              className="glass-button p-3 flex items-center space-x-2"
             >
-              {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              <span>{voiceEnabled ? getTranslation(currentLanguage, 'navigation.voiceOn') : getTranslation(currentLanguage, 'navigation.voiceOff')}</span>
-            </Button>
+              {voiceEnabled ? <Volume2 className="w-5 h-5 text-blue-600" /> : <VolumeX className="w-5 h-5 text-gray-500" />}
+            </button>
             
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
-              className="p-2"
+              className="glass-button p-3"
             >
-              <Settings className="w-4 h-4" />
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={async () => {
-                const success = await voiceGuide.testVoice();
-                if (!success) {
-                  alert('Voice test failed. Please check your browser audio settings.');
-                }
-              }}
-              className="text-xs bg-green-50 hover:bg-green-100"
-            >
-              Test Voice
-            </Button>
+              <Settings className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
 
-          <Button
-            variant="destructive"
-            size="sm"
+          <button
             onClick={handleEndNavigation}
-            className="flex items-center space-x-2"
+            className="bg-red-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-medium hover:bg-red-600/80 transition-all duration-200 flex items-center space-x-2"
           >
             <Square className="w-4 h-4" />
-            <span>End Navigation</span>
-          </Button>
+            <span>End</span>
+          </button>
         </div>
       </div>
 

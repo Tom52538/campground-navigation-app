@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg;
+  }
+
+  .glass-button {
+    @apply bg-white/60 backdrop-blur-sm border border-white/20 rounded-full shadow-md hover:bg-white/80 transition-all duration-200;
+  }
+
+  .glass-compact {
+    @apply bg-white/80 backdrop-blur-lg border border-white/30 rounded-xl shadow-md;
+  }
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

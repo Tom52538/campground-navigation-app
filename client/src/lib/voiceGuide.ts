@@ -7,6 +7,8 @@ export class VoiceGuide {
   private voicesLoaded: boolean = false;
   private preferredVoice: SpeechSynthesisVoice | null = null;
   private currentLanguage: SupportedLanguage;
+  private announcementQueue: Array<{text: string, priority: 'low' | 'medium' | 'high'}> = [];
+  private isSpeaking: boolean = false;
 
   constructor() {
     this.synthesis = window.speechSynthesis;
