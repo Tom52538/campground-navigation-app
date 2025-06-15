@@ -372,6 +372,20 @@ export const GroundNavigation = ({
             </button>
             
             <button
+              onClick={() => voiceGuide.testGermanVoice()}
+              className="p-3 rounded-full transition-all duration-200"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+              }}
+              title="Test German Voice"
+            >
+              <span className="text-sm font-bold text-blue-600">DE</span>
+            </button>
+            
+            <button
               onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
               className="p-3 rounded-full transition-all duration-200"
               style={{

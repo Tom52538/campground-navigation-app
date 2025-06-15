@@ -28,7 +28,17 @@ export class VoiceGuide {
     this.synthesis = window.speechSynthesis;
     this.currentLanguage = detectUserLanguage() as SupportedLanguage;
     console.log(`🎙️ Voice guidance language: ${this.currentLanguage}`);
+    
+    // Force voice loading by speaking empty text
+    this.synthesis.speak(new SpeechSynthesisUtterance(''));
+    this.synthesis.cancel();
+    
     this.initializeVoices();
+    
+    // Re-initialize voices after a delay to ensure they're loaded
+    setTimeout(() => {
+      this.initializeVoices();
+    }, 100);
   }
 
   private initializeVoices() {
@@ -39,9 +49,14 @@ export class VoiceGuide {
       if (voices.length > 0) {
         this.voicesLoaded = true;
         
-        // Find the best voice for current language (prefer local service)
-        const languageCode = this.currentLanguage;
+        // Find the best voice for current language using speech synthesis locale
+        const speechLang = this.voiceLanguageMap[this.currentLanguage] || 'en-US';
+        const languageCode = speechLang.split('-')[0]; // e.g., 'de' from 'de-DE'
+        
+        // Priority: exact locale match > language match > local English > any voice
         this.preferredVoice = voices.find(voice => 
+          voice.lang.toLowerCase() === speechLang.toLowerCase()
+        ) || voices.find(voice => 
           voice.lang.toLowerCase().startsWith(languageCode) && voice.localService
         ) || voices.find(voice => 
           voice.lang.toLowerCase().startsWith(languageCode)
@@ -49,7 +64,8 @@ export class VoiceGuide {
           voice.lang.toLowerCase().includes('en') && voice.localService
         ) || voices[0];
 
-        console.log(`VoiceGuide: Loaded ${voices.length} voices, using:`, this.preferredVoice?.name);
+        console.log(`🗣️ VoiceGuide: Language ${this.currentLanguage} → ${speechLang}`);
+        console.log(`🗣️ Selected voice: ${this.preferredVoice?.name} (${this.preferredVoice?.lang})`);
       }
     };
 
@@ -153,7 +169,8 @@ export class VoiceGuide {
 
     utterance.onstart = () => {
       this.currentUtterance = utterance;
-      console.log(`🔊 Navigation: "${announcement.text}" (${announcement.priority})`);
+      console.log(`🔊 Speaking German: "${translatedText}" | Original: "${announcement.text}"`);
+      console.log(`🔊 Voice: ${utterance.voice?.name} | Lang: ${utterance.lang}`);
     };
 
     utterance.onend = () => {
@@ -204,6 +221,30 @@ export class VoiceGuide {
 
   getCurrentLanguage(): SupportedLanguage {
     return this.currentLanguage;
+  }
+
+  // Test method to check available German voices
+  testGermanVoice() {
+    const voices = this.synthesis.getVoices();
+    const germanVoices = voices.filter(voice => 
+      voice.lang.toLowerCase().startsWith('de')
+    );
+    
+    console.log(`🔍 Available German voices:`, germanVoices.map(v => ({
+      name: v.name,
+      lang: v.lang,
+      localService: v.localService
+    })));
+    
+    if (germanVoices.length > 0) {
+      const testUtterance = new SpeechSynthesisUtterance('Links abbiegen');
+      testUtterance.voice = germanVoices[0];
+      testUtterance.lang = 'de-DE';
+      console.log(`🧪 Testing German voice: ${germanVoices[0].name}`);
+      this.synthesis.speak(testUtterance);
+    } else {
+      console.warn('⚠️ No German voices available on this device');
+    }
   }
 
   announceNavigationStart(firstInstruction: string) {
