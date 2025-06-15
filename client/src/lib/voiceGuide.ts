@@ -172,9 +172,9 @@ export class VoiceGuide {
     try {
       this.isSpeaking = true;
       const announcement = this.announcementQueue.shift()!;
-      const translatedText = this.translateInstruction(announcement.text);
+      const processedText = announcement.text; // Use native German instructions from OpenRouteService
       
-      const utterance = new SpeechSynthesisUtterance(translatedText);
+      const utterance = new SpeechSynthesisUtterance(processedText);
       utterance.rate = 0.9;
       utterance.volume = 1;
       utterance.pitch = 1;
@@ -186,7 +186,7 @@ export class VoiceGuide {
 
       utterance.onstart = () => {
         this.currentUtterance = utterance;
-        console.log(`🔊 Speaking German: "${translatedText}" | Original: "${announcement.text}"`);
+        console.log(`🔊 Speaking native German: "${processedText}"`);
         console.log(`🔊 Voice: ${utterance.voice?.name} | Lang: ${utterance.lang}`);
       };
 
