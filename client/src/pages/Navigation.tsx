@@ -7,7 +7,8 @@ import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
-import { GroundNavigation } from '@/components/Navigation/GroundNavigation';
+import { TopManeuverPanel } from '@/components/Navigation/TopManeuverPanel';
+import { BottomSummaryPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
@@ -17,6 +18,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
 import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Volume2, VolumeX, Settings } from 'lucide-react';
 
 export default function Navigation() {
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
@@ -46,6 +49,10 @@ export default function Navigation() {
     routePlanning: false,
     navigation: false
   });
+
+  // Voice control state
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -312,14 +319,23 @@ export default function Navigation() {
         />
       )}
 
-      {/* Live Navigation with GPS Tracking */}
-      {currentRoute && (
-        <GroundNavigation
-          route={currentRoute}
-          onEndNavigation={handleEndNavigation}
-          onRouteUpdate={setCurrentRoute}
-          isVisible={true}
-        />
+      {/* Live Navigation - Decomposed UI */}
+      {currentRoute && currentRoute.instructions.length > 0 && (
+        <>
+          {/* Top: Current Maneuver */}
+          <TopManeuverPanel
+            instruction={currentRoute.instructions[0].instruction}
+            distance={currentRoute.instructions[0].distance}
+          />
+          
+          {/* Bottom: Trip Summary */}
+          <BottomSummaryPanel
+            timeRemaining={currentRoute.estimatedTime}
+            distanceRemaining={currentRoute.totalDistance}
+            eta={currentRoute.arrivalTime}
+            onEndNavigation={handleEndNavigation}
+          />
+        </>
       )}
 
       {/* Weather Widget - Bottom Right */}
