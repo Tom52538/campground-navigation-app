@@ -235,9 +235,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Valid start and end coordinates are required" });
       }
 
-      const routeData = await routingService.getDirections({
-        start: [from.lng, from.lat],
-        end: [to.lng, to.lat]
+      // Create route request with German language for OpenRouteService
+      const routeData = await routingService.getRoute({
+        coordinates: [[from.lng, from.lat], [to.lng, to.lat]],
+        profile: 'foot-walking',
+        language: 'de', // Request German instructions directly
+        units: 'm',
+        instructions: true,
+        geometry: true
       });
 
       const route = routeData.routes[0];

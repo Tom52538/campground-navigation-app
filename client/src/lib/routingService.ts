@@ -40,6 +40,12 @@ export class RoutingService {
   }
 
   private detectUserLanguage(): string {
+    // Check if we're in browser environment
+    if (typeof navigator === 'undefined') {
+      // Server-side fallback - default to German for German users
+      return 'de';
+    }
+    
     // Detect browser language and map to OpenRouteService supported languages
     const browserLang = navigator.language.toLowerCase();
     
