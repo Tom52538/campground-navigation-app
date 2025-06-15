@@ -76,8 +76,16 @@ export default function Navigation() {
   
   // Debug logging for position tracking
   useEffect(() => {
-    console.log('Position tracking - isNavigating:', isNavigating, 'livePosition:', livePosition, 'trackingPosition:', trackingPosition);
-  }, [isNavigating, livePosition, trackingPosition]);
+    console.log(`🔍 NAVIGATION DEBUG: Position tracking - isNavigating: ${isNavigating}, useRealGPS: ${useRealGPS}, livePosition:`, livePosition, 'trackingPosition:', trackingPosition);
+    
+    if (isNavigating && !useRealGPS) {
+      console.log(`🔍 NAVIGATION DEBUG: Navigation started with MOCK GPS - position should stay locked to:`, currentPosition);
+    }
+    
+    if (isNavigating && useRealGPS) {
+      console.log(`🔍 NAVIGATION DEBUG: Navigation started with REAL GPS - using live tracking`);
+    }
+  }, [isNavigating, useRealGPS, livePosition, trackingPosition, currentPosition]);
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
