@@ -33,6 +33,7 @@ export const GroundNavigation = ({
   const [offRouteCount, setOffRouteCount] = useState(0);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [gpsUpdateCount, setGpsUpdateCount] = useState(0);
 
   // Language system
   const { currentLanguage } = useLanguage();
@@ -126,12 +127,17 @@ export const GroundNavigation = ({
 
 
 
-  // Update route progress when position changes
+  // Update route progress when position changes - CRITICAL for live navigation
   useEffect(() => {
     if (!currentPosition || !isNavigating) return;
 
     const progress = routeTracker.updatePosition(currentPosition.position);
     setRouteProgress(progress);
+
+    // Update step index if it changed (critical for UI updates)
+    if (progress.currentStep !== currentStepIndex) {
+      setCurrentStepIndex(progress.currentStep);
+    }
 
     // Update off-route status
     if (progress.isOffRoute && !isOffRoute) {
@@ -141,11 +147,24 @@ export const GroundNavigation = ({
       setOffRouteCount(0); // Reset counter when back on route
     }
 
-  }, [currentPosition, isNavigating, routeTracker, isOffRoute]);
+    // Increment GPS update counter for performance monitoring
+    setGpsUpdateCount(prev => prev + 1);
+
+    // Debug logging for testing
+    console.log('Navigation Update:', {
+      step: progress.currentStep,
+      distanceToNext: Math.round(progress.distanceToNext * 1000) + 'm',
+      percentComplete: Math.round(progress.percentComplete) + '%',
+      isOffRoute: progress.isOffRoute,
+      updateCount: gpsUpdateCount + 1
+    });
+
+  }, [currentPosition, isNavigating, routeTracker, isOffRoute, currentStepIndex]);
 
   // Voice announcement timer ref to prevent loops
   const announcementTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastAnnouncementRef = useRef<{ step: number; distance: number; time: number }>({ step: -1, distance: 999, time: 0 });
+  const [lastAnnouncedDistance, setLastAnnouncedDistance] = useState(0);
 
   // Smart voice announcements based on distance
   useEffect(() => {
@@ -399,6 +418,9 @@ export const GroundNavigation = ({
         gpsAccuracy={currentPosition?.accuracy || 0}
         adaptiveInterval={1000}
         isVisible={showPerformanceMonitor}
+        currentSpeed={routeProgress?.currentSpeed || 0}
+        averageSpeed={routeProgress?.averageSpeed || 0}
+        updateCount={gpsUpdateCount}
       />
     </div>
   );

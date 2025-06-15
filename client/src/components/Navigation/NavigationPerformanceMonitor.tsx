@@ -1,189 +1,114 @@
-import { useState, useEffect } from 'react';
-import { Battery, Signal, Clock, Gauge } from 'lucide-react';
-
-interface PerformanceMetrics {
-  batteryLevel?: number;
-  batteryCharging?: boolean;
-  gpsAccuracy: number;
-  gpsSignalStrength: 'poor' | 'fair' | 'good' | 'excellent';
-  updateFrequency: number;
-  memoryUsage?: number;
-}
+import { Battery, Signal, Clock, Gauge, Satellite } from 'lucide-react';
 
 interface NavigationPerformanceMonitorProps {
   gpsAccuracy: number;
   adaptiveInterval: number;
-  isVisible?: boolean;
+  isVisible: boolean;
+  currentSpeed?: number;
+  averageSpeed?: number;
+  updateCount?: number;
 }
 
 export const NavigationPerformanceMonitor = ({ 
   gpsAccuracy, 
   adaptiveInterval, 
-  isVisible = false 
+  isVisible,
+  currentSpeed = 0,
+  averageSpeed = 0,
+  updateCount = 0
 }: NavigationPerformanceMonitorProps) => {
-  const [metrics, setMetrics] = useState<PerformanceMetrics>({
-    gpsAccuracy,
-    gpsSignalStrength: 'good',
-    updateFrequency: adaptiveInterval
-  });
-
-  // GPS signal strength based on accuracy
-  const getGpsSignalStrength = (accuracy: number): PerformanceMetrics['gpsSignalStrength'] => {
-    if (accuracy <= 5) return 'excellent';
-    if (accuracy <= 10) return 'good';
-    if (accuracy <= 20) return 'fair';
-    return 'poor';
-  };
-
-  // Battery monitoring
-  useEffect(() => {
-    const updateBatteryInfo = async () => {
-      if ('getBattery' in navigator) {
-        try {
-          const battery = await (navigator as any).getBattery();
-          setMetrics(prev => ({
-            ...prev,
-            batteryLevel: Math.round(battery.level * 100),
-            batteryCharging: battery.charging
-          }));
-
-          const updateBattery = () => {
-            setMetrics(prev => ({
-              ...prev,
-              batteryLevel: Math.round(battery.level * 100),
-              batteryCharging: battery.charging
-            }));
-          };
-
-          battery.addEventListener('levelchange', updateBattery);
-          battery.addEventListener('chargingchange', updateBattery);
-
-          return () => {
-            battery.removeEventListener('levelchange', updateBattery);
-            battery.removeEventListener('chargingchange', updateBattery);
-          };
-        } catch (error) {
-          console.log('Battery API not available');
-        }
-      }
-    };
-
-    updateBatteryInfo();
-  }, []);
-
-  // Memory usage monitoring
-  useEffect(() => {
-    const updateMemoryUsage = () => {
-      if ('memory' in performance) {
-        const memInfo = (performance as any).memory;
-        const usedMB = Math.round(memInfo.usedJSHeapSize / 1024 / 1024);
-        setMetrics(prev => ({ ...prev, memoryUsage: usedMB }));
-      }
-    };
-
-    updateMemoryUsage();
-    const interval = setInterval(updateMemoryUsage, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update GPS metrics
-  useEffect(() => {
-    setMetrics(prev => ({
-      ...prev,
-      gpsAccuracy,
-      gpsSignalStrength: getGpsSignalStrength(gpsAccuracy),
-      updateFrequency: adaptiveInterval
-    }));
-  }, [gpsAccuracy, adaptiveInterval]);
-
-  const getSignalColor = (strength: PerformanceMetrics['gpsSignalStrength']) => {
-    switch (strength) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'fair': return 'text-yellow-600';
-      case 'poor': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getBatteryColor = (level?: number, charging?: boolean) => {
-    if (charging) return 'text-green-600';
-    if (!level) return 'text-gray-400';
-    if (level > 50) return 'text-green-600';
-    if (level > 20) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
   if (!isVisible) return null;
 
+  const getGpsSignalStrength = (accuracy: number) => {
+    if (accuracy <= 5) return { status: 'excellent', color: 'text-green-400' };
+    if (accuracy <= 10) return { status: 'good', color: 'text-yellow-400' };
+    if (accuracy <= 20) return { status: 'fair', color: 'text-orange-400' };
+    return { status: 'poor', color: 'text-red-400' };
+  };
+
+  const getBatteryOptimization = (interval: number) => {
+    if (interval <= 1000) return { status: 'high-power', color: 'text-red-300' };
+    if (interval <= 2000) return { status: 'balanced', color: 'text-yellow-300' };
+    return { status: 'power-saving', color: 'text-green-300' };
+  };
+
+  const signalStrength = getGpsSignalStrength(gpsAccuracy);
+  const batteryMode = getBatteryOptimization(adaptiveInterval);
+  
   return (
-    <div className="absolute top-4 right-4 z-40">
-      <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 text-white text-xs space-y-2 min-w-[200px]">
-        <div className="text-center font-medium text-white/90 mb-2">
-          Navigation Performance
+    <div className="absolute top-4 right-4 z-50 bg-black/90 backdrop-blur-sm p-3 rounded-lg text-white text-xs space-y-2 min-w-[200px]">
+      <div className="font-bold text-center flex items-center justify-center space-x-1">
+        <Satellite className="w-3 h-3" />
+        <span>Navigation Debug</span>
+      </div>
+      
+      {/* GPS Status */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-1">
+          <Signal className="w-3 h-3" />
+          <span>GPS Signal:</span>
         </div>
+        <span className={signalStrength.color}>
+          {signalStrength.status} (±{gpsAccuracy.toFixed(1)}m)
+        </span>
+      </div>
 
-        {/* GPS Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Signal className={`w-3 h-3 ${getSignalColor(metrics.gpsSignalStrength)}`} />
-            <span>GPS</span>
-          </div>
-          <div className="text-right">
-            <div className={getSignalColor(metrics.gpsSignalStrength)}>
-              {metrics.gpsSignalStrength.toUpperCase()}
-            </div>
-            <div className="text-white/60">±{gpsAccuracy.toFixed(0)}m</div>
-          </div>
+      {/* Update Frequency */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-1">
+          <Clock className="w-3 h-3" />
+          <span>Update Rate:</span>
         </div>
+        <span>{adaptiveInterval}ms</span>
+      </div>
 
-        {/* Update Frequency */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-blue-400" />
-            <span>Update</span>
-          </div>
-          <div className="text-right">
-            <div className="text-blue-400">
-              {(1000 / adaptiveInterval).toFixed(1)}Hz
-            </div>
-            <div className="text-white/60">{adaptiveInterval}ms</div>
-          </div>
+      {/* Battery Optimization */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-1">
+          <Battery className="w-3 h-3" />
+          <span>Power Mode:</span>
         </div>
+        <span className={batteryMode.color}>
+          {batteryMode.status}
+        </span>
+      </div>
 
-        {/* Battery Status */}
-        {metrics.batteryLevel !== undefined && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Battery className={`w-3 h-3 ${getBatteryColor(metrics.batteryLevel, metrics.batteryCharging)}`} />
-              <span>Battery</span>
-            </div>
-            <div className="text-right">
-              <div className={getBatteryColor(metrics.batteryLevel, metrics.batteryCharging)}>
-                {metrics.batteryLevel}%
-                {metrics.batteryCharging && ' ⚡'}
-              </div>
-            </div>
+      {/* Speed Information */}
+      {currentSpeed > 0 && (
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-1">
+            <Gauge className="w-3 h-3" />
+            <span>Speed:</span>
           </div>
-        )}
+          <span className="text-blue-300">
+            {currentSpeed.toFixed(1)} km/h
+          </span>
+        </div>
+      )}
 
-        {/* Memory Usage */}
-        {metrics.memoryUsage && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <Gauge className="w-3 h-3 text-purple-400" />
-              <span>Memory</span>
-            </div>
-            <div className="text-right">
-              <div className="text-purple-400">{metrics.memoryUsage}MB</div>
-            </div>
-          </div>
-        )}
+      {/* Average Speed */}
+      {averageSpeed > 0 && (
+        <div className="flex justify-between items-center">
+          <span>Avg Speed:</span>
+          <span className="text-cyan-300">
+            {averageSpeed.toFixed(1)} km/h
+          </span>
+        </div>
+      )}
 
-        <div className="border-t border-white/20 pt-2 text-center">
-          <div className="text-white/60">
-            Adaptive GPS Tracking Active
-          </div>
+      {/* Update Counter */}
+      <div className="flex justify-between items-center">
+        <span>GPS Updates:</span>
+        <span className="text-gray-300">
+          {updateCount}
+        </span>
+      </div>
+
+      {/* Status Indicators */}
+      <div className="pt-2 border-t border-gray-600">
+        <div className="flex justify-between text-xs">
+          <span className="text-gray-400">System Status:</span>
+          <span className="text-green-400">Active</span>
         </div>
       </div>
     </div>
