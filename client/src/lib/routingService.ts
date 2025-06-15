@@ -4,6 +4,8 @@ export interface RouteRequest {
   format?: 'json' | 'geojson';
   instructions?: boolean;
   geometry?: boolean;
+  language?: string;
+  units?: 'm' | 'km' | 'mi';
 }
 
 export interface RouteResponse {
@@ -37,14 +39,44 @@ export class RoutingService {
     this.apiKey = apiKey;
   }
 
+  private detectUserLanguage(): string {
+    // Detect browser language and map to OpenRouteService supported languages
+    const browserLang = navigator.language.toLowerCase();
+    
+    // OpenRouteService supported languages
+    const supportedLanguages: Record<string, string> = {
+      'de': 'de',      // German
+      'en': 'en',      // English
+      'fr': 'fr',      // French
+      'es': 'es',      // Spanish
+      'it': 'it',      // Italian
+      'nl': 'nl',      // Dutch
+      'pt': 'pt',      // Portuguese
+      'ru': 'ru',      // Russian
+      'zh': 'zh',      // Chinese
+    };
+
+    // Extract language code (e.g., 'de' from 'de-DE')
+    const langCode = browserLang.split('-')[0];
+    
+    console.log(`🗺️ OpenRouteService: Detected browser language: ${browserLang}, using: ${supportedLanguages[langCode] || 'en'}`);
+    
+    return supportedLanguages[langCode] || 'en'; // Default to English
+  }
+
   async getRoute(request: RouteRequest): Promise<RouteResponse> {
     const url = `${this.baseUrl}/directions/${request.profile || 'foot-walking'}`;
+    
+    // Detect user language and use it for OpenRouteService instructions
+    const userLanguage = this.detectUserLanguage();
     
     const body = {
       coordinates: request.coordinates,
       format: request.format || 'json',
       instructions: request.instructions !== false,
       geometry: request.geometry !== false,
+      language: request.language || userLanguage, // Use detected or specified language
+      units: request.units || 'm', // Use metric units by default
     };
 
     const response = await fetch(url, {

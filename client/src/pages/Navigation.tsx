@@ -335,14 +335,9 @@ export default function Navigation() {
             const instruction = currentRoute.instructions[step].instruction;
             setCurrentInstruction(instruction);
             
-            // Enhanced voice announcement with distance and street information
+            // Voice announcement with native German instructions from OpenRouteService
             if (voiceGuideRef.current && voiceEnabled) {
-              const distance = currentRoute.instructions[step].distance || 0;
-              voiceGuideRef.current.announceNavigationUpdate(
-                instruction, 
-                distance / 1000, // Convert to kilometers
-                currentRoute.instructions[step].street_name
-              );
+              voiceGuideRef.current.speak(instruction, 'high');
             }
           }
         },
