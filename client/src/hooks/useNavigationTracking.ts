@@ -25,6 +25,8 @@ export const useNavigationTracking = (
   const [error, setError] = useState<string | null>(null);
   const [isTracking, setIsTracking] = useState(false);
   const [adaptiveInterval, setAdaptiveInterval] = useState<number>(1000);
+  
+  console.log(`🔍 NAV TRACKING DEBUG: useNavigationTracking initialized - isNavigating: ${isNavigating}`);
 
   const {
     enableHighAccuracy = true,
@@ -54,21 +56,32 @@ export const useNavigationTracking = (
   };
 
   useEffect(() => {
+    console.log(`🔍 NAV TRACKING DEBUG: Effect triggered - isNavigating: ${isNavigating}`);
+    
     if (!isNavigating) {
+      console.log(`🔍 NAV TRACKING DEBUG: Not navigating - stopping tracking`);
       setIsTracking(false);
       return;
     }
 
     if (!navigator.geolocation) {
+      console.log(`🔍 NAV TRACKING DEBUG: Geolocation not supported`);
       setError('Geolocation is not supported by this browser');
       return;
     }
 
+    console.log(`🔍 NAV TRACKING DEBUG: Starting GPS watch for navigation`);
     setIsTracking(true);
     setError(null);
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        console.log(`🔍 NAV TRACKING DEBUG: GPS position received during navigation:`, {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
+        
         const navPosition: NavigationPosition = {
           position: {
             lat: position.coords.latitude,
@@ -80,6 +93,7 @@ export const useNavigationTracking = (
           timestamp: position.timestamp
         };
 
+        console.log(`🔍 NAV TRACKING DEBUG: Setting navigation position:`, navPosition);
         setCurrentPosition(navPosition);
         setError(null);
         

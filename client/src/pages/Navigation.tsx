@@ -64,15 +64,15 @@ export default function Navigation() {
   const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);
   
-  // Initialize navigation tracking
-  const { currentPosition: livePosition } = useNavigationTracking(isNavigating, {
+  // Initialize navigation tracking - but only when using real GPS
+  const { currentPosition: livePosition } = useNavigationTracking(isNavigating && useRealGPS, {
     enableHighAccuracy: true,
     updateInterval: 1000,
     adaptiveTracking: true
   });
   
-  // Use live position when navigating, fallback to regular position
-  const trackingPosition = (isNavigating && livePosition) ? livePosition.position : currentPosition;
+  // Use live position only when navigating AND using real GPS, otherwise use mock position
+  const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
   // Debug logging for position tracking
   useEffect(() => {

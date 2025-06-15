@@ -14,15 +14,22 @@ export const useLocation = (props?: UseLocationProps) => {
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
+  
+  // Debug logging for GPS state changes
+  console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
 
   useEffect(() => {
+    console.log(`🔍 GPS DEBUG: Effect triggered - useRealGPS: ${useRealGPS}, currentSite: ${currentSite}, watchId: ${watchId}`);
+    
     // Clear any existing GPS watch when switching modes
     if (watchId !== undefined) {
+      console.log(`🔍 GPS DEBUG: Clearing existing watch ${watchId}`);
       navigator.geolocation?.clearWatch(watchId);
       setWatchId(undefined);
     }
 
     if (useRealGPS) {
+      console.log(`🔍 GPS DEBUG: Starting REAL GPS tracking`);
       // Start continuous GPS tracking
       if ('geolocation' in navigator) {
         const newWatchId = navigator.geolocation.watchPosition(
@@ -31,11 +38,13 @@ export const useLocation = (props?: UseLocationProps) => {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
+            console.log(`🔍 GPS DEBUG: Real GPS position received:`, coords);
             setCurrentPosition(coords);
             console.log('Real GPS position updated:', coords);
           },
           (error) => {
             console.warn('GPS tracking error:', error);
+            console.log(`🔍 GPS DEBUG: Real GPS error, staying with current position`);
             setError('GPS tracking failed');
             // Don't fallback to mock coordinates when in real GPS mode
           },
@@ -45,9 +54,11 @@ export const useLocation = (props?: UseLocationProps) => {
             maximumAge: 5000,
           }
         );
+        console.log(`🔍 GPS DEBUG: Created GPS watch with ID: ${newWatchId}`);
         setWatchId(newWatchId);
       }
     } else {
+      console.log(`🔍 GPS DEBUG: Using MOCK GPS - setting position to:`, mockCoordinates);
       // Use mock position for testing - ensure it stays locked
       setCurrentPosition(mockCoordinates);
       console.log('Locked to mock position:', mockCoordinates);
@@ -57,18 +68,25 @@ export const useLocation = (props?: UseLocationProps) => {
     // Cleanup function
     return () => {
       if (watchId !== undefined) {
+        console.log(`🔍 GPS DEBUG: Cleanup - clearing watch ${watchId}`);
         navigator.geolocation?.clearWatch(watchId);
       }
     };
   }, [useRealGPS, currentSite, mockCoordinates]);
 
   const updatePosition = (position: Coordinates) => {
+    console.log(`🔍 GPS DEBUG: updatePosition called with:`, position, `useRealGPS: ${useRealGPS}`);
+    console.trace('🔍 GPS DEBUG: updatePosition call stack');
+    
     // Only allow position updates if we're in real GPS mode
     // This prevents other components from overriding mock position
     if (useRealGPS) {
+      console.log(`🔍 GPS DEBUG: Allowing position update (Real GPS mode)`);
       setCurrentPosition(position);
     } else {
-      console.log('Position update blocked - using mock GPS mode');
+      console.log(`🔍 GPS DEBUG: BLOCKING position update - using mock GPS mode`);
+      console.log(`🔍 GPS DEBUG: Attempted position:`, position);
+      console.log(`🔍 GPS DEBUG: Keeping mock position:`, mockCoordinates);
     }
   };
 
@@ -116,7 +134,10 @@ export const useLocation = (props?: UseLocationProps) => {
   };
 
   const toggleGPS = () => {
-    setUseRealGPS(!useRealGPS);
+    const newGPSState = !useRealGPS;
+    console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
+    console.trace('🔍 GPS DEBUG: toggleGPS call stack');
+    setUseRealGPS(newGPSState);
   };
 
   return {
