@@ -273,24 +273,58 @@ export const GroundNavigation = ({
 
   return (
     <div className="absolute top-20 left-4 right-4 z-30">
-      <div className="glass-panel p-4">
+      <div 
+        className="p-4 rounded-2xl border"
+        style={{
+          background: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(40px) saturate(200%) brightness(1.1)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 8px 32px rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          WebkitBackdropFilter: 'blur(40px) saturate(200%) brightness(1.1)'
+        }}
+      >
         {/* Primary Instruction with Icon */}
         <div className="flex items-center gap-4 mb-4">
-          <div className="bg-blue-600 text-white rounded-lg p-3 flex-shrink-0">
+          <div 
+            className="text-white rounded-lg p-3 flex-shrink-0"
+            style={{
+              background: 'rgba(59, 130, 246, 0.8)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
             <Navigation className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">
+            <h2 
+              className="text-xl font-bold leading-tight"
+              style={{
+                color: '#1f2937',
+                textShadow: '0 1px 3px rgba(255, 255, 255, 0.8)'
+              }}
+            >
               {translateInstruction(currentInstruction.instruction, currentLanguage)}
             </h2>
-            <p className="text-lg text-gray-700 font-medium">
+            <p 
+              className="text-lg font-medium"
+              style={{
+                color: '#374151',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.6)'
+              }}
+            >
               {routeProgress ? formatDistance(routeProgress.distanceToNext) : currentInstruction.distance}
             </p>
           </div>
           {isOffRoute && (
-            <div className="flex items-center space-x-1 text-red-600 bg-red-50 px-2 py-1 rounded-lg">
+            <div 
+              className="flex items-center space-x-1 px-2 py-1 rounded-lg"
+              style={{
+                background: 'rgba(239, 68, 68, 0.8)',
+                color: '#ffffff',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
               <AlertTriangle className="w-4 h-4" />
-              <span className="text-xs font-medium">Off Route</span>
+              <span className="text-xs font-medium">{getTranslation(currentLanguage, 'navigation.offRoute')}</span>
             </div>
           )}
         </div>
@@ -326,14 +360,26 @@ export const GroundNavigation = ({
           <div className="flex items-center space-x-3">
             <button
               onClick={toggleVoice}
-              className="glass-button p-3 flex items-center space-x-2"
+              className="p-3 rounded-full transition-all duration-200"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+              }}
             >
               {voiceEnabled ? <Volume2 className="w-5 h-5 text-blue-600" /> : <VolumeX className="w-5 h-5 text-gray-500" />}
             </button>
             
             <button
               onClick={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
-              className="glass-button p-3"
+              className="p-3 rounded-full transition-all duration-200"
+              style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+              }}
             >
               <Settings className="w-5 h-5 text-gray-600" />
             </button>
@@ -341,10 +387,16 @@ export const GroundNavigation = ({
 
           <button
             onClick={handleEndNavigation}
-            className="bg-red-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-xl font-medium hover:bg-red-600/80 transition-all duration-200 flex items-center space-x-2"
+            className="px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2"
+            style={{
+              background: 'rgba(239, 68, 68, 0.7)',
+              backdropFilter: 'blur(20px)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}
           >
             <Square className="w-4 h-4" />
-            <span>End</span>
+            <span>{getTranslation(currentLanguage, 'navigation.end')}</span>
           </button>
         </div>
       </div>

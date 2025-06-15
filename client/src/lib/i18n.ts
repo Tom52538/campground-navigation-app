@@ -326,7 +326,8 @@ export const translations = {
       headWestOn: 'Richtung Westen auf',
       turnLeftOn: 'Links abbiegen auf',
       turnRightOn: 'Rechts abbiegen auf',
-      continueOn: 'Weiter auf'
+      continueOn: 'Weiter auf',
+      end: 'Beenden'
     },
     categories: {
       'campsites': 'Campingplätze',

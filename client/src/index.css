@@ -4,15 +4,35 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg;
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(60px) saturate(300%) brightness(1.2) !important;
+    -webkit-backdrop-filter: blur(60px) saturate(300%) brightness(1.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.03) !important;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
   }
 
   .glass-button {
-    @apply bg-white/60 backdrop-blur-sm border border-white/20 rounded-full shadow-md hover:bg-white/80 transition-all duration-200;
+    background: rgba(255, 255, 255, 0.01) !important;
+    backdrop-filter: blur(40px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.02) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    border-radius: 50% !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.03) !important;
+    transform: scale(1.05) !important;
   }
 
   .glass-compact {
-    @apply bg-white/80 backdrop-blur-lg border border-white/30 rounded-xl shadow-md;
+    background: rgba(255, 255, 255, 0.01) !important;
+    backdrop-filter: blur(80px) saturate(400%) !important;
+    -webkit-backdrop-filter: blur(80px) saturate(400%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.02) !important;
+    border-radius: 16px !important;
   }
 }
 

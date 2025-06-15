@@ -24,23 +24,26 @@ export const TransparentPOIOverlay = ({ poi, onNavigate, onClose }: TransparentP
       }}
     >
       <div style={{
-        background: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        borderRadius: '16px',
+        background: 'rgba(255, 255, 255, 0.02)',
+        backdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+        WebkitBackdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+        border: '1px solid rgba(255, 255, 255, 0.03)',
+        borderRadius: '20px',
         padding: '16px',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
+        boxShadow: '0 8px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
       }}>
         {/* Close button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110"
           style={{
-            background: 'rgba(0, 0, 0, 0.1)',
-            backdropFilter: 'blur(4px)'
+            background: 'rgba(255, 255, 255, 0.01)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            border: '1px solid rgba(255, 255, 255, 0.02)'
           }}
         >
-          <span className="text-sm text-gray-600">×</span>
+          <span className="text-sm" style={{ color: '#666666', textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)' }}>×</span>
         </button>
 
         {/* POI Header */}
