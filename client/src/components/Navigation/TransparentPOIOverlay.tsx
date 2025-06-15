@@ -110,14 +110,15 @@ export const TransparentPOIOverlay = ({ poi, onNavigate, onClose }: TransparentP
           onClick={handleNavigate}
           className="w-full h-12 rounded-xl font-semibold transition-all duration-200 hover:scale-105 active:scale-95"
           style={{
-            background: 'rgba(34, 197, 94, 0.9)',
+            background: 'rgba(34, 197, 94, 0.7)',
+            backdropFilter: 'blur(20px) saturate(150%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             color: '#ffffff',
-            border: 'none',
-            backdropFilter: 'blur(4px)',
-            boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+            boxShadow: '0 4px 16px rgba(34, 197, 94, 0.2)'
           }}
         >
-          🧭 Navigate Here
+          🧭 Hier navigieren
         </button>
       </div>
     </div>

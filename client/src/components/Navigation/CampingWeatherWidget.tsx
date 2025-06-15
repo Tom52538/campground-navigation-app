@@ -55,10 +55,11 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       <div 
         className="absolute bottom-4 right-4 z-20 p-3 rounded-xl min-w-[120px] animate-pulse"
         style={{
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+          background: 'rgba(255, 255, 255, 0.02)',
+          backdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+          WebkitBackdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+          border: '1px solid rgba(255, 255, 255, 0.03)',
+          boxShadow: '0 8px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
         }}
       >
         <div className="h-8 bg-gray-200/50 rounded mb-2"></div>
@@ -76,10 +77,11 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
     <div 
       className="absolute bottom-4 right-4 z-20 p-3 rounded-xl min-w-[120px] max-w-[160px]"
       style={{
-        background: 'rgba(255, 255, 255, 0.85)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+        background: 'rgba(255, 255, 255, 0.02)',
+        backdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+        WebkitBackdropFilter: 'blur(60px) saturate(300%) brightness(1.2)',
+        border: '1px solid rgba(255, 255, 255, 0.03)',
+        boxShadow: '0 8px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
         minHeight: '80px'
       }}
     >
