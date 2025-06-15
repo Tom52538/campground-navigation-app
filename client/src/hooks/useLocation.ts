@@ -16,6 +16,12 @@ export const useLocation = (props?: UseLocationProps) => {
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
+    // Clear any existing GPS watch when switching modes
+    if (watchId !== undefined) {
+      navigator.geolocation?.clearWatch(watchId);
+      setWatchId(undefined);
+    }
+
     if (useRealGPS) {
       // Start continuous GPS tracking
       if ('geolocation' in navigator) {
@@ -31,7 +37,7 @@ export const useLocation = (props?: UseLocationProps) => {
           (error) => {
             console.warn('GPS tracking error:', error);
             setError('GPS tracking failed');
-            setCurrentPosition(mockCoordinates);
+            // Don't fallback to mock coordinates when in real GPS mode
           },
           {
             enableHighAccuracy: true,
@@ -40,24 +46,42 @@ export const useLocation = (props?: UseLocationProps) => {
           }
         );
         setWatchId(newWatchId);
-
-        return () => {
-          navigator.geolocation?.clearWatch(newWatchId);
-        };
       }
     } else {
-      // Use mock position for testing
+      // Use mock position for testing - ensure it stays locked
       setCurrentPosition(mockCoordinates);
-      console.log('Using mock position:', mockCoordinates);
+      console.log('Locked to mock position:', mockCoordinates);
+      setError(null); // Clear any GPS errors when using mock
     }
-  }, [useRealGPS, currentSite]);
+
+    // Cleanup function
+    return () => {
+      if (watchId !== undefined) {
+        navigator.geolocation?.clearWatch(watchId);
+      }
+    };
+  }, [useRealGPS, currentSite, mockCoordinates]);
 
   const updatePosition = (position: Coordinates) => {
-    setCurrentPosition(position);
+    // Only allow position updates if we're in real GPS mode
+    // This prevents other components from overriding mock position
+    if (useRealGPS) {
+      setCurrentPosition(position);
+    } else {
+      console.log('Position update blocked - using mock GPS mode');
+    }
   };
 
   const getCurrentPosition = (): Promise<Coordinates> => {
     return new Promise((resolve, reject) => {
+      // If using mock GPS, return mock coordinates immediately
+      if (!useRealGPS) {
+        console.log('getCurrentPosition: Using mock coordinates');
+        resolve(mockCoordinates);
+        return;
+      }
+
+      // Only use real GPS when explicitly enabled
       if (!('geolocation' in navigator)) {
         reject(new Error('Geolocation not supported'));
         return;
@@ -77,11 +101,10 @@ export const useLocation = (props?: UseLocationProps) => {
           resolve(coords);
         },
         (error) => {
-          console.warn('Geolocation error, using mock position:', error);
-          // Fallback to current site mock position
-          setCurrentPosition(mockCoordinates);
+          console.warn('Geolocation error:', error);
+          setError('GPS access failed');
           setIsLoading(false);
-          resolve(mockCoordinates);
+          reject(error);
         },
         {
           enableHighAccuracy: true,
