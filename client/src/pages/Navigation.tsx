@@ -61,7 +61,7 @@ export default function Navigation() {
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
   const routeTrackerRef = useRef<RouteTracker | null>(null);
   const [currentInstruction, setCurrentInstruction] = useState<string>('');
-  const [nextDistance, setNextDistance] = useState<number>(0);
+  const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);
   
   // Initialize navigation tracking
@@ -282,6 +282,86 @@ export default function Navigation() {
     });
   }, []);
 
+  // Initialize voice guide when component mounts
+  useEffect(() => {
+    if (!voiceGuideRef.current) {
+      voiceGuideRef.current = new VoiceGuide();
+    }
+  }, []);
+
+  // Update voice enabled state
+  useEffect(() => {
+    if (voiceGuideRef.current) {
+      if (voiceEnabled) {
+        voiceGuideRef.current.enable();
+      } else {
+        voiceGuideRef.current.disable();
+      }
+    }
+  }, [voiceEnabled]);
+
+  // Navigation tracking - Initialize route tracker when navigation starts
+  useEffect(() => {
+    if (isNavigating && currentRoute && trackingPosition) {
+      console.log('Initializing route tracker for navigation');
+      
+      routeTrackerRef.current = new RouteTracker(
+        currentRoute,
+        (step) => {
+          // Update current instruction when step changes
+          if (currentRoute.instructions[step]) {
+            setCurrentInstruction(currentRoute.instructions[step].instruction);
+            
+            // Voice announcement for new instruction
+            if (voiceGuideRef.current && voiceEnabled) {
+              voiceGuideRef.current.speak(currentRoute.instructions[step].instruction, 'high');
+            }
+          }
+        },
+        () => {
+          // Navigation completed
+          console.log('Navigation completed');
+          if (voiceGuideRef.current && voiceEnabled) {
+            voiceGuideRef.current.speak('Sie haben Ihr Ziel erreicht', 'high');
+          }
+          handleEndNavigation();
+        },
+        (distance) => {
+          // Off route detection
+          console.log('Off route detected, distance:', distance);
+          if (voiceGuideRef.current && voiceEnabled) {
+            voiceGuideRef.current.speak('Route wird neu berechnet', 'medium');
+          }
+        }
+      );
+
+      // Set initial instruction
+      if (currentRoute.instructions.length > 0) {
+        setCurrentInstruction(currentRoute.instructions[0].instruction);
+        setNextDistance(currentRoute.instructions[0].distance);
+      }
+    }
+
+    return () => {
+      if (routeTrackerRef.current) {
+        routeTrackerRef.current.reset();
+        routeTrackerRef.current = null;
+      }
+    };
+  }, [isNavigating, currentRoute, voiceEnabled, handleEndNavigation]);
+
+  // Live position tracking during navigation
+  useEffect(() => {
+    if (isNavigating && routeTrackerRef.current && trackingPosition) {
+      const progress = routeTrackerRef.current.updatePosition(trackingPosition);
+      setRouteProgress(progress);
+      setNextDistance(formatDistance(progress.distanceToNext));
+      
+      // Update map center to follow user during navigation
+      setMapCenter(trackingPosition);
+    }
+  }, [isNavigating, trackingPosition]);
+
   if (poisLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-gray-50">
@@ -359,7 +439,7 @@ export default function Navigation() {
           {/* Top: Current Maneuver */}
           <TopManeuverPanel
             instruction={currentInstruction || currentRoute.instructions[0].instruction}
-            distance={nextDistance || currentRoute.instructions[0].distance}
+            distance={typeof nextDistance === 'number' ? formatDistance(nextDistance / 1000) : (nextDistance || currentRoute.instructions[0].distance)}
           />
 
           {/* Floating Voice Controls */}
