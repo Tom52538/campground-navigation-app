@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
@@ -15,11 +15,14 @@ import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
 import { useWeather } from '@/hooks/useWeather';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
 import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
+import { VoiceGuide } from '@/lib/voiceGuide';
+import { RouteTracker } from '@/lib/routeTracker';
 
 export default function Navigation() {
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
@@ -53,6 +56,23 @@ export default function Navigation() {
   // Voice control state
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  
+  // Navigation tracking state
+  const voiceGuideRef = useRef<VoiceGuide | null>(null);
+  const routeTrackerRef = useRef<RouteTracker | null>(null);
+  const [currentInstruction, setCurrentInstruction] = useState<string>('');
+  const [nextDistance, setNextDistance] = useState<number>(0);
+  const [routeProgress, setRouteProgress] = useState<any>(null);
+  
+  // Initialize navigation tracking
+  const { currentPosition: livePosition } = useNavigationTracking(isNavigating, {
+    enableHighAccuracy: true,
+    updateInterval: 1000,
+    adaptiveTracking: true
+  });
+  
+  // Use live position when navigating, fallback to regular position
+  const trackingPosition = (isNavigating && livePosition) ? livePosition.position : currentPosition;
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -74,8 +94,10 @@ export default function Navigation() {
   // Add distance to POIs
   const poisWithDistance = displayPOIs.map(poi => ({
     ...poi,
-    distance: formatDistance(calculateDistance(currentPosition, poi.coordinates))
+    distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
   }));
+
+
 
 
 
@@ -167,8 +189,13 @@ export default function Navigation() {
     setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
-    // Toast removed - user can see route cleared visually
-  }, [toast]);
+    
+    // Clean up navigation tracking
+    if (routeTrackerRef.current) {
+      routeTrackerRef.current.reset();
+      routeTrackerRef.current = null;
+    }
+  }, []);
 
 
 
@@ -331,8 +358,8 @@ export default function Navigation() {
         <>
           {/* Top: Current Maneuver */}
           <TopManeuverPanel
-            instruction={currentRoute.instructions[0].instruction}
-            distance={currentRoute.instructions[0].distance}
+            instruction={currentInstruction || currentRoute.instructions[0].instruction}
+            distance={nextDistance || currentRoute.instructions[0].distance}
           />
 
           {/* Floating Voice Controls */}
