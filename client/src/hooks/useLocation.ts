@@ -13,14 +13,44 @@ export const useLocation = (props?: UseLocationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
+  const [watchId, setWatchId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (useRealGPS) {
-      getCurrentPosition();
+      // Start continuous GPS tracking
+      if ('geolocation' in navigator) {
+        const newWatchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const coords: Coordinates = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            setCurrentPosition(coords);
+            console.log('Real GPS position updated:', coords);
+          },
+          (error) => {
+            console.warn('GPS tracking error:', error);
+            setError('GPS tracking failed');
+            setCurrentPosition(mockCoordinates);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 5000,
+          }
+        );
+        setWatchId(newWatchId);
+
+        return () => {
+          navigator.geolocation?.clearWatch(newWatchId);
+        };
+      }
     } else {
+      // Use mock position for testing
       setCurrentPosition(mockCoordinates);
+      console.log('Using mock position:', mockCoordinates);
     }
-  }, [useRealGPS, currentSite, mockCoordinates]);
+  }, [useRealGPS, currentSite]);
 
   const updatePosition = (position: Coordinates) => {
     setCurrentPosition(position);

@@ -73,6 +73,11 @@ export default function Navigation() {
   
   // Use live position when navigating, fallback to regular position
   const trackingPosition = (isNavigating && livePosition) ? livePosition.position : currentPosition;
+  
+  // Debug logging for position tracking
+  useEffect(() => {
+    console.log('Position tracking - isNavigating:', isNavigating, 'livePosition:', livePosition, 'trackingPosition:', trackingPosition);
+  }, [isNavigating, livePosition, trackingPosition]);
 
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
@@ -379,7 +384,7 @@ export default function Navigation() {
       <MapContainerComponent
         center={mapCenter}
         zoom={mapZoom}
-        currentPosition={currentPosition}
+        currentPosition={trackingPosition}
         pois={poisWithDistance}
         selectedPOI={selectedPOI}
         route={currentRoute}
