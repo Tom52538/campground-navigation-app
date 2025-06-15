@@ -315,44 +315,7 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
       />
 
-      {/* GPS Testing Controls - Top Right Corner */}
-      <div className="absolute top-4 right-4 z-40 flex flex-col gap-2">
-        <Button
-          onClick={() => !useRealGPS && toggleGPS()}
-          disabled={useRealGPS}
-          className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-            useRealGPS 
-              ? 'bg-green-600 text-white shadow-lg' 
-              : 'bg-white/10 text-gray-600 hover:bg-white/20'
-          }`}
-          style={{
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: useRealGPS ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
-            minWidth: '80px'
-          }}
-        >
-          Real GPS
-        </Button>
-        
-        <Button
-          onClick={() => useRealGPS && toggleGPS()}
-          disabled={!useRealGPS}
-          className={`px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
-            !useRealGPS 
-              ? 'bg-blue-600 text-white shadow-lg' 
-              : 'bg-white/10 text-gray-600 hover:bg-white/20'
-          }`}
-          style={{
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: !useRealGPS ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)',
-            minWidth: '80px'
-          }}
-        >
-          Mock GPS
-        </Button>
-      </div>
+
 
       {/* POI Info Overlay - Positioned below button rows */}
       {selectedPOI && (
