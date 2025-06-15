@@ -62,6 +62,7 @@ export class VoiceGuide {
 
   setLanguage(language: SupportedLanguage) {
     this.currentLanguage = language;
+    console.log(`🔄 Voice language changed to: ${language}`);
     this.initializeVoices();
   }
 
