@@ -629,30 +629,64 @@ export const getTranslation = (lang: SupportedLanguage, key: string): string => 
 // Function to translate routing instructions from English to German
 export const translateInstruction = (instruction: string, lang: SupportedLanguage): string => {
   if (lang === 'en') return instruction;
+  if (lang !== 'de') return instruction; // Only German translation implemented
   
-  const lowerInstruction = instruction.toLowerCase();
-  
-  // German translation mappings
+  // German translation mappings - ordered by specificity (longer phrases first)
   const translations: Record<string, string> = {
-    'head north': 'Richtung Norden',
-    'head south': 'Richtung Süden', 
-    'head east': 'Richtung Osten',
-    'head west': 'Richtung Westen',
-    'turn left': 'Links abbiegen',
-    'turn right': 'Rechts abbiegen',
-    'continue straight': 'Geradeaus weiter',
-    'arrive at': 'Ankunft bei',
-    'distance:': 'Entfernung:',
-    'duration:': 'Dauer:',
-    'approaching turn in': 'Abbiegen in',
-    'next:': 'Nächste:',
-    ' on ': ' auf '
+    // Roundabout instructions
+    'Enter the roundabout and take the 1st exit': 'In den Kreisverkehr einfahren und die 1. Ausfahrt nehmen',
+    'Enter the roundabout and take the 2nd exit': 'In den Kreisverkehr einfahren und die 2. Ausfahrt nehmen',
+    'Enter the roundabout and take the 3rd exit': 'In den Kreisverkehr einfahren und die 3. Ausfahrt nehmen',
+    'Enter the roundabout and take the 4th exit': 'In den Kreisverkehr einfahren und die 4. Ausfahrt nehmen',
+    'Enter the roundabout and take the 5th exit': 'In den Kreisverkehr einfahren und die 5. Ausfahrt nehmen',
+    'take the 1st exit': 'die 1. Ausfahrt nehmen',
+    'take the 2nd exit': 'die 2. Ausfahrt nehmen',
+    'take the 3rd exit': 'die 3. Ausfahrt nehmen',
+    'take the 4th exit': 'die 4. Ausfahrt nehmen',
+    'take the 5th exit': 'die 5. Ausfahrt nehmen',
+    'Enter the roundabout': 'In den Kreisverkehr einfahren',
+    
+    // Basic directions
+    'Turn left': 'Links abbiegen',
+    'Turn right': 'Rechts abbiegen',
+    'Turn slight left': 'Leicht links abbiegen',
+    'Turn slight right': 'Leicht rechts abbiegen',
+    'Turn sharp left': 'Scharf links abbiegen',
+    'Turn sharp right': 'Scharf rechts abbiegen',
+    'Continue straight': 'Geradeaus weiterfahren',
+    'Continue ahead': 'Geradeaus weiterfahren',
+    'Keep left': 'Links halten',
+    'Keep right': 'Rechts halten',
+    
+    // Directions and prepositions
+    'Head north': 'Richtung Norden fahren',
+    'Head south': 'Richtung Süden fahren',
+    'Head east': 'Richtung Osten fahren',
+    'Head west': 'Richtung Westen fahren',
+    'Head towards': 'Fahren Sie Richtung',
+    'onto': 'auf',
+    'on': 'auf',
+    'towards': 'Richtung',
+    
+    // Arrival
+    'Arrive at your destination': 'Sie haben Ihr Ziel erreicht',
+    'You have arrived': 'Sie sind angekommen',
+    'at your destination': 'an Ihrem Ziel',
+    
+    // Common words
+    'and': 'und',
+    'the': 'die',
+    'exit': 'Ausfahrt'
   };
   
   let translatedInstruction = instruction;
   
-  for (const [english, german] of Object.entries(translations)) {
-    const regex = new RegExp(english, 'gi');
+  // Apply translations in order of specificity (longest phrases first)
+  const sortedTranslations = Object.entries(translations)
+    .sort(([a], [b]) => b.length - a.length);
+  
+  for (const [english, german] of sortedTranslations) {
+    const regex = new RegExp(english.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     translatedInstruction = translatedInstruction.replace(regex, german);
   }
   
