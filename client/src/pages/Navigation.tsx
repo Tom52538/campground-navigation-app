@@ -327,6 +327,41 @@ export default function Navigation() {
             instruction={currentRoute.instructions[0].instruction}
             distance={currentRoute.instructions[0].distance}
           />
+
+          {/* Floating Voice Controls */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setVoiceEnabled(!voiceEnabled)}
+            className="absolute z-30 right-4 w-12 h-12 rounded-full"
+            style={{ 
+              top: '120px',
+              background: 'rgba(255, 255, 255, 0.01)',
+              backdropFilter: 'blur(40px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+              border: '1px solid rgba(255, 255, 255, 0.02)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            {voiceEnabled ? <Volume2 className="w-6 h-6 text-blue-600" /> : <VolumeX className="w-6 h-6 text-gray-500" />}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowSettings(!showSettings)}
+            className="absolute z-30 right-4 w-12 h-12 rounded-full"
+            style={{ 
+              top: '180px',
+              background: 'rgba(255, 255, 255, 0.01)',
+              backdropFilter: 'blur(40px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+              border: '1px solid rgba(255, 255, 255, 0.02)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+          </Button>
           
           {/* Bottom: Trip Summary */}
           <BottomSummaryPanel

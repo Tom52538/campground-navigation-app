@@ -91,6 +91,14 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Changelog
 
+- June 15, 2025. **UI/UX REDESIGN COMPLETION**: Implemented Google Maps-inspired decomposed navigation interface:
+  - Replaced single bulky navigation panel with minimal, purpose-built components
+  - TopManeuverPanel: Shows immediate next instruction with solid blue background for readability
+  - BottomSummaryPanel: Displays trip summary at bottom with translucent glass background  
+  - Floating Controls: Voice and settings as small circular buttons with ultra-transparent glass design
+  - Enhanced German localization throughout navigation interface
+  - Reduced visual clutter while maintaining full functionality
+
 - June 14, 2025. **PROJECT COMPLETION**: Successfully implemented complete professional camping navigation app with all planned features:
   
   **Phase 1 ✅ COMPLETED - Core Live Navigation:**
