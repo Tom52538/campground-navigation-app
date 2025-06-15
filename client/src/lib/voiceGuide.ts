@@ -1,4 +1,5 @@
 import { detectBrowserLanguage, voiceInstructions, SupportedLanguage } from './i18n';
+import { detectUserLanguage } from './languageDetection';
 
 export class VoiceGuide {
   private synthesis: SpeechSynthesis;
@@ -9,10 +10,24 @@ export class VoiceGuide {
   private currentLanguage: SupportedLanguage;
   private announcementQueue: Array<{text: string, priority: 'low' | 'medium' | 'high'}> = [];
   private isSpeaking: boolean = false;
+  private voiceLanguageMap: { [key: string]: string } = {
+    'de': 'de-DE',    // German (Germany)
+    'en': 'en-US',    // English (US)
+    'fr': 'fr-FR',    // French (France)
+    'es': 'es-ES',    // Spanish (Spain)
+    'it': 'it-IT',    // Italian (Italy)
+    'nl': 'nl-NL',    // Dutch (Netherlands)
+    'pt': 'pt-PT',    // Portuguese (Portugal)
+    'pl': 'pl-PL',    // Polish (Poland)
+    'ru': 'ru-RU',    // Russian (Russia)
+    'cs': 'cs-CZ',    // Czech (Czech Republic)
+    'hu': 'hu-HU'     // Hungarian (Hungary)
+  };
 
   constructor() {
     this.synthesis = window.speechSynthesis;
-    this.currentLanguage = detectBrowserLanguage();
+    this.currentLanguage = detectUserLanguage() as SupportedLanguage;
+    console.log(`🎙️ Voice guidance language: ${this.currentLanguage}`);
     this.initializeVoices();
   }
 
@@ -90,15 +105,10 @@ export class VoiceGuide {
   }
 
   private getLanguageCode(): string {
-    const languageMap: Record<SupportedLanguage, string> = {
-      en: 'en-US',
-      de: 'de-DE',
-      fr: 'fr-FR',
-      nl: 'nl-NL',
-      it: 'it-IT',
-      es: 'es-ES'
-    };
-    return languageMap[this.currentLanguage] || 'en-US';
+    // Use the enhanced voice language mapping
+    const speechLang = this.voiceLanguageMap[this.currentLanguage] || 'en-US';
+    console.log(`🗣️ Speech synthesis language: ${speechLang} for ${this.currentLanguage}`);
+    return speechLang;
   }
 
   enable() {
@@ -189,6 +199,10 @@ export class VoiceGuide {
     } else { // <20m
       this.speak(instruction, 'high');
     }
+  }
+
+  getCurrentLanguage(): SupportedLanguage {
+    return this.currentLanguage;
   }
 
   announceNavigationStart(firstInstruction: string) {

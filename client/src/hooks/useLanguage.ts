@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { SupportedLanguage, detectBrowserLanguage, getTranslation } from '@/lib/i18n';
+import { detectUserLanguage, logLanguageDetection } from '@/lib/languageDetection';
 
 export const useLanguage = () => {
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(() => {
-    // Always check browser language first to handle smartphone language changes
-    const detectedLanguage = detectBrowserLanguage();
+    // Use enhanced language detection for better smartphone compatibility
+    const detectedLanguage = detectUserLanguage() as SupportedLanguage;
     const stored = localStorage.getItem('campground-language') as SupportedLanguage;
+    
+    // Log detection for debugging
+    logLanguageDetection();
     
     // If browser language differs from stored, use browser language (smartphone changed)
     if (stored && stored !== detectedLanguage) {
@@ -25,9 +29,9 @@ export const useLanguage = () => {
   // Force language refresh on component mount to detect smartphone language changes
   useEffect(() => {
     const refreshLanguage = () => {
-      const detectedLanguage = detectBrowserLanguage();
+      const detectedLanguage = detectUserLanguage() as SupportedLanguage;
       if (detectedLanguage !== currentLanguage) {
-        console.log(`Smartphone language detected: ${detectedLanguage}, switching from ${currentLanguage}`);
+        console.log(`🌐 Smartphone language detected: ${detectedLanguage}, switching from ${currentLanguage}`);
         setCurrentLanguage(detectedLanguage);
       }
     };
