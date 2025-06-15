@@ -332,11 +332,17 @@ export default function Navigation() {
         (step) => {
           // Update current instruction when step changes
           if (currentRoute.instructions[step]) {
-            setCurrentInstruction(currentRoute.instructions[step].instruction);
+            const instruction = currentRoute.instructions[step].instruction;
+            setCurrentInstruction(instruction);
             
-            // Voice announcement for new instruction
+            // Enhanced voice announcement with distance and street information
             if (voiceGuideRef.current && voiceEnabled) {
-              voiceGuideRef.current.speak(currentRoute.instructions[step].instruction, 'high');
+              const distance = currentRoute.instructions[step].distance || 0;
+              voiceGuideRef.current.announceNavigationUpdate(
+                instruction, 
+                distance / 1000, // Convert to kilometers
+                currentRoute.instructions[step].street_name
+              );
             }
           }
         },

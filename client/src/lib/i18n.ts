@@ -658,12 +658,21 @@ export const translateInstruction = (instruction: string, lang: SupportedLanguag
     'Keep left': 'Links halten',
     'Keep right': 'Rechts halten',
     
-    // Directions and prepositions
+    // Directions and prepositions - Fix confusing combinations
     'Head north': 'Richtung Norden fahren',
-    'Head south': 'Richtung Süden fahren',
+    'Head south': 'Richtung Süden fahren', 
     'Head east': 'Richtung Osten fahren',
     'Head west': 'Richtung Westen fahren',
+    'Head northeast': 'Richtung Nordosten fahren',
+    'Head northwest': 'Richtung Nordwesten fahren',
+    'Head southeast': 'Richtung Südosten fahren',
+    'Head southwest': 'Richtung Südwesten fahren',
     'Head towards': 'Fahren Sie Richtung',
+    // Fix problematic combinations that create confusion
+    'fahrenwest': 'fahren',
+    'fahreneast': 'fahren',
+    'fahrennorth': 'fahren',
+    'fahrensouth': 'fahren',
     'onto': 'auf',
     'on': 'auf',
     'towards': 'Richtung',
@@ -689,6 +698,18 @@ export const translateInstruction = (instruction: string, lang: SupportedLanguag
     const regex = new RegExp(english.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
     translatedInstruction = translatedInstruction.replace(regex, german);
   }
+  
+  // Post-processing: Fix problematic word combinations that create confusion
+  translatedInstruction = translatedInstruction
+    .replace(/fahrenwest/gi, 'fahren')
+    .replace(/fahreneast/gi, 'fahren')
+    .replace(/fahrennorth/gi, 'fahren')
+    .replace(/fahrensouth/gi, 'fahren')
+    .replace(/Richtung\s+(\w+)\s+fahren(\w+)/gi, 'Richtung $1 fahren')
+    .replace(/fahren\s+west/gi, 'Richtung Westen fahren')
+    .replace(/fahren\s+east/gi, 'Richtung Osten fahren')
+    .replace(/fahren\s+north/gi, 'Richtung Norden fahren')
+    .replace(/fahren\s+south/gi, 'Richtung Süden fahren');
   
   return translatedInstruction;
 };

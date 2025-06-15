@@ -233,13 +233,45 @@ export class VoiceGuide {
   }
 
   announceInstruction(instruction: string, distance: number) {
-    if (distance > 0.1) { // >100m
-      this.speak(`In ${Math.round(distance * 1000)} meters, ${instruction}`);
-    } else if (distance > 0.02) { // 20-100m
-      this.speak(`${instruction} ahead`, 'high');
+    // Enhanced German voice announcements with proper distance announcements
+    if (distance > 0.2) { // >200m
+      this.speak(`In ${Math.round(distance * 1000)} Metern: ${instruction}`, 'medium');
+    } else if (distance > 0.1) { // 100-200m
+      this.speak(`In ${Math.round(distance * 1000)} Metern: ${instruction}`, 'medium');
+    } else if (distance > 0.05) { // 50-100m
+      this.speak(`In ${Math.round(distance * 1000)} Metern: ${instruction}`, 'high');
+    } else if (distance > 0.02) { // 20-50m
+      this.speak(`Gleich: ${instruction}`, 'high');
     } else { // <20m
       this.speak(instruction, 'high');
     }
+  }
+
+  // Enhanced method for comprehensive navigation announcements
+  announceNavigationUpdate(instruction: string, distance: number, streetName?: string) {
+    let announcement = '';
+    
+    if (distance > 0.1) { // >100m
+      announcement = `In ${Math.round(distance * 1000)} Metern: ${instruction}`;
+      if (streetName) {
+        announcement += ` auf ${streetName}`;
+      }
+    } else if (distance > 0.02) { // 20-100m
+      announcement = `Gleich: ${instruction}`;
+    } else { // <20m
+      announcement = instruction;
+    }
+    
+    this.speak(announcement, distance > 0.05 ? 'medium' : 'high');
+  }
+
+  // Method for route progress announcements
+  announceRouteProgress(remainingDistance: number, estimatedTime: string) {
+    const distanceText = remainingDistance > 1 
+      ? `${Math.round(remainingDistance * 10) / 10} Kilometer` 
+      : `${Math.round(remainingDistance * 1000)} Meter`;
+    
+    this.speak(`Noch ${distanceText} bis zum Ziel. Geschätzte Ankunftszeit: ${estimatedTime}`, 'low');
   }
 
   getCurrentLanguage(): SupportedLanguage {
