@@ -19,34 +19,42 @@ export const useLocation = (props?: UseLocationProps) => {
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
 
   useEffect(() => {
-    console.log(`🔍 GPS DEBUG: Effect triggered - useRealGPS: ${useRealGPS}, currentSite: ${currentSite}, watchId: ${watchId}`);
+    console.log(`🔍 GPS DEBUG: Effect triggered - useRealGPS: ${useRealGPS}, currentSite: ${currentSite}`);
     
-    // Clear any existing GPS watch when switching modes
+    // Clear existing GPS watch safely
     if (watchId !== undefined) {
-      console.log(`🔍 GPS DEBUG: Clearing existing watch ${watchId}`);
-      navigator.geolocation?.clearWatch(watchId);
+      try {
+        if (navigator.geolocation) {
+          navigator.geolocation.clearWatch(watchId);
+          console.log(`🔍 GPS DEBUG: Cleared watch ${watchId}`);
+        }
+      } catch (e) {
+        console.warn('Error clearing GPS watch:', e);
+      }
       setWatchId(undefined);
     }
 
     if (useRealGPS) {
-      console.log(`🔍 GPS DEBUG: Starting REAL GPS tracking`);
-      // Start continuous GPS tracking
-      if ('geolocation' in navigator) {
+      // Real GPS mode
+      if (!navigator.geolocation) {
+        setError('Geolocation not supported');
+        return;
+      }
+
+      try {
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
-            console.log(`🔍 GPS DEBUG: Real GPS position received:`, coords);
+            console.log(`🔍 GPS DEBUG: Real GPS position:`, coords);
             setCurrentPosition(coords);
-            console.log('Real GPS position updated:', coords);
+            setError(null);
           },
           (error) => {
-            console.warn('GPS tracking error:', error);
-            console.log(`🔍 GPS DEBUG: Real GPS error, staying with current position`);
-            setError('GPS tracking failed');
-            // Don't fallback to mock coordinates when in real GPS mode
+            console.warn('GPS error:', error.message);
+            setError(`GPS error: ${error.message}`);
           },
           {
             enableHighAccuracy: true,
@@ -54,25 +62,34 @@ export const useLocation = (props?: UseLocationProps) => {
             maximumAge: 5000,
           }
         );
-        console.log(`🔍 GPS DEBUG: Created GPS watch with ID: ${newWatchId}`);
+        
+        console.log(`🔍 GPS DEBUG: Started GPS watch ${newWatchId}`);
         setWatchId(newWatchId);
+      } catch (e) {
+        console.error('Failed to start GPS:', e);
+        setError('Failed to start GPS tracking');
       }
     } else {
-      console.log(`🔍 GPS DEBUG: Using MOCK GPS - setting position to:`, mockCoordinates);
-      // Use mock position for testing - ensure it stays locked
+      // Mock GPS mode - always use site coordinates
+      console.log(`🔍 GPS DEBUG: Using MOCK GPS:`, mockCoordinates);
       setCurrentPosition(mockCoordinates);
       console.log('Locked to mock position:', mockCoordinates);
-      setError(null); // Clear any GPS errors when using mock
+      setError(null);
     }
 
     // Cleanup function
     return () => {
       if (watchId !== undefined) {
-        console.log(`🔍 GPS DEBUG: Cleanup - clearing watch ${watchId}`);
-        navigator.geolocation?.clearWatch(watchId);
+        try {
+          if (navigator.geolocation) {
+            navigator.geolocation.clearWatch(watchId);
+          }
+        } catch (e) {
+          console.warn('Cleanup error:', e);
+        }
       }
     };
-  }, [useRealGPS, currentSite, mockCoordinates]);
+  }, [useRealGPS, currentSite]);
 
   const updatePosition = (position: Coordinates) => {
     console.log(`🔍 GPS DEBUG: updatePosition called with:`, position, `useRealGPS: ${useRealGPS}`);
