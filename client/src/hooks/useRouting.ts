@@ -17,6 +17,18 @@ export const useRouting = () => {
       }
       
       const data = await response.json();
+      
+      // Calculate accurate ETA using device time
+      if (data.durationSeconds) {
+        const now = new Date();
+        const arrival = new Date(now.getTime() + data.durationSeconds * 1000);
+        data.arrivalTime = arrival.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+      }
+      
       return data as NavigationRoute;
     },
   });

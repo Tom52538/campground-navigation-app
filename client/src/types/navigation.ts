@@ -33,6 +33,7 @@ export interface NavigationRoute {
   totalDistance: string;
   estimatedTime: string;
   arrivalTime: string;
+  durationSeconds?: number; // Raw duration for client-side ETA calculation
   instructions: RouteInstruction[];
   geometry: number[][];
   nextInstruction?: RouteInstruction;

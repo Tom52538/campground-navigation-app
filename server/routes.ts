@@ -265,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = {
         totalDistance: routingService.formatDistance(route.summary.distance),
         estimatedTime: routingService.formatDuration(route.summary.duration),
-        arrivalTime: routingService.formatArrivalTime(route.summary.duration),
+        durationSeconds: route.summary.duration, // Send raw duration for client-side ETA calculation
         instructions,
         geometry: geometry,
         nextInstruction: instructions[0] || null
