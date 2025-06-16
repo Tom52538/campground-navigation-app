@@ -9,6 +9,8 @@ interface MapControlsProps {
   onCenterOnLocation: () => void;
   useRealGPS: boolean;
   onToggleGPS: () => void;
+  mapOrientation: 'north' | 'driving';
+  onToggleOrientation: () => void;
 }
 
 interface CompassProps {
@@ -28,7 +30,15 @@ const CompassIcon = ({ heading }: CompassProps) => (
   </div>
 );
 
-export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGPS, onToggleGPS }: MapControlsProps) => {
+export const MapControls = ({ 
+  onZoomIn, 
+  onZoomOut, 
+  onCenterOnLocation, 
+  useRealGPS, 
+  onToggleGPS,
+  mapOrientation,
+  onToggleOrientation 
+}: MapControlsProps) => {
   const [heading, setHeading] = useState(0);
 
   useEffect(() => {
@@ -60,28 +70,34 @@ export const MapControls = ({ onZoomIn, onZoomOut, onCenterOnLocation, useRealGP
 
   return (
     <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col space-y-2">
-      {/* Transparent Compass - 44px */}
-      <div 
-        className="relative flex items-center justify-center"
+      {/* Orientation Toggle Button - North/Driving Direction */}
+      <button 
+        onClick={onToggleOrientation}
+        className="relative flex items-center justify-center transition-all duration-200 hover:scale-105"
         style={{
           width: '44px',
           height: '44px',
-          backgroundColor: 'rgba(255, 255, 255, 0.75)',
+          backgroundColor: mapOrientation === 'north' ? 'rgba(255, 255, 255, 0.75)' : 'rgba(59, 130, 246, 0.75)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '50%',
-          marginBottom: '8px'
+          marginBottom: '8px',
+          cursor: 'pointer'
         }}
+        title={mapOrientation === 'north' ? 'Switch to Driving Direction' : 'Switch to North Up'}
       >
-        <div 
-          className="relative w-6 h-6 transition-transform duration-500 ease-out"
-          style={{ transform: `rotate(${heading}deg)` }}
-        >
-          <div className="absolute inset-0 rounded-full border border-orange-400/60"></div>
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l border-r border-b-2 border-l-transparent border-r-transparent border-b-orange-600"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-0.5 bg-orange-600 rounded-full"></div>
-        </div>
-        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs font-bold text-orange-600">N</div>
-      </div>
+        {mapOrientation === 'north' ? (
+          // North-up compass icon
+          <div className="relative w-6 h-6">
+            <div className="absolute inset-0 rounded-full border border-orange-400/60"></div>
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l border-r border-b-2 border-l-transparent border-r-transparent border-b-orange-600"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0.5 h-0.5 bg-orange-600 rounded-full"></div>
+            <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-xs font-bold text-orange-600">N</div>
+          </div>
+        ) : (
+          // Driving direction icon
+          <NavigationIcon className="w-5 h-5 text-white" />
+        )}
+      </button>
 
       {/* Transparent Zoom In Button */}
       <button 

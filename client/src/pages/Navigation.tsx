@@ -57,6 +57,9 @@ export default function Navigation() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   
+  // Map orientation state
+  const [mapOrientation, setMapOrientation] = useState<'north' | 'driving'>('north');
+  
   // Navigation tracking state
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
   const routeTrackerRef = useRef<RouteTracker | null>(null);
@@ -293,6 +296,11 @@ export default function Navigation() {
         return [category];
       }
     });
+  }, []);
+
+  // Map orientation toggle handler
+  const handleToggleOrientation = useCallback(() => {
+    setMapOrientation(prev => prev === 'north' ? 'driving' : 'north');
   }, []);
 
   // Initialize voice guide when component mounts

@@ -130,10 +130,11 @@ export class RoutingService {
   formatArrivalTime(durationSeconds: number): string {
     const now = new Date();
     const arrival = new Date(now.getTime() + durationSeconds * 1000);
-    return arrival.toLocaleTimeString('en-US', {
-      hour: 'numeric',
+    // Use 24-hour format to match system time display
+    return arrival.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
+      hour12: false,
     });
   }
 }
