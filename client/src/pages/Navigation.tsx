@@ -418,6 +418,8 @@ export default function Navigation() {
         onPOIClick={handlePOIClick}
         onPOINavigate={handleNavigateToPOI}
         onMapClick={handleMapClick}
+        mapOrientation={mapOrientation}
+        bearing={routeProgress?.heading || 0}
       />
 
       {/* EXPLORATION MODE - Only visible when NOT navigating */}

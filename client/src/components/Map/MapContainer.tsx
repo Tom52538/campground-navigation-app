@@ -27,6 +27,8 @@ interface MapContainerProps {
   onPOIClick: (poi: POI) => void;
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
+  mapOrientation?: 'north' | 'driving';
+  bearing?: number;
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -72,12 +74,41 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
   );
 };
 
-const MapController = ({ center, zoom }: { center: Coordinates; zoom: number }) => {
+const MapController = ({ 
+  center, 
+  zoom, 
+  mapOrientation, 
+  bearing 
+}: { 
+  center: Coordinates; 
+  zoom: number; 
+  mapOrientation?: 'north' | 'driving';
+  bearing?: number;
+}) => {
   const map = useMap();
   
   useEffect(() => {
     map.setView([center.lat, center.lng], zoom);
   }, [center, zoom, map]);
+  
+  useEffect(() => {
+    if (mapOrientation === 'driving' && bearing !== undefined) {
+      // Rotate map to driving direction using CSS transform on the leaflet container
+      const mapPane = map.getPane('mapPane');
+      if (mapPane) {
+        mapPane.style.transform = `rotate(${-bearing}deg)`;
+        mapPane.style.transformOrigin = 'center';
+        mapPane.style.transition = 'transform 0.3s ease';
+      }
+    } else {
+      // Reset to north-up orientation
+      const mapPane = map.getPane('mapPane');
+      if (mapPane) {
+        mapPane.style.transform = 'rotate(0deg)';
+        mapPane.style.transition = 'transform 0.3s ease';
+      }
+    }
+  }, [mapOrientation, bearing, map]);
   
   return null;
 };
@@ -105,6 +136,8 @@ export const MapContainerComponent = ({
   onPOIClick,
   onPOINavigate,
   onMapClick,
+  mapOrientation = 'north',
+  bearing = 0,
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
     isVisible: boolean;
@@ -146,7 +179,12 @@ export const MapContainerComponent = ({
         zoomControl={false}
         attributionControl={false}
       >
-        <MapController center={center} zoom={zoom} />
+        <MapController 
+          center={center} 
+          zoom={zoom} 
+          mapOrientation={mapOrientation}
+          bearing={bearing}
+        />
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
