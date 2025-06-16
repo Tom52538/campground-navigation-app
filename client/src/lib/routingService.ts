@@ -128,10 +128,12 @@ export class RoutingService {
   }
 
   formatArrivalTime(durationSeconds: number): string {
+    // Use device system time for accurate ETA calculation
     const now = new Date();
     const arrival = new Date(now.getTime() + durationSeconds * 1000);
-    // Use 24-hour format to match system time display
-    return arrival.toLocaleTimeString('de-DE', {
+    
+    // Use device locale and 24-hour format to match system time display
+    return arrival.toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
