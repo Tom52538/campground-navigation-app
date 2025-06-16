@@ -61,10 +61,12 @@ export const useNavigationTracking = (
     if (!isNavigating) {
       console.log(`🔍 NAV TRACKING DEBUG: Not navigating - stopping tracking`);
       setIsTracking(false);
+      setError(null); // Clear any previous errors
       return;
     }
 
-    if (!navigator.geolocation) {
+    // Check for geolocation support with better error handling
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       console.log(`🔍 NAV TRACKING DEBUG: Geolocation not supported`);
       setError('Geolocation is not supported by this browser');
       return;

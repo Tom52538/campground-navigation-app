@@ -25,10 +25,10 @@ export class RouteTracker {
   private completedDistance: number = 0;
   private speedTracker: SpeedTracker;
 
-  // Thresholds for navigation decisions
-  private readonly STEP_ADVANCE_THRESHOLD = 0.02; // 20 meters
-  private readonly OFF_ROUTE_THRESHOLD = 0.05; // 50 meters
-  private readonly ROUTE_COMPLETE_THRESHOLD = 0.01; // 10 meters
+  // Thresholds for navigation decisions - Made more conservative for accuracy
+  private readonly STEP_ADVANCE_THRESHOLD = 0.015; // 15 meters - more precise
+  private readonly OFF_ROUTE_THRESHOLD = 0.030; // 30 meters - more responsive
+  private readonly ROUTE_COMPLETE_THRESHOLD = 0.008; // 8 meters - prevent premature completion
 
   constructor(
     route: NavigationRoute,
@@ -160,13 +160,16 @@ export class RouteTracker {
     const distanceToNext = calculateDistance(position, nextWaypoint);
     const shouldAdvance = distanceToNext < this.STEP_ADVANCE_THRESHOLD;
 
-    // Check if route is complete
+    // Check if route is complete - More accurate destination detection
     const destination = {
       lat: this.route.geometry[this.route.geometry.length - 1][1],
       lng: this.route.geometry[this.route.geometry.length - 1][0]
     };
     const distanceToDestination = calculateDistance(position, destination);
-    const isComplete = distanceToDestination < this.ROUTE_COMPLETE_THRESHOLD;
+    
+    // Only complete if we're at the final step AND very close to destination
+    const isAtFinalStep = this.currentStepIndex >= this.route.instructions.length - 1;
+    const isComplete = isAtFinalStep && distanceToDestination < this.ROUTE_COMPLETE_THRESHOLD;
 
     // Advance step if needed
     if (shouldAdvance && this.currentStepIndex < this.route.instructions.length - 1) {
