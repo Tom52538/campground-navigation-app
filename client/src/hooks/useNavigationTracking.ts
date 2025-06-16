@@ -76,65 +76,89 @@ export const useNavigationTracking = (
     setIsTracking(true);
     setError(null);
 
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        console.log(`🔍 NAV TRACKING DEBUG: GPS position received during navigation:`, {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        });
-        
-        const navPosition: NavigationPosition = {
-          position: {
+    let watchId: number;
+    
+    try {
+      watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          // Prevent processing if component unmounted or navigation stopped
+          if (!isNavigating) return;
+          
+          console.log(`🔍 NAV TRACKING DEBUG: GPS position received during navigation:`, {
             lat: position.coords.latitude,
-            lng: position.coords.longitude
-          },
-          accuracy: position.coords.accuracy,
-          speed: position.coords.speed || undefined,
-          heading: position.coords.heading || undefined,
-          timestamp: position.timestamp
-        };
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          });
+          
+          const navPosition: NavigationPosition = {
+            position: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            },
+            accuracy: position.coords.accuracy,
+            speed: position.coords.speed || undefined,
+            heading: position.coords.heading || undefined,
+            timestamp: position.timestamp
+          };
 
-        console.log(`🔍 NAV TRACKING DEBUG: Setting navigation position:`, navPosition);
-        setCurrentPosition(navPosition);
-        setError(null);
-        
-        // Update adaptive interval based on current speed
-        if (adaptiveTracking) {
-          const newInterval = calculateAdaptiveInterval(position.coords.speed || undefined, position.coords.accuracy);
-          setAdaptiveInterval(newInterval);
+          console.log(`🔍 NAV TRACKING DEBUG: Setting navigation position:`, navPosition);
+          setCurrentPosition(navPosition);
+          setError(null);
+          
+          // Update adaptive interval based on current speed
+          if (adaptiveTracking) {
+            const newInterval = calculateAdaptiveInterval(position.coords.speed || undefined, position.coords.accuracy);
+            setAdaptiveInterval(newInterval);
+          }
+        },
+        (geoError) => {
+          console.error('GPS tracking error:', geoError);
+          let errorMessage = 'Location tracking failed';
+          
+          switch (geoError.code) {
+            case geoError.PERMISSION_DENIED:
+              errorMessage = 'Location access denied. Please enable location permissions.';
+              break;
+            case geoError.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable.';
+              break;
+            case geoError.TIMEOUT:
+              errorMessage = 'Location request timed out.';
+              break;
+          }
+          
+          setError(errorMessage);
+        },
+        {
+          enableHighAccuracy,
+          timeout,
+          maximumAge
         }
-      },
-      (geoError) => {
-        console.error('GPS tracking error:', geoError);
-        let errorMessage = 'Location tracking failed';
-        
-        switch (geoError.code) {
-          case geoError.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please enable location permissions.';
-            break;
-          case geoError.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
-            break;
-          case geoError.TIMEOUT:
-            errorMessage = 'Location request timed out.';
-            break;
+      );
+      
+      // Cleanup function with proper error handling
+      return () => {
+        try {
+          navigator.geolocation.clearWatch(watchId);
+          console.log(`🔍 NAV TRACKING DEBUG: Cleared GPS watch ${watchId}`);
+        } catch (error) {
+          console.error('Error clearing GPS watch:', error);
         }
-        
-        setError(errorMessage);
-      },
-      {
-        enableHighAccuracy,
-        timeout,
-        maximumAge
-      }
-    );
-
-    // Cleanup function
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
+        setIsTracking(false);
+        setCurrentPosition(null);
+      };
+      
+    } catch (error) {
+      console.error('Failed to start GPS tracking:', error);
+      setError('Failed to start location tracking');
       setIsTracking(false);
-    };
+      
+      // Return empty cleanup function if GPS setup failed
+      return () => {
+        setIsTracking(false);
+        setCurrentPosition(null);
+      };
+    }
   }, [isNavigating, enableHighAccuracy, timeout, maximumAge]);
 
   // Get single position (for initial setup)
