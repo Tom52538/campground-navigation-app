@@ -344,7 +344,7 @@ export const GroundNavigation = ({
           <div className="mb-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span className="font-medium">{route.totalDistance}</span>
-              <span>ETA: {routeProgress.dynamicETA.estimatedArrival.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span>ETA: {route.arrivalTime}</span>
             </div>
             <div className="w-full bg-gray-200/50 rounded-full h-1.5">
               <div 
