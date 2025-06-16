@@ -451,6 +451,8 @@ export default function Navigation() {
         onCenterOnLocation={handleCenterOnLocation}
         useRealGPS={useRealGPS}
         onToggleGPS={toggleGPS}
+        mapOrientation={mapOrientation}
+        onToggleOrientation={handleToggleOrientation}
       />
 
 
