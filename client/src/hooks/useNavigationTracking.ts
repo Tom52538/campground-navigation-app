@@ -203,7 +203,7 @@ export const useNavigationTracking = (
           {
             enableHighAccuracy,
             timeout,
-            maximumAge: 0 // Force fresh reading
+            maximumAge: 0
           }
         );
       } catch (e) {
