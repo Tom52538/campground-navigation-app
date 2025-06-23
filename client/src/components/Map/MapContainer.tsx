@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import L from 'leaflet';
 import { POI } from '@/shared/schema';
@@ -19,17 +19,18 @@ L.Icon.Default.mergeOptions({
 
 interface MapContainerProps {
   center: Coordinates;
-  zoom: number;
+  zoom?: number;
   currentPosition: Coordinates;
   pois: POI[];
   selectedPOI: POI | null;
-  route: any | null;
-  filteredCategories: string[];
+  route?: any | null;
+  filteredCategories?: string[];
   onPOIClick: (poi: POI) => void;
-  onMapClick: () => void;
+  onMapClick?: () => void;
   mapOrientation?: 'north' | 'driving';
   bearing?: number;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  isNavigating?: boolean;
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -300,6 +301,16 @@ export function MapContainerComponent({
 
         {/* Current position marker */}
         <CurrentLocationMarker position={currentPosition} />
+
+        {/* Route polyline */}
+        {route && route.routes && route.routes[0] && (
+          <Polyline
+            positions={decodePolyline(route.routes[0].overview_polyline.points)}
+            color="#2563eb"
+            weight={5}
+            opacity={0.8}
+          />
+        )}
 
         {/* Route polyline */}
         {route && route.routes && route.routes[0] && (
