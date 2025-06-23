@@ -77,6 +77,26 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
+  // Calculate bearing for driving direction mode
+  const [currentBearing, setCurrentBearing] = useState(0);
+  const lastPositionRef = useRef<Coordinates | null>(null);
+  
+  useEffect(() => {
+    if (mapOrientation === 'driving' && isNavigating) {
+      // Calculate bearing from movement when using real GPS
+      if (useRealGPS && livePosition && lastPositionRef.current) {
+        const bearing = calculateBearing(lastPositionRef.current, livePosition.position);
+        if (!isNaN(bearing)) {
+          setCurrentBearing(bearing);
+        }
+      }
+      // Store current position for next calculation
+      if (livePosition) {
+        lastPositionRef.current = livePosition.position;
+      }
+    }
+  }, [livePosition, mapOrientation, isNavigating, useRealGPS]);
+  
   // Debug logging for position tracking
   useEffect(() => {
     console.log(`🔍 NAVIGATION DEBUG: Position tracking - isNavigating: ${isNavigating}, useRealGPS: ${useRealGPS}, livePosition:`, livePosition, 'trackingPosition:', trackingPosition);
