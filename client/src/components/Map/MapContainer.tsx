@@ -117,17 +117,9 @@ const MapController = ({
 }) => {
   const map = useMap();
   
+  // Only update map center for manual center changes, not GPS updates
   useEffect(() => {
     if (map && center) {
-      console.log('🔍 MAP LIBRARY UPDATE:', {
-        library: 'React Leaflet',
-        method: 'map.setView()',
-        center: center,
-        zoom: zoom,
-        animation: { animate: true, duration: 0.8 },
-        mapInstance: !!map
-      });
-      
       map.setView([center.lat, center.lng], zoom, { 
         animate: true,
         duration: 0.8

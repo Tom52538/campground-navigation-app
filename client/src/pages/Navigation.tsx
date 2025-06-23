@@ -81,19 +81,13 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  useEffect(() => {
-    if (followGPS && trackingPosition) {
-      console.log('🔍 MAP CENTER UPDATE LOGIC:', {
-        followGPS: followGPS,
-        trackingPosition: trackingPosition,
-        currentMapCenter: mapCenter,
-        isNavigating: isNavigating,
-        useRealGPS: useRealGPS,
-        updateTriggered: true
-      });
-      setMapCenter(trackingPosition);
-    }
-  }, [trackingPosition, followGPS]);
+  // Disable automatic map recentering for GPS updates
+  // The CurrentLocationMarker will handle smart recentering only when needed
+  // useEffect(() => {
+  //   if (followGPS && trackingPosition) {
+  //     setMapCenter(trackingPosition);
+  //   }
+  // }, [trackingPosition, followGPS]);
   
   // Update map center when site changes
   useEffect(() => {
