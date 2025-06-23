@@ -180,9 +180,10 @@ export const MapContainerComponent = ({
     console.log('Long press - add POI at:', latlng);
   };
 
-  // Debug Mapbox token availability
+  // Debug Mapbox token and style
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
   console.log('🗺️ Mapbox token available:', !!mapboxToken, 'Length:', mapboxToken?.length || 0);
+  console.log('🗺️ Current map style:', mapStyle, 'URL style:', MAP_STYLES[mapStyle]);
 
   return (
     <div className="map-container relative">
@@ -202,6 +203,7 @@ export const MapContainerComponent = ({
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
+          key={mapStyle} // Force re-render when style changes
           url={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
             ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
             : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

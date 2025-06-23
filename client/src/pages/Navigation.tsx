@@ -326,6 +326,7 @@ export default function Navigation() {
 
   // Map style change handler
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
+    console.log('🗺️ Navigation.tsx: Map style changing to:', style);
     setMapStyle(style);
     
     // Auto-switch to navigation mode when using navigation style during active navigation

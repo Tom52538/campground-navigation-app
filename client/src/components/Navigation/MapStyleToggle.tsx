@@ -34,7 +34,9 @@ export const MapStyleToggle = ({ currentStyle, onStyleChange }: MapStyleTogglePr
   
   const handleToggle = () => {
     const nextIndex = (currentIndex + 1) % styles.length;
-    onStyleChange(styles[nextIndex]);
+    const nextStyle = styles[nextIndex];
+    console.log('🗺️ Map style changing from', currentStyle, 'to', nextStyle);
+    onStyleChange(nextStyle);
   };
 
   const CurrentIcon = STYLE_CONFIG[currentStyle].icon;
