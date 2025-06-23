@@ -109,10 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY || ""
   );
   
-  // Initialize Google Directions service
-  // const routingService = new GoogleDirectionsService(
-    process.env.GOOGLE_DIRECTIONS_API_KEY || ""
-  );
+  // Navigation services temporarily disabled
 
 
 

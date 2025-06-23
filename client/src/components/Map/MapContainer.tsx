@@ -239,7 +239,7 @@ const MapClickHandler = ({ onClick }: { onClick: () => void }) => {
   return null;
 };
 
-export function MapContainer({
+export function MapContainerComponent({
   center,
   zoom,
   currentPosition,

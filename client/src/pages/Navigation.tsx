@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer } from '@/components/Map/MapContainer';
+import { MapContainerComponent } from '@/components/Map/MapContainer';
 import { SearchBar } from '@/components/UI/SearchBar';
 import { CategoryFilter } from '@/components/UI/CategoryFilter';
 import { WeatherWidget } from '@/components/UI/WeatherWidget';
@@ -98,7 +98,7 @@ export default function Navigation() {
       {/* Main Content */}
       <div className="flex-1 relative">
         {/* Map Container */}
-        <MapContainer
+        <MapContainerComponent
           center={mapCenter}
           zoom={mapZoom}
           currentPosition={currentPosition}
