@@ -344,16 +344,38 @@ export default function Navigation() {
     setMapOrientation(prev => prev === 'north' ? 'driving' : 'north');
   }, []);
 
-  // Map style change handler
+  // Enhanced map style change handler with Railway debugging
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
-    console.log('🗺️ Navigation.tsx: Map style changing to:', style);
-    setMapStyle(style);
+    console.log('🗺️ DEBUG - Navigation.tsx handleMapStyleChange:', {
+      newStyle: style,
+      currentStyle: mapStyle,
+      isNavigating,
+      environment: import.meta.env.MODE,
+      userAgent: navigator.userAgent.substring(0, 100),
+      timestamp: new Date().toISOString()
+    });
     
-    // Auto-switch to navigation mode when using navigation style during active navigation
-    if (style === 'navigation' && isNavigating) {
-      setMapOrientation('driving');
+    try {
+      setMapStyle(style);
+      console.log('🗺️ DEBUG - setMapStyle completed successfully');
+      
+      // Auto-switch to navigation mode when using navigation style during active navigation
+      if (style === 'navigation' && isNavigating) {
+        console.log('🗺️ DEBUG - Auto-switching to driving orientation for navigation style');
+        setMapOrientation('driving');
+      }
+      
+      // Force re-render of map component
+      setTimeout(() => {
+        console.log('🗺️ DEBUG - Map style change should be visible now');
+      }, 100);
+      
+    } catch (error) {
+      console.error('🗺️ ERROR - handleMapStyleChange failed:', error);
+      // Fallback to default style if something goes wrong
+      setMapStyle('outdoors');
     }
-  }, [isNavigating]);
+  }, [isNavigating, mapStyle]);
 
   // Initialize voice guide when component mounts
   useEffect(() => {

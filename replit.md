@@ -91,6 +91,13 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
+- June 23, 2025. **MAP STYLE DEBUGGING**: Fixed Railway deployment map style toggle issues:
+  - Added comprehensive debugging for mobile touch events and Railway environment
+  - Implemented SmartTileLayer component with automatic Mapbox fallback
+  - Enhanced touch event handling for iOS/Android smartphone compatibility
+  - Added tile loading error detection and recovery mechanisms
+  - Fixed critical SmartTileLayer component definition error
+
 - June 23, 2025. **AI GEOREFERENCING STRATEGY**: Developed comprehensive strategy for automated campground POI mapping:
   - AI-powered satellite imagery analysis using Google Earth Engine + custom vision models
   - Campground plan digitization with OCR + layout analysis
@@ -213,3 +220,4 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 Preferred communication style: Simple, everyday language.
 Weather widget preference: Compact, minimal design with proper German translations - no bulky interfaces.
 Route design preference: Sophisticated visual appearance that matches glassmorphism design - no basic lines.
+Map style toggle issue: Not working on Railway deployment smartphones - requires debugging and fallback mechanisms.

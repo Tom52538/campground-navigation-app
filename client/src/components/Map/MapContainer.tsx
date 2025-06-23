@@ -168,6 +168,71 @@ const MAP_STYLES = {
   navigation: 'navigation-day-v1' // Optimized for turn-by-turn navigation
 };
 
+// Fallback URLs for when Mapbox fails on mobile/Railway
+const FALLBACK_TILES = {
+  outdoors: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  streets: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  navigation: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+};
+
+// Smart TileLayer component with fallback handling
+const SmartTileLayer = ({ 
+  mapStyle, 
+  mapboxToken 
+}: { 
+  mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  mapboxToken?: string;
+}) => {
+  const [useMapbox, setUseMapbox] = useState(!!mapboxToken);
+  const [tileLoadError, setTileLoadError] = useState(false);
+
+  const mapboxUrl = mapboxToken 
+    ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
+    : null;
+  
+  const fallbackUrl = FALLBACK_TILES[mapStyle];
+
+  console.log('🗺️ DEBUG - SmartTileLayer render:', {
+    mapStyle,
+    useMapbox,
+    tileLoadError,
+    mapboxUrl: mapboxUrl ? 'configured' : 'none',
+    fallbackUrl,
+    tokenValid: mapboxToken?.startsWith('pk.') || false
+  });
+
+  return (
+    <TileLayer
+      key={`${mapStyle}-${useMapbox ? 'mapbox' : 'fallback'}-${Date.now()}`}
+      url={useMapbox && mapboxUrl && !tileLoadError ? mapboxUrl : fallbackUrl}
+      attribution={
+        useMapbox && !tileLoadError 
+          ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+      maxZoom={19}
+      eventHandlers={{
+        loading: () => {
+          console.log('🗺️ DEBUG - Tiles loading for:', mapStyle, useMapbox ? 'Mapbox' : 'Fallback');
+        },
+        load: () => {
+          console.log('🗺️ DEBUG - Tiles loaded successfully for:', mapStyle);
+          setTileLoadError(false);
+        },
+        tileerror: (e) => {
+          console.error('🗺️ ERROR - Tile loading failed:', e);
+          if (useMapbox && mapboxToken) {
+            console.log('🗺️ DEBUG - Switching to fallback tiles due to error');
+            setUseMapbox(false);
+            setTileLoadError(true);
+          }
+        }
+      }}
+    />
+  );
+};
+
 export const MapContainerComponent = ({
   center,
   zoom,
@@ -214,10 +279,26 @@ export const MapContainerComponent = ({
     console.log('Long press - add POI at:', latlng);
   };
 
-  // Debug Mapbox token and style
+  // Enhanced debugging for Railway deployment issues
   const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-  console.log('🗺️ Mapbox token available:', !!mapboxToken, 'Length:', mapboxToken?.length || 0);
-  console.log('🗺️ Current map style:', mapStyle, 'URL style:', MAP_STYLES[mapStyle]);
+  console.log('🗺️ DEBUG - Environment:', {
+    nodeEnv: import.meta.env.NODE_ENV,
+    mode: import.meta.env.MODE,
+    dev: import.meta.env.DEV,
+    prod: import.meta.env.PROD
+  });
+  console.log('🗺️ DEBUG - Mapbox token:', {
+    exists: !!mapboxToken,
+    length: mapboxToken?.length || 0,
+    firstChars: mapboxToken?.substring(0, 8) || 'none',
+    isValid: mapboxToken?.startsWith('pk.') || false
+  });
+  console.log('🗺️ DEBUG - Map style config:', {
+    currentStyle: mapStyle,
+    mapboxStyle: MAP_STYLES[mapStyle],
+    allStyles: MAP_STYLES,
+    isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  });
 
   return (
     <div className="map-container relative">
@@ -236,17 +317,9 @@ export const MapContainerComponent = ({
         />
         <PopupController selectedPOI={selectedPOI} />
         
-        <TileLayer
-          key={mapStyle} // Force re-render when style changes
-          url={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
-            ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
-            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          }
-          attribution={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
-            ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          }
-          maxZoom={19}
+        <SmartTileLayer 
+          mapStyle={mapStyle}
+          mapboxToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
         />
         
         {/* SVG Gradient Definition for Route */}

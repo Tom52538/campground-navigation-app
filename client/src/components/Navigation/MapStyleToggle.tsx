@@ -35,10 +35,28 @@ export const MapStyleToggle = ({ currentStyle, onStyleChange }: MapStyleTogglePr
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
     const nextIndex = (currentIndex + 1) % styles.length;
     const nextStyle = styles[nextIndex];
-    console.log('🗺️ Map style toggle clicked, changing from', currentStyle, 'to', nextStyle);
-    onStyleChange(nextStyle);
+    
+    console.log('🗺️ DEBUG - MapStyleToggle clicked:', {
+      currentStyle,
+      currentIndex,
+      nextStyle,
+      nextIndex,
+      allStyles: styles,
+      isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Test if the callback is working
+    try {
+      onStyleChange(nextStyle);
+      console.log('🗺️ DEBUG - onStyleChange called successfully');
+    } catch (error) {
+      console.error('🗺️ ERROR - onStyleChange failed:', error);
+    }
   };
 
   const CurrentIcon = STYLE_CONFIG[currentStyle].icon;
@@ -52,9 +70,22 @@ export const MapStyleToggle = ({ currentStyle, onStyleChange }: MapStyleTogglePr
         border: '1px solid rgba(255, 255, 255, 0.3)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         minWidth: '48px',
-        minHeight: '48px'
+        minHeight: '48px',
+        // Enhanced touch target for mobile
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent'
       }}
       onClick={handleToggle}
+      onTouchStart={(e) => {
+        // Prevent iOS bounce and improve touch responsiveness
+        e.preventDefault();
+        console.log('🗺️ DEBUG - Touch start on map style toggle');
+      }}
+      onTouchEnd={(e) => {
+        e.preventDefault();
+        console.log('🗺️ DEBUG - Touch end on map style toggle');
+        handleToggle(e as any);
+      }}
       title={`${STYLE_CONFIG[currentStyle].label} - ${STYLE_CONFIG[currentStyle].description}`}
     >
       <CurrentIcon 
@@ -62,7 +93,8 @@ export const MapStyleToggle = ({ currentStyle, onStyleChange }: MapStyleTogglePr
         style={{ 
           color: currentStyle === 'outdoors' ? '#059669' : 
                  currentStyle === 'satellite' ? '#0ea5e9' :
-                 currentStyle === 'navigation' ? '#dc2626' : '#374151'
+                 currentStyle === 'navigation' ? '#dc2626' : '#374151',
+          pointerEvents: 'none' // Prevent icon from intercepting touch events
         }} 
       />
     </div>
