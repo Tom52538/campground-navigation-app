@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Coordinates, TestSite, TEST_SITES } from '@/types/navigation';
-import { GPSStabilizer } from '@/lib/gpsStabilizer';
 
 interface UseLocationProps {
   currentSite: TestSite;
@@ -53,13 +52,12 @@ export const useLocation = (props?: UseLocationProps) => {
             
             console.log(`🔍 GPS RAW INPUT: lat=${coords.lat.toFixed(8)}, lng=${coords.lng.toFixed(8)}, accuracy=${position.coords.accuracy}m`);
             
-            // PRODUCTION GPS DEBUGGING: Check environment and stabilizer state
+            // PRODUCTION GPS DEBUGGING: Check environment
             const isProd = import.meta.env.PROD;
-            const isStabilizerNull = !gpsStabilizer.current;
-            console.log(`🔍 GPS ENV: production=${isProd}, stabilizer_null=${isStabilizerNull}`);
+            console.log(`🔍 GPS ENV: production=${isProd}`);
             
-            // EMERGENCY FIX: Skip stabilizer completely and use simple smoothing
-            console.log('🔍 GPS EMERGENCY: Bypassing stabilizer - using simple smoothing');
+            // SIMPLE GPS: Using basic rate limiting and accuracy filtering
+            console.log('🔍 GPS SIMPLE: Using basic filtering');
             
             // Simple position validation without complex stabilizer
             if (position.coords.accuracy > 100) {
