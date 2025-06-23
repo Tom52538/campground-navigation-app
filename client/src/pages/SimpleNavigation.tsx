@@ -26,6 +26,9 @@ export default function SimpleNavigation() {
 
   const { currentPosition } = useLocation({ currentSite });
   const { data: pois = [] } = usePOI(currentSite);
+  
+  console.log('POI Data loaded:', pois.length, 'POIs for site:', currentSite);
+  console.log('POIs:', pois.slice(0, 3));
   const { data: weather } = useWeather(currentPosition.lat, currentPosition.lng);
 
   const handleStartNavigation = async (poi: POI) => {
@@ -80,8 +83,8 @@ export default function SimpleNavigation() {
   });
 
   // POI marker
-  const poiIcon = divIcon({
-    html: `<div class="bg-red-500 w-6 h-6 rounded-full shadow-lg border-2 border-white flex items-center justify-center text-white text-xs">📍</div>`,
+  const createPOIIcon = (color: string) => divIcon({
+    html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px;">🏢</div>`,
     className: 'poi-marker',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
@@ -152,7 +155,15 @@ export default function SimpleNavigation() {
 
           {/* Current position marker */}
           <Marker position={[currentPosition.lat, currentPosition.lng]} icon={currentLocationIcon}>
-            <Popup>Ihr aktueller Standort</Popup>
+            <Popup>
+              <div>
+                <strong>Ihr aktueller Standort</strong><br/>
+                Site: {currentSite}<br/>
+                Lat: {currentPosition.lat.toFixed(6)}<br/>
+                Lng: {currentPosition.lng.toFixed(6)}<br/>
+                POIs geladen: {pois.length}
+              </div>
+            </Popup>
           </Marker>
 
           {/* Route polyline */}
@@ -166,30 +177,41 @@ export default function SimpleNavigation() {
           )}
 
           {/* POI markers */}
-          {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => (
-            <Marker
-              key={poi.id}
-              position={[poi.lat, poi.lng]}
-              icon={poiIcon}
-              eventHandlers={{
-                click: () => handleStartNavigation(poi),
-              }}
-            >
-              <Popup>
-                <div className="min-w-0">
-                  <div className="font-semibold text-gray-900">{poi.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">{poi.description}</div>
-                  <button
-                    onClick={() => handleStartNavigation(poi)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
-                  >
-                    <NavigationIcon className="w-4 h-4 inline mr-1" />
-                    Navigation starten
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => {
+            console.log('Rendering POI:', poi.name, poi.lat, poi.lng);
+            const color = poi.category === 'food-drink' ? '#ff6b6b' : 
+                         poi.category === 'accommodation' ? '#4ecdc4' :
+                         poi.category === 'recreation' ? '#45b7d1' : '#96ceb4';
+            
+            return (
+              <Marker
+                key={poi.id}
+                position={[poi.lat, poi.lng]}
+                icon={createPOIIcon(color)}
+                eventHandlers={{
+                  click: () => {
+                    console.log('POI clicked:', poi.name);
+                    handleStartNavigation(poi);
+                  },
+                }}
+              >
+                <Popup>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-gray-900">{poi.name}</div>
+                    <div className="text-sm text-gray-600 mb-2">{poi.description}</div>
+                    <div className="text-xs text-gray-500 mb-2">Kategorie: {poi.category}</div>
+                    <button
+                      onClick={() => handleStartNavigation(poi)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                    >
+                      <NavigationIcon className="w-4 h-4 inline mr-1" />
+                      Navigation starten
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </LeafletMapContainer>
       </div>
 
