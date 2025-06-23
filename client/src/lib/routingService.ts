@@ -1,3 +1,4 @@
+import MapboxClient from '@mapbox/mapbox-sdk';
 import MapboxDirections from '@mapbox/mapbox-sdk/services/directions';
 import * as turf from '@turf/turf';
 import { NavigationRoute, RouteInstruction, VoiceInstruction } from '@/types/navigation';
@@ -40,9 +41,23 @@ export class MapboxRoutingService {
   
   constructor(accessToken: string) {
     this.accessToken = accessToken;
+    console.log('🗺️ Initializing Mapbox service:', {
+      token_provided: !!accessToken,
+      token_length: accessToken?.length || 0,
+      token_prefix: accessToken?.substring(0, 3) || 'none',
+      is_valid_format: accessToken?.startsWith('pk.') || false
+    });
+    
     // Initialize Mapbox service only when token is valid
     if (accessToken && accessToken.startsWith('pk.')) {
-      this.directionsService = MapboxDirections({ accessToken });
+      try {
+        const mapboxClient = MapboxClient({ accessToken });
+        this.directionsService = MapboxDirections(mapboxClient);
+        console.log('🗺️ Mapbox Directions service initialized successfully');
+      } catch (error) {
+        console.error('🗺️ Failed to initialize Mapbox Directions service:', error);
+        this.directionsService = null;
+      }
     } else {
       console.warn('🗺️ Invalid or missing Mapbox token, will use fallback routing');
       this.directionsService = null;
@@ -51,48 +66,74 @@ export class MapboxRoutingService {
 
   async getRoute(request: RouteRequest): Promise<NavigationRoute> {
     if (!this.directionsService) {
+      console.warn('🗺️ Mapbox service not available - invalid or missing token');
       throw new Error('Mapbox service not available - invalid token');
     }
 
     try {
+      const profile = this.mapProfile(request.profile || 'walking');
+      const coordinates = request.coordinates.map(coord => [coord[1], coord[0]]); // Mapbox expects [lng, lat]
+      
       const mapboxRequest = {
-        waypoints: request.coordinates.map(coord => ({
-          coordinates: [coord[1], coord[0]] // Mapbox expects [lng, lat]
+        waypoints: coordinates.map(coord => ({
+          coordinates: coord
         })),
-        profile: this.mapProfile(request.profile || 'walking'),
+        profile: profile,
         language: request.language || 'de',
         steps: true,
         voice_instructions: true,
         banner_instructions: true,
         geometries: 'geojson',
-        overview: 'full'
+        overview: 'full',
+        alternatives: false
       };
 
-      console.log('🗺️ Mapbox routing request:', { profile: mapboxRequest.profile, language: mapboxRequest.language });
+      console.log('🗺️ Mapbox routing request details:', {
+        profile: mapboxRequest.profile,
+        language: mapboxRequest.language,
+        waypoints: mapboxRequest.waypoints,
+        token_available: !!this.accessToken,
+        token_format: this.accessToken ? this.accessToken.substring(0, 10) + '...' : 'none'
+      });
 
       const response = await this.directionsService.getDirections(mapboxRequest).send();
       
+      console.log('🗺️ Mapbox API response status:', response.status);
+      
       if (!response.body.routes || response.body.routes.length === 0) {
+        console.error('🗺️ No routes found in Mapbox response:', response.body);
         throw new Error('No route found');
       }
 
       const route = response.body.routes[0];
-      console.log('🗺️ Mapbox route received:', { distance: route.distance, duration: route.duration });
+      console.log('🗺️ Mapbox route received successfully:', { 
+        distance: route.distance, 
+        duration: route.duration,
+        legs: route.legs?.length,
+        steps: route.legs?.[0]?.steps?.length
+      });
       
       return this.processMapboxRoute(route);
     } catch (error) {
-      console.error('Mapbox routing error:', error);
+      console.error('🗺️ Mapbox routing error details:', {
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 3),
+        profile: request.profile,
+        coordinates: request.coordinates
+      });
       throw new Error(`Routing failed: ${error.message}`);
     }
   }
 
   private mapProfile(profile: string): string {
     const profileMap = {
-      'walking': 'mapbox/walking',
-      'cycling': 'mapbox/cycling', 
-      'driving': 'mapbox/driving'
+      'walking': 'walking',
+      'cycling': 'cycling', 
+      'driving': 'driving'
     };
-    return profileMap[profile] || 'mapbox/walking';
+    const mappedProfile = profileMap[profile] || 'walking';
+    console.log(`🗺️ Mapbox profile mapping: ${profile} → ${mappedProfile}`);
+    return mappedProfile;
   }
 
   private processMapboxRoute(route: any): NavigationRoute {
@@ -330,19 +371,36 @@ export class EnhancedRoutingService {
   }
 
   async getRoute(request: RouteRequest): Promise<NavigationRoute> {
+    console.log('🗺️ Enhanced routing service called with:', {
+      profile: request.profile,
+      coordinates: request.coordinates,
+      language: request.language
+    });
+
     try {
       // Try Mapbox first (primary routing)
-      console.log('🗺️ Using Mapbox routing (primary)');
-      return await this.mapboxService.getRoute(request);
+      console.log('🗺️ Attempting Mapbox routing (primary service)');
+      const result = await this.mapboxService.getRoute(request);
+      console.log('✅ Mapbox routing successful');
+      return result;
     } catch (error) {
-      console.warn('⚠️ Mapbox routing failed, falling back to OpenRoute:', error);
+      console.warn('⚠️ Mapbox routing failed, falling back to OpenRoute:', {
+        error: error.message,
+        hasMapboxToken: !!process.env.MAPBOX_ACCESS_TOKEN,
+        hasOpenRouteToken: !!process.env.OPENROUTE_API_KEY
+      });
       
       try {
         // Fallback to OpenRouteService
         console.log('🔄 Using OpenRoute fallback service');
-        return await this.openRouteService.getRoute(request);
+        const result = await this.openRouteService.getRoute(request);
+        console.log('✅ OpenRoute fallback successful');
+        return result;
       } catch (fallbackError) {
-        console.error('❌ Both routing services failed:', fallbackError);
+        console.error('❌ Both routing services failed:', {
+          mapboxError: error.message,
+          openRouteError: fallbackError.message
+        });
         throw new Error('Navigation service unavailable. Please try again.');
       }
     }
