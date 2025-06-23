@@ -83,8 +83,7 @@ export class MapboxRoutingService {
         steps: true,
         geometries: 'geojson',
         overview: 'full',
-        alternatives: false,
-        radiuses: [100, 100] // Allow 100m radius to snap to nearest road
+        alternatives: false
       };
 
       console.log('🗺️ Mapbox routing request details:', {
@@ -383,20 +382,32 @@ export class EnhancedRoutingService {
       console.log('✅ Mapbox routing successful');
       return result;
     } catch (error) {
-      console.warn('⚠️ Mapbox routing failed, falling back to OpenRoute:', {
+      console.warn('⚠️ Mapbox routing failed, trying driving profile fallback:', {
         error: error.message,
-        hasMapboxToken: !!process.env.MAPBOX_ACCESS_TOKEN,
-        hasOpenRouteToken: !!process.env.OPENROUTE_API_KEY
+        originalProfile: request.profile
       });
       
+      // If walking fails, try driving profile for areas with limited pedestrian data
+      if (request.profile === 'walking' && error.message.includes('NoSegment')) {
+        try {
+          console.log('🗺️ Trying Mapbox with driving profile for better coverage');
+          const drivingRequest = { ...request, profile: 'driving' };
+          const result = await this.mapboxService.getRoute(drivingRequest);
+          console.log('✅ Mapbox driving fallback successful');
+          return result;
+        } catch (drivingError) {
+          console.warn('⚠️ Mapbox driving fallback also failed:', drivingError.message);
+        }
+      }
+      
       try {
-        // Fallback to OpenRouteService
+        // Final fallback to OpenRouteService
         console.log('🔄 Using OpenRoute fallback service');
         const result = await this.openRouteService.getRoute(request);
         console.log('✅ OpenRoute fallback successful');
         return result;
       } catch (fallbackError) {
-        console.error('❌ Both routing services failed:', {
+        console.error('❌ All routing services failed:', {
           mapboxError: error.message,
           openRouteError: fallbackError.message
         });
