@@ -61,26 +61,42 @@ export class GoogleDirectionsService {
 
   private mapProfile(profile: string): string {
     const profileMap = {
-      'walking': 'walking',
+      'walking': 'bicycling', // Use bicycling to avoid driving restrictions in campgrounds
       'cycling': 'bicycling', 
       'driving': 'driving'
     };
-    return profileMap[profile] || 'walking';
+    return profileMap[profile] || 'bicycling';
   }
 
   private processGoogleRoute(route: any): NavigationRoute {
     const leg = route.legs[0];
-    const duration = leg?.duration?.value || 0; // seconds
     const distance = leg?.distance?.value || 0; // meters
     
-    // Process turn-by-turn instructions
-    const instructions = (leg?.steps || []).map((step: any, index: number) => ({
-      instruction: this.cleanHtmlTags(step.html_instructions || ''),
-      distance: this.formatDistance(step.distance?.value || 0),
-      duration: this.formatDuration(step.duration?.value || 0),
-      maneuverType: step.maneuver || 'straight',
-      stepIndex: index
-    }));
+    // Recalculate duration for 6 km/h campground walking speed
+    const campgroundWalkingSpeed = 6; // km/h
+    const distanceKm = distance / 1000;
+    const recalculatedDurationHours = distanceKm / campgroundWalkingSpeed;
+    const recalculatedDurationSeconds = Math.round(recalculatedDurationHours * 3600);
+    
+    console.log(`🚶 Campground routing: ${distance}m distance, recalculated from Google's time to ${Math.round(recalculatedDurationSeconds/60)} min for 6km/h walking`);
+    
+    const duration = recalculatedDurationSeconds; // Use our campground-optimized timing
+    
+    // Process turn-by-turn instructions with recalculated timing for each step
+    const instructions = (leg?.steps || []).map((step: any, index: number) => {
+      const stepDistance = step.distance?.value || 0;
+      const stepDistanceKm = stepDistance / 1000;
+      const stepDurationHours = stepDistanceKm / campgroundWalkingSpeed;
+      const stepDurationSeconds = Math.round(stepDurationHours * 3600);
+      
+      return {
+        instruction: this.cleanHtmlTags(step.html_instructions || ''),
+        distance: this.formatDistance(stepDistance),
+        duration: this.formatDuration(stepDurationSeconds), // Use campground walking speed
+        maneuverType: step.maneuver || 'straight',
+        stepIndex: index
+      };
+    });
 
     // Process route geometry (decode polyline)
     const geometry = this.decodePolyline(route.overview_polyline?.points || '');
