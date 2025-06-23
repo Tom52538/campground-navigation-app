@@ -27,6 +27,14 @@ export interface RouteInstruction {
   distance: string;
   duration: string;
   direction?: string;
+  maneuverType?: string;
+  coordinates?: [number, number];
+}
+
+export interface VoiceInstruction {
+  text: string;
+  distanceAlongGeometry: number;
+  announcement?: number[];
 }
 
 export interface NavigationRoute {
@@ -37,6 +45,7 @@ export interface NavigationRoute {
   instructions: RouteInstruction[];
   geometry: number[][];
   nextInstruction?: RouteInstruction;
+  voiceInstructions?: VoiceInstruction[];
 }
 
 export interface MapState {

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WeatherService } from "../client/src/lib/weatherService";
-import { RoutingService } from "../client/src/lib/routingService";
+import { EnhancedRoutingService } from "../client/src/lib/routingService";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -109,7 +109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY || ""
   );
   
-  const routingService = new RoutingService(
+  // Initialize enhanced routing service with both Mapbox and OpenRoute tokens
+  const routingService = new EnhancedRoutingService(
+    process.env.MAPBOX_ACCESS_TOKEN || "",
     process.env.OPENROUTE_API_KEY || process.env.ROUTING_API_KEY || ""
   );
 
