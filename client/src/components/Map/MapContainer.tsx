@@ -121,7 +121,7 @@ const MapController = ({
     if (map && center) {
       map.setView([center.lat, center.lng], zoom, { 
         animate: true,
-        duration: 1.0
+        duration: 0.8
       });
     }
   }, [center, zoom, map]);

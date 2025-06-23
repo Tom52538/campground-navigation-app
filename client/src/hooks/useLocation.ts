@@ -43,13 +43,35 @@ export const useLocation = (props?: UseLocationProps) => {
       }
 
       try {
+        let lastGPSUpdate = 0;
+        let lastGPSPosition: Coordinates | null = null;
+        
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
+            const now = Date.now();
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
             
+            // Rate limit: Only update every 3 seconds
+            if (now - lastGPSUpdate < 3000) {
+              return;
+            }
+            
+            // Position change filter: Only update if moved significantly
+            if (lastGPSPosition) {
+              const latDiff = Math.abs(coords.lat - lastGPSPosition.lat);
+              const lngDiff = Math.abs(coords.lng - lastGPSPosition.lng);
+              // Ignore tiny GPS jitter (less than ~1 meter)
+              if (latDiff < 0.00001 && lngDiff < 0.00001) {
+                return;
+              }
+            }
+            
+            console.log(`GPS UPDATE: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+            lastGPSUpdate = now;
+            lastGPSPosition = coords;
             setCurrentPosition(coords);
             setIsLoading(false);
             setError(null);
