@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import L from 'leaflet';
@@ -18,6 +18,27 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function SimpleNavigation() {
+  // Add CSS for animations
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ping {
+        75%, 100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+      .poi-marker-visible {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+      }
+      .current-location-marker-pulse {
+        z-index: 1000 !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -74,20 +95,57 @@ export default function SimpleNavigation() {
     }
   };
 
-  // Current location marker
+  // Current location marker with pulse animation
   const currentLocationIcon = divIcon({
-    html: `<div class="bg-blue-600 w-4 h-4 rounded-full shadow-lg border-2 border-white"></div>`,
-    className: 'current-location-marker',
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
+    html: `
+      <div style="position: relative; width: 20px; height: 20px;">
+        <div style="
+          background-color: #2563eb; 
+          width: 20px; 
+          height: 20px; 
+          border-radius: 50%; 
+          border: 3px solid white; 
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          position: absolute;
+          z-index: 1000;
+        "></div>
+        <div style="
+          background-color: #2563eb; 
+          width: 20px; 
+          height: 20px; 
+          border-radius: 50%; 
+          opacity: 0.3;
+          position: absolute;
+          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        "></div>
+      </div>
+    `,
+    className: 'current-location-marker-pulse',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
   });
 
-  // POI marker
+  // POI marker with better visibility
   const createPOIIcon = (color: string) => divIcon({
-    html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px;">🏢</div>`,
-    className: 'poi-marker',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    html: `
+      <div style="
+        background-color: ${color}; 
+        width: 30px; 
+        height: 30px; 
+        border-radius: 50%; 
+        border: 3px solid white; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 16px;
+        position: relative;
+        z-index: 1000;
+      ">📍</div>
+    `,
+    className: 'poi-marker-visible',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
   });
 
   const routeSteps = route?.routes?.[0]?.legs?.[0]?.steps || [];
