@@ -83,7 +83,8 @@ export class MapboxRoutingService {
         steps: true,
         geometries: 'geojson',
         overview: 'full',
-        alternatives: false
+        alternatives: false,
+        radiuses: [100, 100] // Allow 100m radius to snap to nearest road
       };
 
       console.log('🗺️ Mapbox routing request details:', {
