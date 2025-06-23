@@ -189,3 +189,4 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Weather widget preference: Compact, minimal design with proper German translations - no bulky interfaces.
