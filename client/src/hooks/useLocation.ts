@@ -50,31 +50,10 @@ export const useLocation = (props?: UseLocationProps) => {
               lng: position.coords.longitude,
             };
             
-            console.log(`🔍 GPS RAW INPUT: lat=${coords.lat.toFixed(8)}, lng=${coords.lng.toFixed(8)}, accuracy=${position.coords.accuracy}m`);
+            console.log(`🔍 GPS UPDATE: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)} (${position.coords.accuracy}m)`);
             
-            // PRODUCTION GPS DEBUGGING: Check environment
-            const isProd = import.meta.env.PROD;
-            console.log(`🔍 GPS ENV: production=${isProd}`);
-            
-            // SIMPLE GPS: Using basic rate limiting and accuracy filtering
-            console.log('🔍 GPS SIMPLE: Using basic filtering');
-            
-            // Simple position validation without complex stabilizer
-            if (position.coords.accuracy > 100) {
-              console.log(`🔍 GPS REJECT: Poor accuracy ${position.coords.accuracy}m`);
-              return;
-            }
-            
-            // Rate limiting: Only update every 3 seconds
-            const now = Date.now();
-            if (lastEmittedTime && now - lastEmittedTime < 3000) {
-              console.log(`🔍 GPS THROTTLE: ${Math.round((now - lastEmittedTime)/1000)}s since last update`);
-              return;
-            }
-            
-            console.log(`🔍 GPS ACCEPT: lat=${coords.lat.toFixed(8)}, lng=${coords.lng.toFixed(8)}`);
+            // DIRECT UPDATE - NO FILTERING
             setCurrentPosition(coords);
-            setLastEmittedTime(now);
             setIsLoading(false);
             setError(null);
           },
