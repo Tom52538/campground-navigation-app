@@ -173,19 +173,19 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
               key={day.date}
               className="flex items-center justify-between p-1 rounded text-xs bg-white/10"
             >
-              <div className="flex items-center space-x-2 flex-1">
-                <div className="w-8 text-xs font-medium text-white/90">
+              <div className="flex items-center space-x-3 flex-1">
+                <div className="w-12 text-xs font-medium text-white/90 text-left">
                   {day.day}
                 </div>
-                <span className="text-sm">{getWeatherIcon(day.condition)}</span>
+                <span className="text-sm flex-shrink-0">{getWeatherIcon(day.condition)}</span>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-shrink-0">
                 <div className="flex items-center space-x-1">
                   <Droplets className="w-2 h-2 text-blue-200" />
                   <span className="text-xs text-white/80">{day.precipitation}%</span>
                 </div>
-                <div className="text-xs font-medium text-white">
+                <div className="text-xs font-medium text-white min-w-[40px]">
                   {day.temp_low}°/{day.temp_high}°
                 </div>
               </div>
