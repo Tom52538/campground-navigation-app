@@ -57,8 +57,9 @@ export default function Navigation() {
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   
-  // Map orientation state
+  // Map orientation and style state
   const [mapOrientation, setMapOrientation] = useState<'north' | 'driving'>('north');
+  const [mapStyle, setMapStyle] = useState<'outdoors' | 'satellite' | 'streets' | 'navigation'>('outdoors');
   
   // Navigation tracking state
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
@@ -323,6 +324,16 @@ export default function Navigation() {
     setMapOrientation(prev => prev === 'north' ? 'driving' : 'north');
   }, []);
 
+  // Map style change handler
+  const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
+    setMapStyle(style);
+    
+    // Auto-switch to navigation mode when using navigation style during active navigation
+    if (style === 'navigation' && isNavigating) {
+      setMapOrientation('driving');
+    }
+  }, [isNavigating]);
+
   // Initialize voice guide when component mounts
   useEffect(() => {
     try {
@@ -475,6 +486,8 @@ export default function Navigation() {
         onToggleGPS={toggleGPS}
         mapOrientation={mapOrientation}
         onToggleOrientation={handleToggleOrientation}
+        mapStyle={mapStyle}
+        onMapStyleChange={handleMapStyleChange}
       />
 
 

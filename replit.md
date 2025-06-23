@@ -91,6 +91,13 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Changelog
 
+- June 23, 2025. **MAPBOX TILES INTEGRATION**: Enhanced map visualization with professional Mapbox tiles:
+  - Implemented outdoor-optimized map styling perfect for camping navigation
+  - Added map style toggle: Outdoors (trails/terrain), Satellite (aerial view), Streets, Navigation
+  - Professional tile quality with high-DPI support for mobile devices
+  - Maintains OpenStreetMap data with enhanced Mapbox presentation
+  - Smart style switching: auto-switches to navigation mode during active routing
+
 - June 23, 2025. **GOOGLE DIRECTIONS API PRODUCTION READY**: Successfully replaced OpenRoute with Google Directions API:
   - Eliminated all OpenRoute dependencies that caused weeks of routing failures
   - Implemented professional Google Directions API integration with native German instructions

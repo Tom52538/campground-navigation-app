@@ -9,6 +9,8 @@ interface EnhancedMapControlsProps {
   onToggleGPS: () => void;
   mapOrientation: 'north' | 'driving';
   onToggleOrientation: () => void;
+  mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  onMapStyleChange: (style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => void;
 }
 
 export const EnhancedMapControls = ({

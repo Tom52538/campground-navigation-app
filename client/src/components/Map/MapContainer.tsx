@@ -29,6 +29,7 @@ interface MapContainerProps {
   onMapClick: () => void;
   mapOrientation?: 'north' | 'driving';
   bearing?: number;
+  mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -125,6 +126,14 @@ const PopupController = ({ selectedPOI }: { selectedPOI: POI | null }) => {
   return null;
 };
 
+// Map style configurations for different camping use cases
+const MAP_STYLES = {
+  outdoors: 'outdoors-v12',    // Best for camping - shows trails, terrain, elevation
+  satellite: 'satellite-v9',   // Aerial view for campground layout
+  streets: 'streets-v12',      // Urban navigation
+  navigation: 'navigation-day-v1' // Optimized for turn-by-turn navigation
+};
+
 export const MapContainerComponent = ({
   center,
   zoom,
@@ -138,6 +147,7 @@ export const MapContainerComponent = ({
   onMapClick,
   mapOrientation = 'north',
   bearing = 0,
+  mapStyle = 'outdoors',
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
     isVisible: boolean;
@@ -188,8 +198,8 @@ export const MapContainerComponent = ({
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url={`https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''}`}
+          attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           maxZoom={19}
         />
         
