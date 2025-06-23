@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Coordinates, TestSite, TEST_SITES } from '@/types/navigation';
+import { Coordinates, TestSite } from '@/types';
 
 interface UseLocationProps {
   currentSite: TestSite;
@@ -7,6 +7,11 @@ interface UseLocationProps {
 
 export const useLocation = (props?: UseLocationProps) => {
   const currentSite = props?.currentSite || 'kamperland';
+  const TEST_SITES: Record<TestSite, { coordinates: Coordinates; name: string }> = {
+    kamperland: { coordinates: { lat: 51.58979501327052, lng: 3.721826089503387 }, name: 'Kamperland (NL)' },
+    zuhause: { coordinates: { lat: 51.00165397612932, lng: 6.051040465199215 }, name: 'Zuhause (DE)' }
+  };
+  
   const mockCoordinates = TEST_SITES[currentSite].coordinates;
   
   const [currentPosition, setCurrentPosition] = useState<Coordinates>(mockCoordinates);
