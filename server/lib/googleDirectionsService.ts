@@ -70,20 +70,20 @@ export class GoogleDirectionsService {
 
   private processGoogleRoute(route: any): NavigationRoute {
     const leg = route.legs[0];
-    const duration = leg.duration.value; // seconds
-    const distance = leg.distance.value; // meters
+    const duration = leg?.duration?.value || 0; // seconds
+    const distance = leg?.distance?.value || 0; // meters
     
     // Process turn-by-turn instructions
-    const instructions = leg.steps.map((step: any, index: number) => ({
-      instruction: this.cleanHtmlTags(step.html_instructions),
-      distance: this.formatDistance(step.distance.value),
-      duration: this.formatDuration(step.duration.value),
+    const instructions = (leg?.steps || []).map((step: any, index: number) => ({
+      instruction: this.cleanHtmlTags(step.html_instructions || ''),
+      distance: this.formatDistance(step.distance?.value || 0),
+      duration: this.formatDuration(step.duration?.value || 0),
       maneuverType: step.maneuver || 'straight',
       stepIndex: index
     }));
 
     // Process route geometry (decode polyline)
-    const geometry = this.decodePolyline(route.overview_polyline.points);
+    const geometry = this.decodePolyline(route.overview_polyline?.points || '');
 
     // Calculate arrival time
     const arrivalTime = new Date(Date.now() + duration * 1000).toLocaleTimeString('de-DE', {
