@@ -22,10 +22,10 @@ interface MapContainerProps {
   currentPosition: Coordinates;
   pois: POI[];
   selectedPOI: POI | null;
-  route: NavigationRoute | null;
+  route: any | null;
   filteredCategories: string[];
   onPOIClick: (poi: POI) => void;
-  onPOINavigate?: (poi: POI) => void;
+
   onMapClick: () => void;
   mapOrientation?: 'north' | 'driving';
   bearing?: number;
