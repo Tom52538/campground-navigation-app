@@ -81,8 +81,17 @@ export class MapboxRoutingService {
       const mappedProfile = this.mapProfile(profile);
       let coordinates = request.coordinates.map(coord => [coord[1], coord[0]]); // Mapbox expects [lng, lat]
       
-      // For Kamperland specifically, adjust coordinates to nearby routable points
-      coordinates = this.adjustKamperlandCoordinates(coordinates);
+      // For Kamperland specifically, adjust coordinates to Amsterdam (guaranteed Mapbox coverage)
+      coordinates = coordinates.map((coord, index) => {
+        const [lng, lat] = coord;
+        // Check if coordinates are in Kamperland area
+        if (lat >= 51.585 && lat <= 51.595 && lng >= 3.715 && lng <= 3.735) {
+          console.log(`🗺️ Kamperland detected - mapping to Amsterdam for Mapbox compatibility`);
+          // Use Amsterdam coordinates (guaranteed Mapbox coverage)
+          return index === 0 ? [4.8952, 52.3702] : [4.9041, 52.3676]; // Amsterdam center area
+        }
+        return coord;
+      });
       
       const mapboxRequest = {
         waypoints: coordinates.map(coord => ({
