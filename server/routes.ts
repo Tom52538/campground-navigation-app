@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WeatherService } from "../client/src/lib/weatherService";
-import { GoogleDirectionsService } from "./lib/googleDirectionsService";
+
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
   
   // Initialize Google Directions service
-  const routingService = new GoogleDirectionsService(
+  // const routingService = new GoogleDirectionsService(
     process.env.GOOGLE_DIRECTIONS_API_KEY || ""
   );
 
