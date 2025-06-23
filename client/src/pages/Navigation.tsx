@@ -461,6 +461,7 @@ export default function Navigation() {
         onMapClick={handleMapClick}
         mapOrientation={mapOrientation}
         bearing={routeProgress?.heading || 0}
+        mapStyle={mapStyle}
       />
 
       {/* EXPLORATION MODE - Only visible when NOT navigating */}

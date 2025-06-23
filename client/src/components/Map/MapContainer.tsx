@@ -94,6 +94,7 @@ const MapController = ({
   
   useEffect(() => {
     if (map) {
+      console.log('🧭 MapController: Orientation change -', mapOrientation, 'bearing:', bearing);
       if (mapOrientation === 'driving' && bearing !== undefined && bearing !== 0) {
         // Rotate map to driving direction using CSS transform on the leaflet container
         const mapPane = map.getPane('mapPane');
