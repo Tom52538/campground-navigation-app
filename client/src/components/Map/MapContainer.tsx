@@ -33,6 +33,24 @@ interface MapContainerProps {
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
+  const map = useMap();
+  
+  // Smart map following - only recenter if marker goes off-screen
+  useEffect(() => {
+    if (map && position) {
+      const bounds = map.getBounds();
+      const markerLatLng = L.latLng(position.lat, position.lng);
+      
+      // Only recenter if the marker is outside the current view
+      if (!bounds.contains(markerLatLng)) {
+        map.setView([position.lat, position.lng], map.getZoom(), { 
+          animate: true,
+          duration: 0.8
+        });
+      }
+    }
+  }, [position, map]);
+  
   const currentLocationIcon = divIcon({
     html: `
       <div class="relative">
