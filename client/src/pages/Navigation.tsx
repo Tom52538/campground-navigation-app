@@ -10,6 +10,7 @@ import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOve
 import { TopManeuverPanel } from '@/components/Navigation/TopManeuverPanel';
 import { BottomSummaryPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
+import { CampgroundRerouteDetector } from '@/lib/campgroundRerouting';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
 import { useRouting } from '@/hooks/useRouting';
@@ -64,6 +65,7 @@ export default function Navigation() {
   // Navigation tracking state
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
   const routeTrackerRef = useRef<RouteTracker | null>(null);
+  const campgroundRerouteRef = useRef<CampgroundRerouteDetector | null>(null);
   const [currentInstruction, setCurrentInstruction] = useState<string>('');
   const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);

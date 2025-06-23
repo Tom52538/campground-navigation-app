@@ -48,15 +48,17 @@ export const useDynamicNavigation = ({
       // Calculate distance to next maneuver
       const maneuverDistance = currentRouteStep.distance || 0;
       
-      // Dynamic zoom based on upcoming maneuver distance
-      let dynamicZoom = 17; // Default navigation zoom
+      // Campground-optimized dynamic zoom (much closer view for small distances)
+      let dynamicZoom = 18; // Default campground navigation zoom (closer than city)
       
-      if (maneuverDistance < 100) {
-        dynamicZoom = 19; // Very close to turn - zoom in
-      } else if (maneuverDistance < 200) {
-        dynamicZoom = 18; // Approaching turn
-      } else if (maneuverDistance > 1000) {
-        dynamicZoom = 16; // Long straight - zoom out slightly
+      if (maneuverDistance < 20) {
+        dynamicZoom = 20; // Very close to turn in campground - maximum zoom
+      } else if (maneuverDistance < 50) {
+        dynamicZoom = 19; // Approaching turn in campground
+      } else if (maneuverDistance < 100) {
+        dynamicZoom = 18; // Medium distance in campground
+      } else if (maneuverDistance > 200) {
+        dynamicZoom = 17; // Long straight for campground context
       }
       
       // Calculate bearing from current position to next step
@@ -75,12 +77,13 @@ export const useDynamicNavigation = ({
       // Use maneuver bearing if available, otherwise calculated bearing
       const finalBearing = currentRouteStep.maneuver?.bearing_after ?? routeBearing;
       
-      console.log('🗺️ Dynamic navigation config:', {
+      console.log('🏕️ Campground navigation config:', {
         step: currentStep,
-        distance: maneuverDistance,
+        distance: maneuverDistance + 'm',
         zoom: dynamicZoom,
         bearing: finalBearing,
-        instruction: currentRouteStep.instruction
+        instruction: currentRouteStep.instruction,
+        mode: 'campground-optimized'
       });
       
       setMapConfig({
@@ -90,9 +93,9 @@ export const useDynamicNavigation = ({
         followUser: true
       });
     } else {
-      // Fallback navigation view
+      // Fallback campground navigation view
       setMapConfig({
-        zoom: 17,
+        zoom: 18, // Closer zoom for campground fallback
         center: currentPosition,
         bearing: 0,
         followUser: true

@@ -91,6 +91,19 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Changelog
 
+- June 23, 2025. **CAMPGROUND-OPTIMIZED NAVIGATION**: Implemented Google Maps-style dynamic navigation with campground-specific parameters:
+  - Dynamic zoom adjustment based on maneuver distance (20x zoom for turns <20m, 19x for <50m, 18x for <100m)
+  - Campground-specific rerouting thresholds (8m off-route detection, 15m auto-reroute vs 50m for cities)
+  - Sensitive movement detection (3m minimum vs 10m+ for roads) for precise path following
+  - Automatic map style switching to navigation mode during active routing
+  - Smart bearing calculation from route geometry for realistic map rotation
+  - Campground-optimized zoom levels (16-20x vs 10-19x for city navigation)
+
+- June 23, 2025. **POI HOVER TOOLTIPS**: Added interactive hover tooltips for POI markers:
+  - Glassmorphism tooltip design matching app aesthetic
+  - Display POI name, category, description, and distance on mouseover
+  - Smooth tooltip animations with proper z-index handling
+
 - June 23, 2025. **MAPBOX TILES INTEGRATION**: Enhanced map visualization with professional Mapbox tiles:
   - Implemented outdoor-optimized map styling perfect for camping navigation
   - Added map style toggle: Outdoors (trails/terrain), Satellite (aerial view), Streets, Navigation
