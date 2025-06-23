@@ -177,8 +177,17 @@ export default function SimpleNavigation() {
           )}
 
           {/* POI markers */}
-          {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => {
-            console.log('Rendering POI:', poi.name, poi.lat, poi.lng);
+          {pois.filter(poi => {
+            // Handle both coordinate structures
+            const lat = poi.lat || poi.coordinates?.lat;
+            const lng = poi.lng || poi.coordinates?.lng;
+            return lat && lng && !isNaN(lat) && !isNaN(lng);
+          }).map((poi) => {
+            // Handle both coordinate structures
+            const lat = poi.lat || poi.coordinates?.lat;
+            const lng = poi.lng || poi.coordinates?.lng;
+            
+            console.log('Rendering POI:', poi.name, lat, lng);
             const color = poi.category === 'food-drink' ? '#ff6b6b' : 
                          poi.category === 'accommodation' ? '#4ecdc4' :
                          poi.category === 'recreation' ? '#45b7d1' : '#96ceb4';
@@ -186,12 +195,18 @@ export default function SimpleNavigation() {
             return (
               <Marker
                 key={poi.id}
-                position={[poi.lat, poi.lng]}
+                position={[lat, lng]}
                 icon={createPOIIcon(color)}
                 eventHandlers={{
                   click: () => {
                     console.log('POI clicked:', poi.name);
-                    handleStartNavigation(poi);
+                    // Create POI object with correct structure for navigation
+                    const navigationPOI = {
+                      ...poi,
+                      lat: lat,
+                      lng: lng
+                    };
+                    handleStartNavigation(navigationPOI);
                   },
                 }}
               >
@@ -201,7 +216,10 @@ export default function SimpleNavigation() {
                     <div className="text-sm text-gray-600 mb-2">{poi.description}</div>
                     <div className="text-xs text-gray-500 mb-2">Kategorie: {poi.category}</div>
                     <button
-                      onClick={() => handleStartNavigation(poi)}
+                      onClick={() => {
+                        const navigationPOI = { ...poi, lat: lat, lng: lng };
+                        handleStartNavigation(navigationPOI);
+                      }}
                       className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
                     >
                       <NavigationIcon className="w-4 h-4 inline mr-1" />
