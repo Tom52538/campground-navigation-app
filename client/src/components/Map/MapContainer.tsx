@@ -93,20 +93,24 @@ const MapController = ({
   }, [center, zoom, map]);
   
   useEffect(() => {
-    if (mapOrientation === 'driving' && bearing !== undefined) {
-      // Rotate map to driving direction using CSS transform on the leaflet container
-      const mapPane = map.getPane('mapPane');
-      if (mapPane) {
-        mapPane.style.transform = `rotate(${-bearing}deg)`;
-        mapPane.style.transformOrigin = 'center';
-        mapPane.style.transition = 'transform 0.3s ease';
-      }
-    } else {
-      // Reset to north-up orientation
-      const mapPane = map.getPane('mapPane');
-      if (mapPane) {
-        mapPane.style.transform = 'rotate(0deg)';
-        mapPane.style.transition = 'transform 0.3s ease';
+    if (map) {
+      if (mapOrientation === 'driving' && bearing !== undefined && bearing !== 0) {
+        // Rotate map to driving direction using CSS transform on the leaflet container
+        const mapPane = map.getPane('mapPane');
+        if (mapPane) {
+          mapPane.style.transform = `rotate(${-bearing}deg)`;
+          mapPane.style.transformOrigin = 'center';
+          mapPane.style.transition = 'transform 0.3s ease';
+          console.log('🧭 Map rotated to bearing:', bearing);
+        }
+      } else {
+        // Reset to north-up orientation
+        const mapPane = map.getPane('mapPane');
+        if (mapPane) {
+          mapPane.style.transform = 'rotate(0deg)';
+          mapPane.style.transition = 'transform 0.3s ease';
+          console.log('🧭 Map reset to north-up');
+        }
       }
     }
   }, [mapOrientation, bearing, map]);

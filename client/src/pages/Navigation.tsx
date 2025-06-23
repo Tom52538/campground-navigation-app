@@ -88,7 +88,16 @@ export default function Navigation() {
       if (useRealGPS && livePosition && lastPositionRef.current) {
         const bearing = calculateBearing(lastPositionRef.current, livePosition.position);
         if (!isNaN(bearing)) {
+          console.log('📍 Calculated bearing from movement:', bearing);
           setCurrentBearing(bearing);
+        }
+      }
+      // For mock GPS, use route direction if available
+      else if (!useRealGPS && currentRoute && routeProgress) {
+        const routeBearing = routeProgress.heading || 0;
+        if (routeBearing !== 0) {
+          console.log('📍 Using route bearing for mock GPS:', routeBearing);
+          setCurrentBearing(routeBearing);
         }
       }
       // Store current position for next calculation
@@ -96,7 +105,7 @@ export default function Navigation() {
         lastPositionRef.current = livePosition.position;
       }
     }
-  }, [livePosition, mapOrientation, isNavigating, useRealGPS]);
+  }, [livePosition, mapOrientation, isNavigating, useRealGPS, currentRoute, routeProgress]);
   
   // Debug logging for position tracking
   useEffect(() => {

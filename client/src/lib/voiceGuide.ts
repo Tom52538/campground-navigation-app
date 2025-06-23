@@ -26,7 +26,7 @@ export class VoiceGuide {
 
   constructor() {
     // Check if speech synthesis is available
-    if (!window.speechSynthesis) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
       console.warn('Speech synthesis not available in this browser');
       this.synthesis = null as any;
       this.currentLanguage = detectUserLanguage() as SupportedLanguage;

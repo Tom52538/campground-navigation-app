@@ -47,7 +47,7 @@ export const getBounds = (coordinates: Coordinates[]): [[number, number], [numbe
   return [[minLat, minLng], [maxLat, maxLng]];
 };
 
-// Calculate bearing between two coordinates
+// Calculate bearing between two coordinates  
 export const calculateBearing = (from: Coordinates, to: Coordinates): number => {
   const dLng = toRadians(to.lng - from.lng);
   const lat1 = toRadians(from.lat);
