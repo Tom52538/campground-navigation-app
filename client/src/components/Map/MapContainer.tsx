@@ -239,6 +239,7 @@ export const MapContainerComponent = ({
             isSelected={selectedPOI?.id === poi.id}
             onClick={() => onPOIClick(poi)}
             onNavigate={onPOINavigate}
+            showHoverTooltip={true}
           />
         ))}
         

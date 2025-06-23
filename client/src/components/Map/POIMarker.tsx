@@ -7,6 +7,7 @@ interface POIMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   onNavigate?: (poi: POI) => void;
+  showHoverTooltip?: boolean;
 }
 
 const getEmojiIcon = (iconName: string) => {
@@ -19,7 +20,7 @@ const getEmojiIcon = (iconName: string) => {
   }
 };
 
-export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerProps) => {
+export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverTooltip = true }: POIMarkerProps) => {
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
   const iconName = category?.icon || 'MapPin';
   const colorClass = category?.color || 'bg-gray-500';
@@ -38,13 +39,40 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate }: POIMarkerPro
     iconAnchor: [16, 16],
   });
 
+  const eventHandlers = {
+    click: onClick,
+    ...(showHoverTooltip && {
+      mouseover: (e: any) => {
+        const marker = e.target;
+        const tooltipContent = `
+          <div style="font-family: system-ui; font-size: 12px; line-height: 1.4; padding: 6px 8px;">
+            <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">${poi.name}</div>
+            <div style="color: #6b7280; margin-bottom: 2px; text-transform: capitalize;">${poi.category}</div>
+            ${poi.description ? `<div style="color: #6b7280; font-size: 11px; margin-bottom: 4px;">${poi.description}</div>` : ''}
+            ${poi.distance ? `<div style="color: #059669; font-weight: 500; font-size: 11px;">📍 ${poi.distance}</div>` : ''}
+          </div>
+        `;
+        
+        marker.bindTooltip(tooltipContent, {
+          permanent: false,
+          direction: 'top',
+          offset: [0, -10],
+          className: 'custom-poi-tooltip',
+          opacity: 0.95
+        }).openTooltip();
+      },
+      mouseout: (e: any) => {
+        const marker = e.target;
+        marker.closeTooltip();
+      }
+    })
+  };
+
   return (
     <Marker 
       position={[poi.coordinates.lat, poi.coordinates.lng]} 
       icon={markerIcon}
-      eventHandlers={{
-        click: onClick,
-      }}
+      eventHandlers={eventHandlers}
     />
   );
 };
