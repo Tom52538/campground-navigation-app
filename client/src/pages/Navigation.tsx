@@ -81,8 +81,7 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  // Disable automatic map recentering for GPS updates
-  // The CurrentLocationMarker will handle smart recentering only when needed
+  // GPS Follow Logic - Only update map center manually
   // useEffect(() => {
   //   if (followGPS && trackingPosition) {
   //     setMapCenter(trackingPosition);

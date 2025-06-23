@@ -33,24 +33,6 @@ interface MapContainerProps {
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
-  const map = useMap();
-  
-  // Smart map following - only recenter if marker goes off-screen
-  useEffect(() => {
-    if (map && position) {
-      const bounds = map.getBounds();
-      const markerLatLng = L.latLng(position.lat, position.lng);
-      
-      // Only recenter if the marker is outside the current view
-      if (!bounds.contains(markerLatLng)) {
-        map.setView([position.lat, position.lng], map.getZoom(), { 
-          animate: true,
-          duration: 0.8
-        });
-      }
-    }
-  }, [position, map]);
-  
   const currentLocationIcon = divIcon({
     html: `
       <div class="relative">
@@ -135,12 +117,10 @@ const MapController = ({
 }) => {
   const map = useMap();
   
-  // Only update map center for manual center changes, not GPS updates
   useEffect(() => {
     if (map && center) {
       map.setView([center.lat, center.lng], zoom, { 
-        animate: true,
-        duration: 0.8
+        animate: false
       });
     }
   }, [center, zoom, map]);
