@@ -175,26 +175,7 @@
     @apply w-12 h-12 floating-button;
   }
   
-  /* Stylish Route Design */
-  .stylish-route-line {
-    background: linear-gradient(90deg, #3b82f6, #1d4ed8, #2563eb);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-    border-radius: 3px;
-  }
-  
-  .route-animation {
-    animation: routeFlow 3s linear infinite;
-  }
-  
-  @keyframes routeFlow {
-    0% { stroke-dashoffset: 0; }
-    100% { stroke-dashoffset: -20px; }
-  }
-  
-  /* Enhanced Route Glow Effect */
-  .leaflet-interactive.stylish-route-line {
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
-  }
+  /* Route styling cleaned up - using multi-layer approach instead */
 }
 
 @layer utilities {

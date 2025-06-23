@@ -64,39 +64,59 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
 
   return (
     <>
-      {/* Shadow/Glow Effect */}
+      {/* Outer Glow/Shadow */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
-          color: '#000000', 
-          weight: 8, 
-          opacity: 0.2,
+          color: '#1e40af', 
+          weight: 12, 
+          opacity: 0.15,
           lineCap: 'round',
           lineJoin: 'round'
         }} 
       />
-      {/* Main Gradient Route */}
+      {/* Middle Glow */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
-          color: 'url(#routeGradient)', 
-          weight: 5, 
-          opacity: 1,
+          color: '#2563eb', 
+          weight: 8, 
+          opacity: 0.4,
           lineCap: 'round',
-          lineJoin: 'round',
-          className: 'stylish-route-line'
+          lineJoin: 'round'
         }} 
       />
-      {/* Animated Progress Overlay */}
+      {/* Main Route Line */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
-          color: '#ffffff', 
-          weight: 2, 
-          opacity: 0.6,
+          color: '#3b82f6', 
+          weight: 5, 
+          opacity: 0.9,
           lineCap: 'round',
-          dashArray: '12, 8',
-          className: 'route-animation'
+          lineJoin: 'round'
+        }} 
+      />
+      {/* Inner Highlight */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#60a5fa', 
+          weight: 3, 
+          opacity: 0.8,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }} 
+      />
+      {/* Center Core */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#93c5fd', 
+          weight: 1, 
+          opacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round'
         }} 
       />
     </>
@@ -248,16 +268,7 @@ export const MapContainerComponent = ({
           maxZoom={19}
         />
         
-        {/* SVG Definitions for Route Gradient */}
-        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-          <defs>
-            <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="1" />
-              <stop offset="50%" stopColor="#1d4ed8" stopOpacity="1" />
-              <stop offset="100%" stopColor="#2563eb" stopOpacity="1" />
-            </linearGradient>
-          </defs>
-        </svg>
+
         
         <GestureController
           onPinchZoom={handlePinchZoom}
