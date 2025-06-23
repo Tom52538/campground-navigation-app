@@ -81,8 +81,6 @@ export class MapboxRoutingService {
         profile: profile,
         language: request.language || 'de',
         steps: true,
-        voice_instructions: true,
-        banner_instructions: true,
         geometries: 'geojson',
         overview: 'full',
         alternatives: false
@@ -101,8 +99,12 @@ export class MapboxRoutingService {
       console.log('🗺️ Mapbox API response status:', response.status);
       
       if (!response.body.routes || response.body.routes.length === 0) {
-        console.error('🗺️ No routes found in Mapbox response:', response.body);
-        throw new Error('No route found');
+        console.error('🗺️ No routes found in Mapbox response:', {
+          code: response.body.code,
+          message: response.body.message,
+          coordinates: coordinates
+        });
+        throw new Error(`No route found: ${response.body.message || 'Unknown error'}`);
       }
 
       const route = response.body.routes[0];
@@ -141,6 +143,14 @@ export class MapboxRoutingService {
     const duration = route.duration;
     const distance = route.distance;
     
+    console.log('🗺️ Processing Mapbox route:', {
+      distance,
+      duration,
+      legs: route.legs.length,
+      steps: leg.steps.length,
+      geometry_type: route.geometry?.type
+    });
+    
     // Process step-by-step instructions
     const instructions: RouteInstruction[] = leg.steps.map((step: any) => ({
       instruction: step.maneuver.instruction || this.generateInstruction(step),
@@ -149,17 +159,6 @@ export class MapboxRoutingService {
       maneuverType: step.maneuver.type,
       coordinates: step.maneuver.location as [number, number]
     }));
-
-    // Process voice instructions
-    const voiceInstructions: VoiceInstruction[] = leg.steps
-      .filter((step: any) => step.voiceInstructions && step.voiceInstructions.length > 0)
-      .flatMap((step: any) => 
-        step.voiceInstructions.map((voice: any) => ({
-          text: voice.announcement,
-          distanceAlongGeometry: voice.distanceAlongGeometry,
-          announcement: voice.announcement
-        }))
-      );
 
     // Calculate arrival time using device time
     const arrivalTime = this.formatArrivalTime(duration);
@@ -171,8 +170,7 @@ export class MapboxRoutingService {
       instructions,
       geometry: route.geometry.coordinates,
       nextInstruction: instructions[0] || null,
-      arrivalTime,
-      voiceInstructions
+      arrivalTime
     };
   }
 
