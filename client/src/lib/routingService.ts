@@ -36,12 +36,24 @@ export interface DirectionsRequest {
 
 export class MapboxRoutingService {
   private directionsService: any;
+  private accessToken: string;
   
   constructor(accessToken: string) {
-    this.directionsService = MapboxDirections({ accessToken });
+    this.accessToken = accessToken;
+    // Initialize Mapbox service only when token is valid
+    if (accessToken && accessToken.startsWith('pk.')) {
+      this.directionsService = MapboxDirections({ accessToken });
+    } else {
+      console.warn('🗺️ Invalid or missing Mapbox token, will use fallback routing');
+      this.directionsService = null;
+    }
   }
 
   async getRoute(request: RouteRequest): Promise<NavigationRoute> {
+    if (!this.directionsService) {
+      throw new Error('Mapbox service not available - invalid token');
+    }
+
     try {
       const mapboxRequest = {
         waypoints: request.coordinates.map(coord => ({
@@ -156,30 +168,40 @@ export class MapboxRoutingService {
     nextWaypointIndex: number;
     distanceToNext: number;
   } {
-    const currentPoint = turf.point([currentPosition[1], currentPosition[0]]); // [lng, lat]
-    const routeLine = turf.lineString(routeGeometry);
-    
-    // Find closest point on route
-    const snapped = turf.nearestPointOnLine(routeLine, currentPoint);
-    const progressAlong = snapped.properties.location;
-    
-    // Calculate remaining distance
-    const remainingSlice = turf.lineSliceAlong(
-      routeLine, 
-      progressAlong, 
-      turf.length(routeLine)
-    );
-    
-    const distanceRemaining = turf.length(remainingSlice) * 1000; // Convert to meters
-    const totalDistance = turf.length(routeLine) * 1000;
-    const progressPercentage = ((totalDistance - distanceRemaining) / totalDistance) * 100;
+    try {
+      const currentPoint = turf.point([currentPosition[1], currentPosition[0]]); // [lng, lat]
+      const routeLine = turf.lineString(routeGeometry);
+      
+      // Find closest point on route
+      const snapped = turf.nearestPointOnLine(routeLine, currentPoint);
+      const progressAlong = snapped.properties.location;
+      
+      // Calculate remaining distance
+      const remainingSlice = turf.lineSliceAlong(
+        routeLine, 
+        progressAlong, 
+        turf.length(routeLine)
+      );
+      
+      const distanceRemaining = turf.length(remainingSlice) * 1000; // Convert to meters
+      const totalDistance = turf.length(routeLine) * 1000;
+      const progressPercentage = ((totalDistance - distanceRemaining) / totalDistance) * 100;
 
-    return {
-      progressPercentage: Math.max(0, Math.min(100, progressPercentage)),
-      distanceRemaining,
-      nextWaypointIndex: 0,
-      distanceToNext: distanceRemaining
-    };
+      return {
+        progressPercentage: Math.max(0, Math.min(100, progressPercentage)),
+        distanceRemaining,
+        nextWaypointIndex: 0,
+        distanceToNext: distanceRemaining
+      };
+    } catch (error) {
+      console.error('Route progress calculation error:', error);
+      return {
+        progressPercentage: 0,
+        distanceRemaining: 0,
+        nextWaypointIndex: 0,
+        distanceToNext: 0
+      };
+    }
   }
 
   formatDistance(meters: number): string {
@@ -341,7 +363,18 @@ export class EnhancedRoutingService {
     nextWaypointIndex: number;
     distanceToNext: number;
   } {
-    return this.mapboxService.calculateRouteProgress(currentPosition, routeGeometry);
+    try {
+      return this.mapboxService.calculateRouteProgress(currentPosition, routeGeometry);
+    } catch (error) {
+      console.warn('Using fallback route progress calculation');
+      // Simple fallback calculation
+      return {
+        progressPercentage: 0,
+        distanceRemaining: 0,
+        nextWaypointIndex: 0,
+        distanceToNext: 0
+      };
+    }
   }
 
   formatDistance(meters: number): string {

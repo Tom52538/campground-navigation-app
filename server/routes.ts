@@ -228,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Routing endpoint
+  // Enhanced routing endpoint with Mapbox integration
   app.post("/api/route", async (req, res) => {
     try {
       const { from, to } = req.body;
@@ -237,46 +237,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Valid start and end coordinates are required" });
       }
 
-      // Create route request with German language for OpenRouteService
+      console.log(`🗺️ Route request: ${from.lat},${from.lng} → ${to.lat},${to.lng}`);
+
+      // Enhanced route request with Mapbox/OpenRoute fallback
       const routeData = await routingService.getRoute({
         coordinates: [[from.lng, from.lat], [to.lng, to.lat]],
-        profile: 'foot-walking',
-        language: 'de', // Request German instructions directly
+        profile: 'walking',
+        language: 'de',
         units: 'm',
         instructions: true,
         geometry: true
       });
 
-      const route = routeData.routes[0];
-      const instructions = route.segments.flatMap((segment: any) => 
-        segment.steps.map((step: any) => ({
-          instruction: step.instruction,
-          distance: routingService.formatDistance(step.distance),
-          duration: routingService.formatDuration(step.duration)
-        }))
-      );
-
-      // Decode geometry for route display
-      let geometry: number[][];
-      if (typeof route.geometry === 'string') {
-        geometry = decodePolyline(route.geometry);
-      } else {
-        geometry = route.geometry;
-      }
-
+      // Enhanced response format - routeData is already a NavigationRoute
       const response = {
-        totalDistance: routingService.formatDistance(route.summary.distance),
-        estimatedTime: routingService.formatDuration(route.summary.duration),
-        durationSeconds: route.summary.duration, // Send raw duration for client-side ETA calculation
-        instructions,
-        geometry: geometry,
-        nextInstruction: instructions[0] || null
+        totalDistance: routeData.totalDistance,
+        estimatedTime: routeData.estimatedTime,
+        durationSeconds: routeData.durationSeconds,
+        instructions: routeData.instructions,
+        geometry: routeData.geometry,
+        nextInstruction: routeData.nextInstruction,
+        arrivalTime: routeData.arrivalTime,
+        voiceInstructions: routeData.voiceInstructions
       };
 
+      console.log(`🗺️ Route calculated: ${response.totalDistance}, ${response.estimatedTime}`);
       res.json(response);
     } catch (error) {
-      console.error("Routing API error:", error);
-      res.status(500).json({ error: "Failed to calculate route" });
+      console.error("Enhanced routing API error:", error);
+      res.status(500).json({ 
+        error: "Failed to calculate route",
+        details: error.message
+      });
+    }
+  });
+
+  // Add new endpoint for route progress tracking
+  app.post("/api/route/progress", async (req, res) => {
+    try {
+      const { currentPosition, routeGeometry } = req.body;
+      
+      if (!currentPosition || !routeGeometry) {
+        return res.status(400).json({ error: "Current position and route geometry required" });
+      }
+
+      const progress = routingService.calculateRouteProgress(
+        [currentPosition.lat, currentPosition.lng],
+        routeGeometry
+      );
+
+      res.json(progress);
+    } catch (error) {
+      console.error("Route progress error:", error);
+      res.status(500).json({ error: "Failed to calculate route progress" });
     }
   });
 
@@ -287,7 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       services: {
         weather: !!process.env.OPENWEATHER_API_KEY || !!process.env.WEATHER_API_KEY,
-        routing: !!process.env.OPENROUTE_API_KEY || !!process.env.ROUTING_API_KEY
+        mapbox: !!process.env.MAPBOX_ACCESS_TOKEN,
+        openroute: !!process.env.OPENROUTE_API_KEY || !!process.env.ROUTING_API_KEY
       }
     });
   });
