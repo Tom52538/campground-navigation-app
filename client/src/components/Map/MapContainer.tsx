@@ -316,6 +316,7 @@ export const MapContainerComponent = ({
         className="w-full h-full z-0"
         zoomControl={false}
         attributionControl={false}
+        onClick={onMapClick}
       >
         <MapController 
           center={center} 

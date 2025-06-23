@@ -227,6 +227,9 @@ export default function Navigation() {
       setUIMode('start');
       setOverlayStates(prev => ({ ...prev, poiInfo: false }));
     }
+    // Disable GPS following when user manually interacts with map
+    setFollowGPS(false);
+    console.log('🗺️ MAP CLICK: GPS following disabled due to user interaction');
   }, [selectedPOI]);
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
@@ -510,7 +513,10 @@ export default function Navigation() {
         filteredCategories={filteredCategories}
         onPOIClick={handlePOIClick}
         onPOINavigate={handleNavigateToPOI}
-        onMapClick={handleMapClick}
+        onMapClick={() => {
+          handleMapClick();
+          setFollowGPS(false); // Disable GPS following when user interacts with map
+        }}
         mapOrientation={mapOrientation}
         bearing={routeProgress?.heading || 0}
         mapStyle={mapStyle}

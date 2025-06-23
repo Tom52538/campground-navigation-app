@@ -57,7 +57,7 @@ export const useLocation = (props?: UseLocationProps) => {
             
             // Position stabilization to prevent flickering
             const now = Date.now();
-            const minUpdateInterval = 3000; // 3 seconds minimum between updates
+            const minUpdateInterval = 2000; // 2 seconds minimum between updates
             
             if (now - positionStabilizer.lastUpdate < minUpdateInterval) {
               console.log(`🔍 GPS DEBUG: Position update throttled (${now - positionStabilizer.lastUpdate}ms)`);
@@ -65,7 +65,7 @@ export const useLocation = (props?: UseLocationProps) => {
             }
             
             // Accuracy filter - reject low accuracy positions
-            if (position.coords.accuracy > 50) {
+            if (position.coords.accuracy > 30) {
               console.log(`🔍 GPS DEBUG: Position accuracy too low (${position.coords.accuracy}m), skipping`);
               return;
             }
@@ -73,7 +73,7 @@ export const useLocation = (props?: UseLocationProps) => {
             // Distance validation to prevent unrealistic jumps
             if (lastValidPosition) {
               const distance = calculateDistance(lastValidPosition, coords);
-              if (distance > 200) { // More than 200m jump is suspicious
+              if (distance > 100) { // More than 100m jump is suspicious for pedestrian movement
                 console.log(`🔍 GPS DEBUG: Large position jump (${distance.toFixed(0)}m), validating...`);
                 // Store for validation but don't update immediately
                 setPositionStabilizer(prev => ({
