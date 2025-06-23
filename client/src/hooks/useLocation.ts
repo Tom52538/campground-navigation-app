@@ -59,6 +59,18 @@ export const useLocation = (props?: UseLocationProps) => {
             
             console.log(`🔍 GPS RAW: Received position`, coords, `accuracy: ${position.coords.accuracy}m`);
             
+            // FORCE GPS stabilizer initialization in production
+            if (!gpsStabilizer.current) {
+              console.log('🔍 GPS: Reinitializing stabilizer for production');
+              gpsStabilizer.current = new GPSStabilizer({
+                smoothingWindow: 8,
+                maxAccuracy: 30,
+                maxJumpDistance: 40,
+                minUpdateInterval: 6000,
+                speedThreshold: 1.0
+              });
+            }
+            
             // Use GPS stabilizer to filter and smooth position
             const stabilizedPosition = gpsStabilizer.current.addPosition(coords, position.coords.accuracy);
             
@@ -172,6 +184,18 @@ export const useLocation = (props?: UseLocationProps) => {
   const toggleGPS = () => {
     const newGPSState = !useRealGPS;
     console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
+    
+    // Ensure stabilizer exists before calling methods
+    if (!gpsStabilizer.current) {
+      console.log('🔍 GPS: Creating stabilizer during toggle');
+      gpsStabilizer.current = new GPSStabilizer({
+        smoothingWindow: 8,
+        maxAccuracy: 30,
+        maxJumpDistance: 40,
+        minUpdateInterval: 6000,
+        speedThreshold: 1.0
+      });
+    }
     
     if (newGPSState) {
       // Switching to Real GPS - reset stabilizer and start loading
