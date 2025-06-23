@@ -95,58 +95,18 @@ export default function SimpleNavigation() {
     }
   };
 
-  // Current location marker with pulse animation
-  const currentLocationIcon = divIcon({
-    html: `
-      <div style="position: relative; width: 20px; height: 20px;">
-        <div style="
-          background-color: #2563eb; 
-          width: 20px; 
-          height: 20px; 
-          border-radius: 50%; 
-          border: 3px solid white; 
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          position: absolute;
-          z-index: 1000;
-        "></div>
-        <div style="
-          background-color: #2563eb; 
-          width: 20px; 
-          height: 20px; 
-          border-radius: 50%; 
-          opacity: 0.3;
-          position: absolute;
-          animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        "></div>
-      </div>
-    `,
-    className: 'current-location-marker-pulse',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+  // Use simple red marker for current location
+  const currentLocationIcon = new L.Icon({
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
   });
 
-  // POI marker with better visibility
-  const createPOIIcon = (color: string) => divIcon({
-    html: `
-      <div style="
-        background-color: ${color}; 
-        width: 30px; 
-        height: 30px; 
-        border-radius: 50%; 
-        border: 3px solid white; 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 16px;
-        position: relative;
-        z-index: 1000;
-      ">📍</div>
-    `,
-    className: 'poi-marker-visible',
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-  });
+  // Use default Leaflet marker for guaranteed visibility
+  const createPOIIcon = () => new L.Icon.Default();
 
   const routeSteps = route?.routes?.[0]?.legs?.[0]?.steps || [];
   const totalDistance = route?.routes?.[0]?.legs?.[0]?.distance?.text || '';
@@ -246,15 +206,12 @@ export default function SimpleNavigation() {
             const lng = poi.lng || poi.coordinates?.lng;
             
             console.log('Rendering POI:', poi.name, lat, lng);
-            const color = poi.category === 'food-drink' ? '#ff6b6b' : 
-                         poi.category === 'accommodation' ? '#4ecdc4' :
-                         poi.category === 'recreation' ? '#45b7d1' : '#96ceb4';
             
             return (
               <Marker
                 key={poi.id}
                 position={[lat, lng]}
-                icon={createPOIIcon(color)}
+                icon={createPOIIcon()}
                 eventHandlers={{
                   click: () => {
                     console.log('POI clicked:', poi.name);
