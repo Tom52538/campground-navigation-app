@@ -85,7 +85,13 @@ export const useNavigationTracking = (
             // Prevent processing if component unmounted or navigation stopped
             if (!isNavigating) return;
             
-            console.log(`🔍 NAV TRACKING DEBUG: GPS position received during navigation:`, {
+            // Skip low accuracy positions during navigation
+            if (position.coords.accuracy > 50) {
+              console.log(`🔍 NAV TRACKING DEBUG: Navigation position accuracy too low (${position.coords.accuracy}m), skipping`);
+              return;
+            }
+            
+            console.log(`🔍 NAV TRACKING DEBUG: High-accuracy GPS position received during navigation:`, {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
               accuracy: position.coords.accuracy

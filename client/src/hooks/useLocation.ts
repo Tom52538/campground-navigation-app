@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Coordinates, TestSite, TEST_SITES } from '@/types/navigation';
+import { calculateDistance } from '@/lib/mapUtils';
 
 interface UseLocationProps {
   currentSite: TestSite;
@@ -14,6 +15,11 @@ export const useLocation = (props?: UseLocationProps) => {
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
+  const [lastValidPosition, setLastValidPosition] = useState<Coordinates | null>(null);
+  const [positionStabilizer, setPositionStabilizer] = useState<{
+    positions: Coordinates[];
+    lastUpdate: number;
+  }>({ positions: [], lastUpdate: 0 });
   
   // Debug logging for GPS state changes
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
@@ -153,7 +159,21 @@ export const useLocation = (props?: UseLocationProps) => {
   const toggleGPS = () => {
     const newGPSState = !useRealGPS;
     console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
-    console.trace('🔍 GPS DEBUG: toggleGPS call stack');
+    
+    if (newGPSState) {
+      // Switching to Real GPS - start with loading state to prevent flickering
+      setIsLoading(true);
+      setPositionStabilizer({ positions: [], lastUpdate: 0 });
+      setLastValidPosition(currentPosition); // Remember last known position
+    } else {
+      // Switching to Mock GPS - immediately set to mock coordinates
+      console.log(`🔍 GPS DEBUG: Switching to Mock GPS - setting position to:`, mockCoordinates);
+      setCurrentPosition(mockCoordinates);
+      setLastValidPosition(null);
+      setIsLoading(false);
+      setError(null);
+    }
+    
     setUseRealGPS(newGPSState);
   };
 
