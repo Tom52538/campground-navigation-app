@@ -54,8 +54,41 @@ export const useLocation = (props?: UseLocationProps) => {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
-            console.log(`🔍 GPS DEBUG: Real GPS position:`, coords);
+            
+            // Position stabilization to prevent flickering
+            const now = Date.now();
+            const minUpdateInterval = 3000; // 3 seconds minimum between updates
+            
+            if (now - positionStabilizer.lastUpdate < minUpdateInterval) {
+              console.log(`🔍 GPS DEBUG: Position update throttled (${now - positionStabilizer.lastUpdate}ms)`);
+              return;
+            }
+            
+            // Accuracy filter - reject low accuracy positions
+            if (position.coords.accuracy > 50) {
+              console.log(`🔍 GPS DEBUG: Position accuracy too low (${position.coords.accuracy}m), skipping`);
+              return;
+            }
+            
+            // Distance validation to prevent unrealistic jumps
+            if (lastValidPosition) {
+              const distance = calculateDistance(lastValidPosition, coords);
+              if (distance > 200) { // More than 200m jump is suspicious
+                console.log(`🔍 GPS DEBUG: Large position jump (${distance.toFixed(0)}m), validating...`);
+                // Store for validation but don't update immediately
+                setPositionStabilizer(prev => ({
+                  positions: [...prev.positions.slice(-2), coords],
+                  lastUpdate: now
+                }));
+                return;
+              }
+            }
+            
+            console.log(`🔍 GPS DEBUG: Real GPS position accepted:`, coords, `accuracy: ${position.coords.accuracy}m`);
             setCurrentPosition(coords);
+            setLastValidPosition(coords);
+            setPositionStabilizer({ positions: [], lastUpdate: now });
+            setIsLoading(false);
             setError(null);
           },
           (error) => {

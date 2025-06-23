@@ -34,9 +34,10 @@ export default function Navigation() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  // Map state
+  // Map state with GPS following
   const [mapCenter, setMapCenter] = useState(TEST_SITES.kamperland.coordinates);
   const [mapZoom, setMapZoom] = useState(16);
+  const [followGPS, setFollowGPS] = useState(true);
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [currentRoute, setCurrentRoute] = useState<NavigationRoute | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -79,6 +80,21 @@ export default function Navigation() {
   
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
+  
+  // Auto-follow GPS position with the map
+  useEffect(() => {
+    if (followGPS && trackingPosition) {
+      console.log(`🗺️ GPS FOLLOW: Centering map on position:`, trackingPosition);
+      setMapCenter(trackingPosition);
+    }
+  }, [trackingPosition, followGPS]);
+  
+  // Update map center when site changes
+  useEffect(() => {
+    const siteCoords = TEST_SITES[currentSite].coordinates;
+    setMapCenter(siteCoords);
+    console.log(`🗺️ SITE CHANGE: Centering map on ${currentSite}:`, siteCoords);
+  }, [currentSite]);
   
   // Calculate bearing for driving direction mode
   const [currentBearing, setCurrentBearing] = useState(0);
@@ -184,9 +200,12 @@ export default function Navigation() {
   }, []);
 
   const handleCenterOnLocation = useCallback(() => {
-    setMapCenter(currentPosition);
-    setMapZoom(16);
-  }, [currentPosition]);
+    const centerPosition = trackingPosition || currentPosition;
+    console.log(`🗺️ CENTER: Manual center on location:`, centerPosition);
+    setMapCenter(centerPosition);
+    setMapZoom(18);
+    setFollowGPS(true); // Re-enable GPS following
+  }, [currentPosition, trackingPosition]);
 
   const handlePOIClick = useCallback((poi: POI) => {
     setSelectedPOI(poi);
