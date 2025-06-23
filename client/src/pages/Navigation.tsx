@@ -92,12 +92,21 @@ export default function Navigation() {
           setCurrentBearing(bearing);
         }
       }
-      // For mock GPS, use route direction if available
-      else if (!useRealGPS && currentRoute && routeProgress) {
-        const routeBearing = routeProgress.heading || 0;
-        if (routeBearing !== 0) {
-          console.log('📍 Using route bearing for mock GPS:', routeBearing);
+      // For mock GPS, use route direction if available or calculate from route steps
+      else if (!useRealGPS && currentRoute && currentRoute.steps && currentRoute.steps.length > 0) {
+        // Use bearing from current route step or calculate from coordinates
+        const currentStep = currentRoute.steps[routeProgress?.currentStep || 0];
+        if (currentStep && currentStep.maneuver?.bearing_after !== undefined) {
+          const routeBearing = currentStep.maneuver.bearing_after;
+          console.log('📍 Using route step bearing for mock GPS:', routeBearing);
           setCurrentBearing(routeBearing);
+        } else if (routeProgress?.heading) {
+          console.log('📍 Using route progress bearing:', routeProgress.heading);
+          setCurrentBearing(routeProgress.heading);
+        } else {
+          // Default driving direction simulation for testing
+          setCurrentBearing(45); // Northeast direction for testing
+          console.log('📍 Using default test bearing: 45 degrees');
         }
       }
       // Store current position for next calculation

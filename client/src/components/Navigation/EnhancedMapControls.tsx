@@ -59,7 +59,12 @@ export const EnhancedMapControls = ({
           minWidth: '48px',
           minHeight: '48px'
         }}
-        onClick={onToggleOrientation}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🧭 Orientation toggle clicked, current:', mapOrientation);
+          onToggleOrientation();
+        }}
         title={mapOrientation === 'north' ? 'Switch to Driving Direction' : 'Switch to North Up'}
       >
         {mapOrientation === 'north' ? (

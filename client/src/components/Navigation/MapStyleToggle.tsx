@@ -32,10 +32,12 @@ export const MapStyleToggle = ({ currentStyle, onStyleChange }: MapStyleTogglePr
   const styles = Object.keys(STYLE_CONFIG) as Array<keyof typeof STYLE_CONFIG>;
   const currentIndex = styles.indexOf(currentStyle);
   
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     const nextIndex = (currentIndex + 1) % styles.length;
     const nextStyle = styles[nextIndex];
-    console.log('🗺️ Map style changing from', currentStyle, 'to', nextStyle);
+    console.log('🗺️ Map style toggle clicked, changing from', currentStyle, 'to', nextStyle);
     onStyleChange(nextStyle);
   };
 

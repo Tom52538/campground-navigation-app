@@ -359,16 +359,25 @@ export const GroundNavigation = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <button
-              onClick={toggleVoice}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🎤 Voice button clicked');
+                toggleVoice();
+              }}
               className="p-3 rounded-full transition-all duration-200"
               style={{
-                background: 'rgba(255, 255, 255, 0.03)',
+                background: voiceEnabled ? 'rgba(34, 197, 94, 0.9)' : 'rgba(255, 255, 255, 0.03)',
                 backdropFilter: 'blur(30px)',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
               }}
+              title={voiceEnabled ? 'Voice ON - Click to Disable' : 'Voice OFF - Click to Enable'}
             >
-              {voiceEnabled ? <Volume2 className="w-5 h-5 text-blue-600" /> : <VolumeX className="w-5 h-5 text-gray-500" />}
+              {voiceEnabled ? 
+                <Volume2 className="w-5 h-5 text-white" /> : 
+                <VolumeX className="w-5 h-5 text-gray-500" />
+              }
             </button>
             
             <button
