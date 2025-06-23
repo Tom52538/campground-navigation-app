@@ -205,7 +205,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         from,
         to,
         profile: 'walking', // Default for campground navigation
-        language: 'de'
+        language: 'de',
+        campgroundMode: true // Enable campground-optimized routing
       });
 
       // Response format stays exactly the same - no frontend changes needed

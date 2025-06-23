@@ -5,6 +5,7 @@ export interface RouteRequest {
   to: Coordinates;
   profile?: 'walking' | 'cycling' | 'driving';
   language?: string;
+  campgroundMode?: boolean; // Direct routing for campgrounds
 }
 
 export class GoogleDirectionsService {
@@ -21,13 +22,18 @@ export class GoogleDirectionsService {
     // Map profiles to Google travel modes
     const travelMode = this.mapProfile(request.profile || 'walking');
     
-    const url = `https://maps.googleapis.com/maps/api/directions/json?` +
+    // For campground mode, try multiple routing strategies
+    const baseUrl = `https://maps.googleapis.com/maps/api/directions/json?` +
       `origin=${origin}&` +
       `destination=${destination}&` +
       `mode=${travelMode}&` +
       `language=de&` +
       `units=metric&` +
       `key=${this.apiKey}`;
+    
+    const url = request.campgroundMode 
+      ? `${baseUrl}&alternatives=true&avoid=tolls`
+      : `${baseUrl}&alternatives=true`;
 
     console.log(`🗺️ Google Directions: Routing from ${origin} to ${destination} (${travelMode})`);
 
@@ -49,7 +55,18 @@ export class GoogleDirectionsService {
         throw new Error('No routes found');
       }
 
-      const processedRoute = this.processGoogleRoute(data.routes[0]);
+      // Choose shortest route if alternatives are available
+      let selectedRoute = data.routes[0];
+      if (data.routes.length > 1) {
+        selectedRoute = data.routes.reduce((shortest, current) => {
+          const shortestDistance = shortest.legs[0]?.distance?.value || Infinity;
+          const currentDistance = current.legs[0]?.distance?.value || Infinity;
+          return currentDistance < shortestDistance ? current : shortest;
+        });
+        console.log(`🗺️ Selected shortest route from ${data.routes.length} alternatives: ${selectedRoute.legs[0]?.distance?.value}m`);
+      }
+
+      const processedRoute = this.processGoogleRoute(selectedRoute);
       console.log(`✅ Google Directions: Route calculated - ${processedRoute.totalDistance}, ${processedRoute.estimatedTime}`);
       
       return processedRoute;
@@ -61,11 +78,11 @@ export class GoogleDirectionsService {
 
   private mapProfile(profile: string): string {
     const profileMap = {
-      'walking': 'bicycling', // Use bicycling to avoid driving restrictions in campgrounds
+      'walking': 'walking', // Back to walking mode for more direct pedestrian paths
       'cycling': 'bicycling', 
       'driving': 'driving'
     };
-    return profileMap[profile] || 'bicycling';
+    return profileMap[profile] || 'walking';
   }
 
   private processGoogleRoute(route: any): NavigationRoute {
