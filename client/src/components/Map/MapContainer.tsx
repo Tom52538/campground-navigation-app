@@ -170,7 +170,7 @@ const MAP_STYLES = {
 
 // Fallback URLs for when Mapbox fails on mobile/Railway
 const FALLBACK_TILES = {
-  outdoors: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  outdoors: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", // Standard OSM for outdoor fallback
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
   streets: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   navigation: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -184,30 +184,35 @@ const SmartTileLayer = ({
   mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
   mapboxToken?: string;
 }) => {
-  const [useMapbox, setUseMapbox] = useState(!!mapboxToken);
   const [tileLoadError, setTileLoadError] = useState(false);
+
+  // Force use of Mapbox if token is available and valid
+  const useMapbox = !!(mapboxToken && mapboxToken.startsWith('pk.') && !tileLoadError);
 
   const mapboxUrl = mapboxToken 
     ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
     : null;
   
   const fallbackUrl = FALLBACK_TILES[mapStyle];
+  const finalUrl = useMapbox && mapboxUrl ? mapboxUrl : fallbackUrl;
 
   console.log('🗺️ DEBUG - SmartTileLayer render:', {
     mapStyle,
     useMapbox,
     tileLoadError,
-    mapboxUrl: mapboxUrl ? 'configured' : 'none',
-    fallbackUrl,
-    tokenValid: mapboxToken?.startsWith('pk.') || false
+    mapboxTokenExists: !!mapboxToken,
+    mapboxTokenValid: mapboxToken?.startsWith('pk.') || false,
+    mapboxStyle: MAP_STYLES[mapStyle],
+    finalUrl: finalUrl?.substring(0, 100) + '...',
+    fallbackUrl
   });
 
   return (
     <TileLayer
       key={`${mapStyle}-${useMapbox ? 'mapbox' : 'fallback'}-${Date.now()}`}
-      url={useMapbox && mapboxUrl && !tileLoadError ? mapboxUrl : fallbackUrl}
+      url={finalUrl}
       attribution={
-        useMapbox && !tileLoadError 
+        useMapbox 
           ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }
@@ -221,10 +226,9 @@ const SmartTileLayer = ({
           setTileLoadError(false);
         },
         tileerror: (e) => {
-          console.error('🗺️ ERROR - Tile loading failed:', e);
-          if (useMapbox && mapboxToken) {
-            console.log('🗺️ DEBUG - Switching to fallback tiles due to error');
-            setUseMapbox(false);
+          console.error('🗺️ ERROR - Tile loading failed for:', mapStyle, 'Error:', e);
+          if (useMapbox) {
+            console.log('🗺️ DEBUG - Will retry with fallback tiles on next render');
             setTileLoadError(true);
           }
         }
@@ -291,7 +295,8 @@ export const MapContainerComponent = ({
     exists: !!mapboxToken,
     length: mapboxToken?.length || 0,
     firstChars: mapboxToken?.substring(0, 8) || 'none',
-    isValid: mapboxToken?.startsWith('pk.') || false
+    isValid: mapboxToken?.startsWith('pk.') || false,
+    fullToken: mapboxToken // Temporary debug - remove in production
   });
   console.log('🗺️ DEBUG - Map style config:', {
     currentStyle: mapStyle,
@@ -317,9 +322,34 @@ export const MapContainerComponent = ({
         />
         <PopupController selectedPOI={selectedPOI} />
         
-        <SmartTileLayer 
-          mapStyle={mapStyle}
-          mapboxToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+        <TileLayer
+          key={`${mapStyle}-direct-${Date.now()}`} // Direct implementation with debugging
+          url={(() => {
+            const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+            if (token && token.startsWith('pk.')) {
+              const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${token}`;
+              console.log('🗺️ DEBUG - Using Mapbox URL:', mapboxUrl.substring(0, 120) + '...');
+              return mapboxUrl;
+            } else {
+              const fallbackUrl = FALLBACK_TILES[mapStyle];
+              console.log('🗺️ DEBUG - Using fallback URL:', fallbackUrl);
+              return fallbackUrl;
+            }
+          })()}
+          attribution={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN?.startsWith('pk.') 
+            ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }
+          maxZoom={19}
+          eventHandlers={{
+            loading: () => console.log('🗺️ DEBUG - Direct TileLayer loading for:', mapStyle),
+            load: () => console.log('🗺️ DEBUG - Direct TileLayer loaded successfully for:', mapStyle),
+            tileerror: (e) => {
+              console.error('🗺️ ERROR - Direct TileLayer failed for:', mapStyle, e);
+              // Log the specific tile URL that failed
+              console.error('🗺️ ERROR - Failed tile details:', e.target?.src || 'Unknown URL');
+            }
+          }}
         />
         
         {/* SVG Gradient Definition for Route */}
