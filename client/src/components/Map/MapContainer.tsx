@@ -64,40 +64,30 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
 
   return (
     <>
-      {/* Outer Glow/Shadow */}
+      {/* Shadow/Glow Base */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
-          color: '#1e40af', 
-          weight: 12, 
-          opacity: 0.15,
+          color: '#000000', 
+          weight: 10, 
+          opacity: 0.3,
           lineCap: 'round',
           lineJoin: 'round'
         }} 
       />
-      {/* Middle Glow */}
+      {/* Main Route with Custom Class */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
-          color: '#2563eb', 
-          weight: 8, 
-          opacity: 0.4,
+          color: '#ffffff', // This will be overridden by CSS
+          weight: 6, 
+          opacity: 1,
           lineCap: 'round',
-          lineJoin: 'round'
+          lineJoin: 'round',
+          className: 'premium-route-line'
         }} 
       />
-      {/* Main Route Line */}
-      <Polyline 
-        positions={positions} 
-        pathOptions={{ 
-          color: '#3b82f6', 
-          weight: 5, 
-          opacity: 0.9,
-          lineCap: 'round',
-          lineJoin: 'round'
-        }} 
-      />
-      {/* Inner Highlight */}
+      {/* Animated Pulse Overlay */}
       <Polyline 
         positions={positions} 
         pathOptions={{ 
@@ -105,18 +95,9 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
           weight: 3, 
           opacity: 0.8,
           lineCap: 'round',
-          lineJoin: 'round'
-        }} 
-      />
-      {/* Center Core */}
-      <Polyline 
-        positions={positions} 
-        pathOptions={{ 
-          color: '#93c5fd', 
-          weight: 1, 
-          opacity: 1,
-          lineCap: 'round',
-          lineJoin: 'round'
+          lineJoin: 'round',
+          dashArray: '20, 10',
+          className: 'route-pulse-animation'
         }} 
       />
     </>
@@ -267,6 +248,18 @@ export const MapContainerComponent = ({
           }
           maxZoom={19}
         />
+        
+        {/* SVG Gradient Definition for Route */}
+        <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
+          <defs>
+            <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="objectBoundingBox">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="30%" stopColor="#1d4ed8" />
+              <stop offset="70%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#60a5fa" />
+            </linearGradient>
+          </defs>
+        </svg>
         
 
         

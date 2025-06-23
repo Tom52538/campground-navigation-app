@@ -175,7 +175,29 @@
     @apply w-12 h-12 floating-button;
   }
   
-  /* Route styling cleaned up - using multi-layer approach instead */
+  /* Premium Route Styling */
+  .premium-route-line {
+    stroke: url(#routeGradient) !important;
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) !important;
+  }
+  
+  .route-pulse-animation {
+    animation: routePulse 2s ease-in-out infinite !important;
+  }
+  
+  @keyframes routePulse {
+    0% { 
+      stroke-dashoffset: 0;
+      opacity: 0.8;
+    }
+    50% { 
+      opacity: 1;
+    }
+    100% { 
+      stroke-dashoffset: -30px;
+      opacity: 0.8;
+    }
+  }
 }
 
 @layer utilities {
