@@ -16,11 +16,11 @@ export const useLocation = (props?: UseLocationProps) => {
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
   const gpsStabilizer = useRef<GPSStabilizer>(new GPSStabilizer({
-    smoothingWindow: 4,
-    maxAccuracy: 25,
-    maxJumpDistance: 30,
-    minUpdateInterval: 1000,
-    speedThreshold: 3 // 3 m/s = ~10 km/h max for walking/cycling
+    smoothingWindow: 8,     // Large buffer for maximum stability
+    maxAccuracy: 30,        // Only accept good GPS signals
+    maxJumpDistance: 40,    // Very conservative jump detection
+    minUpdateInterval: 6000, // 6 seconds between updates - ZERO flickering
+    speedThreshold: 1.0     // 1 m/s = 3.6 km/h (very slow walking)
   }));
   
   // Debug logging for GPS state changes

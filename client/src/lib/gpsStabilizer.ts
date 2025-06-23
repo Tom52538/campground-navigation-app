@@ -25,14 +25,17 @@ export class GPSStabilizer {
   }> = [];
   private lastEmittedPosition: Coordinates | null = null;
   private lastEmittedTime: number = 0;
+  private isStabilizing: boolean = false;
+  private smoothedPosition: Coordinates | null = null;
+  private interpolationTimer: NodeJS.Timeout | null = null;
 
   constructor(config: Partial<GPSStabilizerConfig> = {}) {
     this.config = {
-      smoothingWindow: 3,
-      maxAccuracy: 30,
+      smoothingWindow: 7,
+      maxAccuracy: 40,
       maxJumpDistance: 50,
-      minUpdateInterval: 1500,
-      speedThreshold: 5, // 5 m/s = 18 km/h (fast walking/jogging)
+      minUpdateInterval: 5000, // 5 seconds - very conservative
+      speedThreshold: 1.2, // 1.2 m/s = 4.3 km/h (slow walking)
       ...config
     };
   }
@@ -40,74 +43,93 @@ export class GPSStabilizer {
   addPosition(position: Coordinates, accuracy: number): StabilizedPosition | null {
     const now = Date.now();
     
-    // 1. Filter by accuracy
+    console.log(`🔍 GPS RAW: ${position.lat.toFixed(7)},${position.lng.toFixed(7)} acc:${accuracy}m`);
+    
+    // ULTRA-STRICT filtering to prevent ANY flickering
+    
+    // 1. Only accept high-accuracy positions
     if (accuracy > this.config.maxAccuracy) {
-      console.log(`🔍 GPS STABILIZER: Rejected low accuracy (${accuracy}m)`);
+      console.log(`🔍 GPS: REJECT accuracy ${accuracy}m`);
       return null;
     }
 
-    // 2. Check time interval
-    if (now - this.lastEmittedTime < this.config.minUpdateInterval) {
-      console.log(`🔍 GPS STABILIZER: Throttled update (${now - this.lastEmittedTime}ms)`);
-      return null;
-    }
-
-    // 3. Check for unrealistic jumps
-    if (this.lastEmittedPosition) {
-      const distance = calculateDistance(this.lastEmittedPosition, position);
-      const timeDelta = (now - this.lastEmittedTime) / 1000; // seconds
-      const speed = distance / timeDelta;
-
-      if (speed > this.config.speedThreshold) {
-        console.log(`🔍 GPS STABILIZER: Rejected unrealistic speed (${speed.toFixed(1)} m/s, ${distance.toFixed(0)}m jump)`);
+    // 2. Enforce minimum time interval religiously
+    if (this.lastEmittedTime > 0) {
+      const timeSinceLastEmit = now - this.lastEmittedTime;
+      if (timeSinceLastEmit < this.config.minUpdateInterval) {
+        console.log(`🔍 GPS: THROTTLE ${Math.round(timeSinceLastEmit/1000)}s/${this.config.minUpdateInterval/1000}s`);
         return null;
       }
     }
 
-    // 4. Add to history
-    this.positionHistory.push({
-      position,
-      accuracy,
-      timestamp: now
-    });
-
-    // Keep only recent positions
-    this.positionHistory = this.positionHistory.slice(-this.config.smoothingWindow);
-
-    // 5. Calculate smoothed position if we have enough data
-    if (this.positionHistory.length >= Math.min(2, this.config.smoothingWindow)) {
-      const smoothedPosition = this.calculateSmoothedPosition();
-      this.lastEmittedPosition = smoothedPosition.position;
-      this.lastEmittedTime = now;
+    // 3. Validate against last known good position
+    if (this.lastEmittedPosition) {
+      const distance = calculateDistance(this.lastEmittedPosition, position);
+      const timeDelta = this.lastEmittedTime ? (now - this.lastEmittedTime) / 1000 : 1;
+      const speed = distance / timeDelta;
       
-      console.log(`🔍 GPS STABILIZER: Emitting smoothed position:`, smoothedPosition.position, `confidence: ${smoothedPosition.confidence.toFixed(2)}`);
-      return smoothedPosition;
+      if (speed > this.config.speedThreshold) {
+        console.log(`🔍 GPS: REJECT speed ${speed.toFixed(1)}m/s (${distance.toFixed(0)}m in ${timeDelta.toFixed(0)}s)`);
+        return null;
+      }
     }
 
+    // 4. Add to buffer for smoothing
+    this.positionHistory.push({ position, accuracy, timestamp: now });
+    this.positionHistory = this.positionHistory.slice(-this.config.smoothingWindow);
+
+    // 5. Only emit after collecting enough stable samples
+    if (this.positionHistory.length >= 5) {
+      const stablePosition = this.calculateUltraStablePosition();
+      
+      console.log(`🔍 GPS: ✅ EMIT ${stablePosition.position.lat.toFixed(7)},${stablePosition.position.lng.toFixed(7)} conf:${stablePosition.confidence.toFixed(2)}`);
+      
+      this.lastEmittedPosition = stablePosition.position;
+      this.lastEmittedTime = now;
+      this.smoothedPosition = stablePosition.position;
+      
+      return stablePosition;
+    }
+
+    console.log(`🔍 GPS: BUFFER ${this.positionHistory.length}/${this.config.smoothingWindow}`);
     return null;
   }
 
-  private calculateSmoothedPosition(): StabilizedPosition {
+  private calculateUltraStablePosition(): StabilizedPosition {
     if (this.positionHistory.length === 0) {
       throw new Error('No position history available');
     }
 
-    // Weighted average based on accuracy (better accuracy = higher weight)
+    // Use MEDIAN instead of average to eliminate outliers completely
+    const latitudes = this.positionHistory.map(p => p.position.lat).sort((a, b) => a - b);
+    const longitudes = this.positionHistory.map(p => p.position.lng).sort((a, b) => a - b);
+    
+    const medianLat = latitudes[Math.floor(latitudes.length / 2)];
+    const medianLng = longitudes[Math.floor(longitudes.length / 2)];
+
+    // Additional smoothing: weighted average of positions closest to median
     let totalWeight = 0;
     let weightedLat = 0;
     let weightedLng = 0;
     let totalAccuracy = 0;
 
     for (const entry of this.positionHistory) {
-      // Inverse accuracy as weight (lower accuracy number = better = higher weight)
-      const weight = 1 / (entry.accuracy + 1);
+      const latDiff = Math.abs(entry.position.lat - medianLat);
+      const lngDiff = Math.abs(entry.position.lng - medianLng);
+      const distanceFromMedian = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+      
+      // Weight: closer to median = higher weight, better accuracy = higher weight
+      const proximityWeight = 1 / (distanceFromMedian * 1000000 + 1); // Scale for GPS precision
+      const accuracyWeight = 1 / (entry.accuracy + 1);
+      const weight = proximityWeight * accuracyWeight;
+      
       totalWeight += weight;
       weightedLat += entry.position.lat * weight;
       weightedLng += entry.position.lng * weight;
       totalAccuracy += entry.accuracy;
     }
 
-    const smoothedPosition: Coordinates = {
+    const ultraStablePosition: Coordinates = {
       lat: weightedLat / totalWeight,
       lng: weightedLng / totalWeight
     };
@@ -116,7 +138,7 @@ export class GPSStabilizer {
     const confidence = Math.min(1, this.positionHistory.length / this.config.smoothingWindow);
 
     return {
-      position: smoothedPosition,
+      position: ultraStablePosition,
       accuracy: avgAccuracy,
       confidence,
       timestamp: Date.now()
