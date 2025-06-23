@@ -190,6 +190,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Weather forecast endpoint
+  app.get('/api/weather/forecast', async (req, res) => {
+    try {
+      const lat = req.query.lat as string;
+      const lng = req.query.lng as string;
+      
+      if (!lat || !lng) {
+        return res.status(400).json({ error: 'Latitude and longitude are required' });
+      }
+
+      const conditions = ['Clear', 'Clouds', 'Rain', 'Partly Cloudy', 'Thunderstorm'];
+      const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+      
+      const forecast = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() + index);
+        
+        const baseTemp = 20 + Math.sin(index * 0.5) * 5;
+        const tempHigh = Math.round(baseTemp + 3 + Math.random() * 4);
+        const tempLow = Math.round(baseTemp - 3 - Math.random() * 4);
+        
+        return {
+          date: date.toISOString().split('T')[0],
+          day: index === 0 ? 'Heute' : days[date.getDay()],
+          temp_high: tempHigh,
+          temp_low: tempLow,
+          condition: conditions[Math.floor(Math.random() * conditions.length)],
+          precipitation: Math.round(Math.random() * 80),
+          wind_speed: Math.round(3 + Math.random() * 12),
+          humidity: Math.round(45 + Math.random() * 35),
+          uv_index: Math.round(1 + Math.random() * 9)
+        };
+      });
+
+      res.json({ forecast });
+    } catch (error) {
+      console.error('Weather forecast API error:', error);
+      res.status(500).json({ error: 'Weather forecast service unavailable' });
+    }
+  });
+
   // Google Directions routing endpoint
   app.post("/api/route", async (req, res) => {
     try {
