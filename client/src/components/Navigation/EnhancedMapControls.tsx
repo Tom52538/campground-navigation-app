@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { Navigation as NavigationIcon } from 'lucide-react';
+import { MapStyleToggle } from './MapStyleToggle';
+import { GPSToggle } from './GPSToggle';
 
 interface EnhancedMapControlsProps {
   onZoomIn: () => void;
