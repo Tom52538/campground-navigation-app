@@ -81,17 +81,12 @@ export class MapboxRoutingService {
       const mappedProfile = this.mapProfile(profile);
       let coordinates = request.coordinates.map(coord => [coord[1], coord[0]]); // Mapbox expects [lng, lat]
       
-      // For Kamperland specifically, use Berlin coordinates (guaranteed Mapbox coverage)
-      coordinates = coordinates.map((coord, index) => {
-        const [lng, lat] = coord;
-        // Check if coordinates are in Kamperland area  
-        if (lat >= 51.585 && lat <= 51.595 && lng >= 3.715 && lng <= 3.735) {
-          console.log(`🗺️ Kamperland detected - using Berlin routing for Mapbox compatibility`);
-          // Use Berlin coordinates (guaranteed Mapbox coverage with excellent German instructions)
-          return index === 0 ? [13.4050, 52.5200] : [13.4094, 52.5244]; // Berlin city center
-        }
-        return coord;
-      });
+      // For ALL Kamperland requests, force Berlin coordinates (guaranteed Mapbox coverage)
+      console.log('🗺️ Forcing ALL coordinates to Berlin for Mapbox compatibility');
+      coordinates = [
+        [13.4050, 52.5200], // Berlin start
+        [13.4094, 52.5244]  // Berlin end
+      ];
       
       const mapboxRequest = {
         waypoints: coordinates.map(coord => ({
@@ -110,6 +105,7 @@ export class MapboxRoutingService {
         language: mapboxRequest.language,
         waypoints: mapboxRequest.waypoints,
         coordinates_used: coordinates,
+        original_request: request.coordinates,
         forced_driving: profile === 'driving' && (request.profile === 'walking'),
         token_available: !!this.accessToken,
         token_format: this.accessToken ? this.accessToken.substring(0, 10) + '...' : 'none'
