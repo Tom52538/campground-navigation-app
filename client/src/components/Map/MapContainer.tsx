@@ -235,7 +235,7 @@ const MapClickHandler = ({ onClick }: { onClick: () => void }) => {
   return null;
 };
 
-export function MapContainerComponent({
+export function MapContainer({
   center,
   zoom,
   currentPosition,
@@ -283,7 +283,7 @@ export function MapContainerComponent({
 
   return (
     <div className="w-full h-full relative">
-      <MapContainer
+      <LeafletMapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
         scrollWheelZoom={true}
@@ -312,16 +312,6 @@ export function MapContainerComponent({
           />
         )}
 
-        {/* Route polyline */}
-        {route && route.routes && route.routes[0] && (
-          <Polyline
-            positions={decodePolyline(route.routes[0].overview_polyline.points)}
-            color="#2563eb"
-            weight={5}
-            opacity={0.8}
-          />
-        )}
-
         {/* POI markers */}
         {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => (
           <POIMarker
@@ -335,7 +325,7 @@ export function MapContainerComponent({
         ))}
 
         <MapClickHandler onClick={onMapClick} />
-      </MapContainer>
+      </LeafletMapContainer>
     </div>
   );
 }

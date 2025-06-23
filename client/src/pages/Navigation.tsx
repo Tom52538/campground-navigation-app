@@ -8,7 +8,7 @@ import { usePOI } from '@/hooks/usePOI';
 import { useLanguage } from '@/hooks/useLanguage';
 import { TestSite, POI, Coordinates } from '@/types';
 
-export function Navigation() {
+export default function Navigation() {
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
