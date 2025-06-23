@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WeatherService } from "../client/src/lib/weatherService";
-import { EnhancedRoutingService } from "../client/src/lib/routingService";
+import { GoogleDirectionsService } from "./lib/googleDirectionsService";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -109,50 +109,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY || ""
   );
   
-  // Initialize enhanced routing service with both Mapbox and OpenRoute tokens
-  const routingService = new EnhancedRoutingService(
-    process.env.MAPBOX_ACCESS_TOKEN || "",
-    process.env.OPENROUTE_API_KEY || process.env.ROUTING_API_KEY || ""
+  // Initialize Google Directions service
+  const routingService = new GoogleDirectionsService(
+    process.env.GOOGLE_DIRECTIONS_API_KEY || ""
   );
 
-  // Simple polyline decoder for OpenRouteService
-  function decodePolyline(encoded: string): number[][] {
-    const coordinates: number[][] = [];
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
 
-    while (index < encoded.length) {
-      let shift = 0;
-      let result = 0;
-      let byte: number;
-
-      do {
-        byte = encoded.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      const deltaLat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-      lat += deltaLat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        byte = encoded.charCodeAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (byte >= 0x20);
-
-      const deltaLng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-      lng += deltaLng;
-
-      coordinates.push([lng / 1e5, lat / 1e5]);
-    }
-
-    return coordinates;
-  }
 
   // Weather API endpoint
   app.get("/api/weather", async (req, res) => {
@@ -228,7 +190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced routing endpoint with Mapbox integration
+  // Google Directions routing endpoint
   app.post("/api/route", async (req, res) => {
     try {
       const { from, to } = req.body;
@@ -237,19 +199,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Valid start and end coordinates are required" });
       }
 
-      console.log(`🗺️ Route request: ${from.lat},${from.lng} → ${to.lat},${to.lng}`);
+      console.log(`🗺️ Google Directions: Routing from ${from.lat},${from.lng} to ${to.lat},${to.lng}`);
 
-      // Enhanced route request with Mapbox/OpenRoute fallback
       const routeData = await routingService.getRoute({
-        coordinates: [[from.lng, from.lat], [to.lng, to.lat]],
-        profile: 'walking',
-        language: 'de',
-        units: 'm',
-        instructions: true,
-        geometry: true
+        from,
+        to,
+        profile: 'walking', // Default for campground navigation
+        language: 'de'
       });
 
-      // Enhanced response format - routeData is already a NavigationRoute
+      // Response format stays exactly the same - no frontend changes needed
       const response = {
         totalDistance: routeData.totalDistance,
         estimatedTime: routeData.estimatedTime,
@@ -257,14 +216,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         instructions: routeData.instructions,
         geometry: routeData.geometry,
         nextInstruction: routeData.nextInstruction,
-        arrivalTime: routeData.arrivalTime,
-        voiceInstructions: routeData.voiceInstructions
+        arrivalTime: routeData.arrivalTime
       };
 
-      console.log(`🗺️ Route calculated: ${response.totalDistance}, ${response.estimatedTime}`);
+      console.log(`✅ Google Directions: Route calculated successfully - ${response.totalDistance}, ${response.estimatedTime}`);
       res.json(response);
     } catch (error) {
-      console.error("Enhanced routing API error:", error);
+      console.error("Google Directions API error:", error);
       res.status(500).json({ 
         error: "Failed to calculate route",
         details: error.message
@@ -272,26 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add new endpoint for route progress tracking
-  app.post("/api/route/progress", async (req, res) => {
-    try {
-      const { currentPosition, routeGeometry } = req.body;
-      
-      if (!currentPosition || !routeGeometry) {
-        return res.status(400).json({ error: "Current position and route geometry required" });
-      }
 
-      const progress = routingService.calculateRouteProgress(
-        [currentPosition.lat, currentPosition.lng],
-        routeGeometry
-      );
-
-      res.json(progress);
-    } catch (error) {
-      console.error("Route progress error:", error);
-      res.status(500).json({ error: "Failed to calculate route progress" });
-    }
-  });
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
@@ -300,8 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       services: {
         weather: !!process.env.OPENWEATHER_API_KEY || !!process.env.WEATHER_API_KEY,
-        mapbox: !!process.env.MAPBOX_ACCESS_TOKEN,
-        openroute: !!process.env.OPENROUTE_API_KEY || !!process.env.ROUTING_API_KEY
+        google_directions: !!process.env.GOOGLE_DIRECTIONS_API_KEY
       }
     });
   });
