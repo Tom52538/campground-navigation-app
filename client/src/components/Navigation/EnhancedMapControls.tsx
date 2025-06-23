@@ -22,7 +22,9 @@ export const EnhancedMapControls = ({
   useRealGPS,
   onToggleGPS,
   mapOrientation,
-  onToggleOrientation
+  onToggleOrientation,
+  mapStyle,
+  onMapStyleChange
 }: EnhancedMapControlsProps) => {
   
   const handleZoomIn = useCallback(() => {
@@ -40,6 +42,12 @@ export const EnhancedMapControls = ({
 
   return (
     <div className="absolute right-4 z-20 flex flex-col justify-center space-y-3" style={{ top: '50%', transform: 'translateY(-50%)' }}>
+      {/* Map Style Toggle */}
+      <MapStyleToggle 
+        currentStyle={mapStyle}
+        onStyleChange={onMapStyleChange}
+      />
+      
       {/* Orientation Toggle - North/Driving Direction */}
       <div 
         className="w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
@@ -109,7 +117,13 @@ export const EnhancedMapControls = ({
         </button>
       </div>
 
-      {/* GPS Testing Controls */}
+      {/* GPS Toggle */}
+      <GPSToggle 
+        useRealGPS={useRealGPS}
+        onToggle={onToggleGPS}
+      />
+
+      {/* Legacy GPS Testing Controls - Remove in cleanup */}
       <div 
         className="flex flex-col rounded-full overflow-hidden"
         style={{
