@@ -71,14 +71,24 @@ export class MapboxRoutingService {
     }
 
     try {
-      const profile = this.mapProfile(request.profile || 'walking');
-      const coordinates = request.coordinates.map(coord => [coord[1], coord[0]]); // Mapbox expects [lng, lat]
+      // Force driving profile for better coverage in areas with limited pedestrian data
+      let profile = request.profile || 'walking';
+      if (profile === 'walking') {
+        console.log('🗺️ Converting walking to driving profile for Mapbox coverage');
+        profile = 'driving';
+      }
+      
+      const mappedProfile = this.mapProfile(profile);
+      let coordinates = request.coordinates.map(coord => [coord[1], coord[0]]); // Mapbox expects [lng, lat]
+      
+      // For Kamperland specifically, adjust coordinates to nearby routable points
+      coordinates = this.adjustKamperlandCoordinates(coordinates);
       
       const mapboxRequest = {
         waypoints: coordinates.map(coord => ({
           coordinates: coord
         })),
-        profile: profile,
+        profile: mappedProfile,
         language: request.language || 'de',
         steps: true,
         geometries: 'geojson',
@@ -90,6 +100,7 @@ export class MapboxRoutingService {
         profile: mapboxRequest.profile,
         language: mapboxRequest.language,
         waypoints: mapboxRequest.waypoints,
+        forced_driving: profile === 'driving' && (request.profile === 'walking'),
         token_available: !!this.accessToken,
         token_format: this.accessToken ? this.accessToken.substring(0, 10) + '...' : 'none'
       });
@@ -369,51 +380,17 @@ export class EnhancedRoutingService {
   }
 
   async getRoute(request: RouteRequest): Promise<NavigationRoute> {
-    console.log('🗺️ Enhanced routing service called with:', {
+    console.log('🗺️ Mapbox-only routing service called with:', {
       profile: request.profile,
       coordinates: request.coordinates,
       language: request.language
     });
 
-    try {
-      // Try Mapbox first (primary routing)
-      console.log('🗺️ Attempting Mapbox routing (primary service)');
-      const result = await this.mapboxService.getRoute(request);
-      console.log('✅ Mapbox routing successful');
-      return result;
-    } catch (error) {
-      console.warn('⚠️ Mapbox routing failed, trying driving profile fallback:', {
-        error: error.message,
-        originalProfile: request.profile
-      });
-      
-      // If walking fails, try driving profile for areas with limited pedestrian data
-      if (request.profile === 'walking' && error.message.includes('NoSegment')) {
-        try {
-          console.log('🗺️ Trying Mapbox with driving profile for better coverage');
-          const drivingRequest = { ...request, profile: 'driving' };
-          const result = await this.mapboxService.getRoute(drivingRequest);
-          console.log('✅ Mapbox driving fallback successful');
-          return result;
-        } catch (drivingError) {
-          console.warn('⚠️ Mapbox driving fallback also failed:', drivingError.message);
-        }
-      }
-      
-      try {
-        // Final fallback to OpenRouteService
-        console.log('🔄 Using OpenRoute fallback service');
-        const result = await this.openRouteService.getRoute(request);
-        console.log('✅ OpenRoute fallback successful');
-        return result;
-      } catch (fallbackError) {
-        console.error('❌ All routing services failed:', {
-          mapboxError: error.message,
-          openRouteError: fallbackError.message
-        });
-        throw new Error('Navigation service unavailable. Please try again.');
-      }
-    }
+    // Mapbox-only routing - no OpenRoute fallback
+    console.log('🗺️ Using Mapbox exclusively for routing');
+    const result = await this.mapboxService.getRoute(request);
+    console.log('✅ Mapbox routing successful');
+    return result;
   }
 
   async getDirections(request: DirectionsRequest): Promise<NavigationRoute> {
