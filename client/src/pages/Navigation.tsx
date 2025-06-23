@@ -81,11 +81,15 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  // Auto-follow GPS position with the map
+  // Auto-follow GPS position with the map - debounced to prevent excessive updates
   useEffect(() => {
     if (followGPS && trackingPosition) {
-      console.log(`🗺️ GPS FOLLOW: Centering map on position:`, trackingPosition);
-      setMapCenter(trackingPosition);
+      const timeout = setTimeout(() => {
+        console.log(`🗺️ GPS FOLLOW: Centering map on position:`, trackingPosition);
+        setMapCenter(trackingPosition);
+      }, 100); // Small delay to batch rapid updates
+      
+      return () => clearTimeout(timeout);
     }
   }, [trackingPosition, followGPS]);
   

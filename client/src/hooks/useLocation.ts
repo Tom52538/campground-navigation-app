@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Coordinates, TestSite, TEST_SITES } from '@/types/navigation';
-import { calculateDistance } from '@/lib/mapUtils';
+import { GPSStabilizer } from '@/lib/gpsStabilizer';
 
 interface UseLocationProps {
   currentSite: TestSite;
@@ -15,11 +15,13 @@ export const useLocation = (props?: UseLocationProps) => {
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
-  const [lastValidPosition, setLastValidPosition] = useState<Coordinates | null>(null);
-  const [positionStabilizer, setPositionStabilizer] = useState<{
-    positions: Coordinates[];
-    lastUpdate: number;
-  }>({ positions: [], lastUpdate: 0 });
+  const gpsStabilizer = useRef<GPSStabilizer>(new GPSStabilizer({
+    smoothingWindow: 4,
+    maxAccuracy: 25,
+    maxJumpDistance: 30,
+    minUpdateInterval: 1000,
+    speedThreshold: 3 // 3 m/s = ~10 km/h max for walking/cycling
+  }));
   
   // Debug logging for GPS state changes
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
@@ -55,41 +57,19 @@ export const useLocation = (props?: UseLocationProps) => {
               lng: position.coords.longitude,
             };
             
-            // Position stabilization to prevent flickering
-            const now = Date.now();
-            const minUpdateInterval = 2000; // 2 seconds minimum between updates
+            console.log(`🔍 GPS RAW: Received position`, coords, `accuracy: ${position.coords.accuracy}m`);
             
-            if (now - positionStabilizer.lastUpdate < minUpdateInterval) {
-              console.log(`🔍 GPS DEBUG: Position update throttled (${now - positionStabilizer.lastUpdate}ms)`);
-              return;
+            // Use GPS stabilizer to filter and smooth position
+            const stabilizedPosition = gpsStabilizer.current.addPosition(coords, position.coords.accuracy);
+            
+            if (stabilizedPosition) {
+              console.log(`🔍 GPS STABILIZED: Position update accepted`, stabilizedPosition.position);
+              setCurrentPosition(stabilizedPosition.position);
+              setIsLoading(false);
+              setError(null);
+            } else {
+              console.log(`🔍 GPS STABILIZED: Position update rejected`);
             }
-            
-            // Accuracy filter - reject low accuracy positions
-            if (position.coords.accuracy > 30) {
-              console.log(`🔍 GPS DEBUG: Position accuracy too low (${position.coords.accuracy}m), skipping`);
-              return;
-            }
-            
-            // Distance validation to prevent unrealistic jumps
-            if (lastValidPosition) {
-              const distance = calculateDistance(lastValidPosition, coords);
-              if (distance > 100) { // More than 100m jump is suspicious for pedestrian movement
-                console.log(`🔍 GPS DEBUG: Large position jump (${distance.toFixed(0)}m), validating...`);
-                // Store for validation but don't update immediately
-                setPositionStabilizer(prev => ({
-                  positions: [...prev.positions.slice(-2), coords],
-                  lastUpdate: now
-                }));
-                return;
-              }
-            }
-            
-            console.log(`🔍 GPS DEBUG: Real GPS position accepted:`, coords, `accuracy: ${position.coords.accuracy}m`);
-            setCurrentPosition(coords);
-            setLastValidPosition(coords);
-            setPositionStabilizer({ positions: [], lastUpdate: now });
-            setIsLoading(false);
-            setError(null);
           },
           (error) => {
             console.warn('GPS error:', error.message);
@@ -97,8 +77,8 @@ export const useLocation = (props?: UseLocationProps) => {
           },
           {
             enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 5000,
+            timeout: 10000,
+            maximumAge: 2000, // Use more recent positions
           }
         );
         
@@ -194,15 +174,15 @@ export const useLocation = (props?: UseLocationProps) => {
     console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
     
     if (newGPSState) {
-      // Switching to Real GPS - start with loading state to prevent flickering
+      // Switching to Real GPS - reset stabilizer and start loading
+      gpsStabilizer.current.reset();
       setIsLoading(true);
-      setPositionStabilizer({ positions: [], lastUpdate: 0 });
-      setLastValidPosition(currentPosition); // Remember last known position
+      console.log(`🔍 GPS DEBUG: Switching to Real GPS - stabilizer reset`);
     } else {
       // Switching to Mock GPS - immediately set to mock coordinates
+      gpsStabilizer.current.reset();
       console.log(`🔍 GPS DEBUG: Switching to Mock GPS - setting position to:`, mockCoordinates);
       setCurrentPosition(mockCoordinates);
-      setLastValidPosition(null);
       setIsLoading(false);
       setError(null);
     }
