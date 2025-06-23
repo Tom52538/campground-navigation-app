@@ -43,32 +43,13 @@ export const useLocation = (props?: UseLocationProps) => {
       }
 
       try {
-        let lastUpdate = 0;
-        let lastPosition: Coordinates | null = null;
-        
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
-            const now = Date.now();
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
             
-            // Rate limiting and position filtering to prevent flickering
-            if (lastPosition) {
-              const distance = Math.sqrt(
-                Math.pow((coords.lat - lastPosition.lat) * 111000, 2) +
-                Math.pow((coords.lng - lastPosition.lng) * 111000, 2)
-              );
-              
-              // Only update if moved more than 2 meters or 2 seconds passed
-              if (distance < 2 && now - lastUpdate < 2000) {
-                return;
-              }
-            }
-            
-            lastUpdate = now;
-            lastPosition = coords;
             setCurrentPosition(coords);
             setIsLoading(false);
             setError(null);
