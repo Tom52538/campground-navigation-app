@@ -301,6 +301,16 @@ export function MapContainerComponent({
         {/* Current position marker */}
         <CurrentLocationMarker position={currentPosition} />
 
+        {/* Route polyline */}
+        {route && route.routes && route.routes[0] && (
+          <Polyline
+            positions={decodePolyline(route.routes[0].overview_polyline.points)}
+            color="#2563eb"
+            weight={5}
+            opacity={0.8}
+          />
+        )}
+
         {/* POI markers */}
         {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => (
           <POIMarker
