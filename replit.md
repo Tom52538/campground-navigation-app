@@ -99,6 +99,13 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
   - Smart bearing calculation from route geometry for realistic map rotation
   - Campground-optimized zoom levels (16-20x vs 10-19x for city navigation)
 
+- June 23, 2025. **DYNAMIC WEATHER WIDGET**: Enhanced weather widget with expandable 7-day forecast:
+  - Compact view shows current conditions with temperature, condition, humidity, wind, pressure, and visibility
+  - Tap to expand into full 7-day forecast with daily highs/lows, conditions, and precipitation probability
+  - Smartphone-optimized layout with scrollable forecast list and camping-specific weather alerts
+  - Glassmorphism design with weather-based gradient backgrounds for visual weather indication
+  - German localization for all weather conditions and day names
+
 - June 23, 2025. **POI HOVER TOOLTIPS**: Added interactive hover tooltips for POI markers:
   - Glassmorphism tooltip design matching app aesthetic
   - Display POI name, category, description, and distance on mouseover
