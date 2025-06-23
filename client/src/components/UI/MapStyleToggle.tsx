@@ -1,5 +1,5 @@
 import React from 'react';
-import { Map, Satellite, Navigation, StreetView } from 'lucide-react';
+import { Map, Satellite, Navigation, MapPin } from 'lucide-react';
 import { MapStyle } from '@/types';
 
 interface MapStyleToggleProps {
@@ -10,7 +10,7 @@ interface MapStyleToggleProps {
 const STYLE_CONFIG: Record<MapStyle, { icon: React.ReactNode; label: string }> = {
   outdoors: { icon: <Map className="w-4 h-4" />, label: 'Outdoor' },
   satellite: { icon: <Satellite className="w-4 h-4" />, label: 'Satellit' },
-  streets: { icon: <StreetView className="w-4 h-4" />, label: 'Straßen' },
+  streets: { icon: <MapPin className="w-4 h-4" />, label: 'Straßen' },
   navigation: { icon: <Navigation className="w-4 h-4" />, label: 'Navigation' }
 };
 

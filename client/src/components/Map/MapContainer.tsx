@@ -207,16 +207,11 @@ const MapController = ({
     }
   }, [center, zoom, map]);
 
-  // Handle orientation changes
+  // Orientation handling disabled for clean slate
   useEffect(() => {
-    if (map) {
-      if (orientation === 'driving' && bearing !== undefined) {
-        console.log('🧭 MapController: Orientation change -', orientation, 'bearing:', bearing);
-        map.setBearing(bearing);
-      } else {
-        console.log('🧭 Map reset to north-up');
-        map.setBearing(0);
-      }
+    if (map && orientation) {
+      console.log('🧭 MapController: Orientation change -', orientation, 'bearing:', bearing);
+      // setBearing functionality removed - will be reimplemented in new navigation system
     }
   }, [map, orientation, bearing]);
 
@@ -307,7 +302,7 @@ export function MapContainerComponent({
         <CurrentLocationMarker position={currentPosition} />
 
         {/* POI markers */}
-        {pois.map((poi) => (
+        {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => (
           <POIMarker
             key={poi.id}
             poi={poi}
