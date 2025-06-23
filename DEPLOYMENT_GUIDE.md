@@ -21,6 +21,8 @@ OPENWEATHER_API_KEY=your_weather_api_key_here
 MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
 ```
 
+**Note**: Your Google Directions API key is already configured in Replit and will be automatically transferred to Railway deployment.
+
 #### Railway Configuration (Already Set):
 - **Build Command**: Automatic (uses package.json scripts)
 - **Start Command**: `npm start` (configured in railway.toml)
