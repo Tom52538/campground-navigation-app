@@ -43,35 +43,88 @@ export const useLocation = (props?: UseLocationProps) => {
       }
 
       try {
-        let lastGPSUpdate = 0;
-        let lastGPSPosition: Coordinates | null = null;
+        // 🔍 GPS DEBUG VARIABLES
+        let gpsUpdateCount = 0;
+        let startTime = Date.now();
+        let lastTimestamp = 0;
+        let lastGPSPosition: any = null;
+        const coordinateHistory: any[] = [];
+        
+        console.log('🔍 GPS API CONFIGURATION:', {
+          method: 'watchPosition',
+          enableHighAccuracy: false,
+          timeout: 30000,
+          maximumAge: 60000
+        });
         
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
-            const now = Date.now();
+            // 🔍 DIAGNOSTIC TEST 1: GPS Update Frequency
+            gpsUpdateCount++;
+            const elapsed = (Date.now() - startTime) / 1000;
+            const timeDiff = position.timestamp - lastTimestamp;
+            
+            console.log('🔍 GPS DIAGNOSTIC UPDATE:', {
+              updateNumber: gpsUpdateCount,
+              elapsedSeconds: elapsed.toFixed(1),
+              timeDiff: timeDiff,
+              updatesPerSecond: (gpsUpdateCount / elapsed).toFixed(2),
+              coordinates: {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy
+              }
+            });
+            
+            // 🔍 DIAGNOSTIC TEST 2: Coordinate Changes
+            if (lastGPSPosition) {
+              const latDiff = Math.abs(position.coords.latitude - lastGPSPosition.latitude);
+              const lngDiff = Math.abs(position.coords.longitude - lastGPSPosition.longitude);
+              const latDiffMeters = latDiff * 111000;
+              const lngDiffMeters = lngDiff * 111000;
+              
+              console.log('🔍 COORDINATE CHANGES:', {
+                latDiff: latDiff.toFixed(8),
+                lngDiff: lngDiff.toFixed(8),
+                latDiffMeters: latDiffMeters.toFixed(2),
+                lngDiffMeters: lngDiffMeters.toFixed(2),
+                totalMovementMeters: Math.sqrt(latDiffMeters * latDiffMeters + lngDiffMeters * lngDiffMeters).toFixed(2)
+              });
+            }
+            
+            // 🔍 DIAGNOSTIC TEST 3: Coordinate Stability
+            coordinateHistory.push({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy,
+              time: Date.now()
+            });
+            
+            if (coordinateHistory.length > 10) {
+              coordinateHistory.shift();
+            }
+            
+            if (coordinateHistory.length >= 5) {
+              const latValues = coordinateHistory.map(c => c.lat);
+              const lngValues = coordinateHistory.map(c => c.lng);
+              const latRange = (Math.max(...latValues) - Math.min(...latValues)) * 111000;
+              const lngRange = (Math.max(...lngValues) - Math.min(...lngValues)) * 111000;
+              
+              console.log('🔍 COORDINATE STABILITY (last 10 updates):', {
+                latRangeMeters: latRange.toFixed(2),
+                lngRangeMeters: lngRange.toFixed(2),
+                maxMovement: Math.max(latRange, lngRange).toFixed(2)
+              });
+            }
+            
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
             
-            // Rate limit: Only update every 3 seconds
-            if (now - lastGPSUpdate < 3000) {
-              return;
-            }
-            
-            // Position change filter: Only update if moved significantly
-            if (lastGPSPosition) {
-              const latDiff = Math.abs(coords.lat - lastGPSPosition.lat);
-              const lngDiff = Math.abs(coords.lng - lastGPSPosition.lng);
-              // Ignore tiny GPS jitter (less than ~1 meter)
-              if (latDiff < 0.00001 && lngDiff < 0.00001) {
-                return;
-              }
-            }
-            
-            console.log(`GPS UPDATE: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
-            lastGPSUpdate = now;
-            lastGPSPosition = coords;
+            console.log('🔍 MAP UPDATE TRIGGERED for coordinates:', coords);
+            lastTimestamp = position.timestamp;
+            lastGPSPosition = position.coords;
             setCurrentPosition(coords);
             setIsLoading(false);
             setError(null);

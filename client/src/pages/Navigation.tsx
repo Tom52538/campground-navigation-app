@@ -83,6 +83,14 @@ export default function Navigation() {
   
   useEffect(() => {
     if (followGPS && trackingPosition) {
+      console.log('🔍 MAP CENTER UPDATE LOGIC:', {
+        followGPS: followGPS,
+        trackingPosition: trackingPosition,
+        currentMapCenter: mapCenter,
+        isNavigating: isNavigating,
+        useRealGPS: useRealGPS,
+        updateTriggered: true
+      });
       setMapCenter(trackingPosition);
     }
   }, [trackingPosition, followGPS]);
