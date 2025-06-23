@@ -15,23 +15,7 @@ export const useLocation = (props?: UseLocationProps) => {
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
-  // Initialize GPS stabilizer with null safety
-  const gpsStabilizer = useRef<GPSStabilizer | null>(null);
-  
-  // Lazy initialization to ensure it works in all environments
-  const getStabilizer = () => {
-    if (!gpsStabilizer.current) {
-      console.log('🔍 GPS: Lazy initializing stabilizer');
-      gpsStabilizer.current = new GPSStabilizer({
-        smoothingWindow: 8,
-        maxAccuracy: 30,
-        maxJumpDistance: 40,
-        minUpdateInterval: 6000,
-        speedThreshold: 1.0
-      });
-    }
-    return gpsStabilizer.current;
-  };
+  const [lastEmittedTime, setLastEmittedTime] = useState<number>(0);
   
   // Debug logging for GPS state changes
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
@@ -74,30 +58,27 @@ export const useLocation = (props?: UseLocationProps) => {
             const isStabilizerNull = !gpsStabilizer.current;
             console.log(`🔍 GPS ENV: production=${isProd}, stabilizer_null=${isStabilizerNull}`);
             
-            try {
-              // Get stabilizer instance (creates if needed)
-              const stabilizer = getStabilizer();
-              
-              // Use GPS stabilizer with error catching
-              const stabilizedPosition = stabilizer.addPosition(coords, position.coords.accuracy);
-              
-              if (stabilizedPosition) {
-                console.log(`🔍 GPS STABILIZED SUCCESS: lat=${stabilizedPosition.position.lat.toFixed(8)}, lng=${stabilizedPosition.position.lng.toFixed(8)}`);
-                setCurrentPosition(stabilizedPosition.position);
-                setIsLoading(false);
-                setError(null);
-              } else {
-                console.log(`🔍 GPS STABILIZED REJECT: Position filtered out by stabilizer`);
-                // Position was rejected by stabilizer - this is GOOD behavior
-              }
-            } catch (stabilizerError) {
-              console.error('🚨 GPS STABILIZER ERROR:', stabilizerError);
-              // FALLBACK: Direct position update without stabilizer
-              console.log('🔍 GPS FALLBACK: Using raw position due to stabilizer failure');
-              setCurrentPosition(coords);
-              setIsLoading(false);
-              setError(null);
+            // EMERGENCY FIX: Skip stabilizer completely and use simple smoothing
+            console.log('🔍 GPS EMERGENCY: Bypassing stabilizer - using simple smoothing');
+            
+            // Simple position validation without complex stabilizer
+            if (position.coords.accuracy > 100) {
+              console.log(`🔍 GPS REJECT: Poor accuracy ${position.coords.accuracy}m`);
+              return;
             }
+            
+            // Rate limiting: Only update every 3 seconds
+            const now = Date.now();
+            if (lastEmittedTime && now - lastEmittedTime < 3000) {
+              console.log(`🔍 GPS THROTTLE: ${Math.round((now - lastEmittedTime)/1000)}s since last update`);
+              return;
+            }
+            
+            console.log(`🔍 GPS ACCEPT: lat=${coords.lat.toFixed(8)}, lng=${coords.lng.toFixed(8)}`);
+            setCurrentPosition(coords);
+            setLastEmittedTime(now);
+            setIsLoading(false);
+            setError(null);
           },
           (error) => {
             console.warn('GPS error:', error.message);
@@ -105,8 +86,8 @@ export const useLocation = (props?: UseLocationProps) => {
           },
           {
             enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 2000, // Use more recent positions
+            timeout: 15000,
+            maximumAge: 10000, // Allow older positions to reduce rapid updates
           }
         );
         
@@ -202,15 +183,13 @@ export const useLocation = (props?: UseLocationProps) => {
     console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
     
     if (newGPSState) {
-      // Switching to Real GPS - reset stabilizer and start loading
-      const stabilizer = getStabilizer();
-      stabilizer.reset();
+      // Switching to Real GPS - reset timing and start loading
+      setLastEmittedTime(0);
       setIsLoading(true);
-      console.log(`🔍 GPS TOGGLE: Real GPS enabled - stabilizer reset`);
+      console.log(`🔍 GPS TOGGLE: Real GPS enabled`);
     } else {
-      // Switching to Mock GPS - reset stabilizer and set mock position
-      const stabilizer = getStabilizer();
-      stabilizer.reset();
+      // Switching to Mock GPS - set mock position
+      setLastEmittedTime(0);
       console.log(`🔍 GPS TOGGLE: Mock GPS enabled - position set to:`, mockCoordinates);
       setCurrentPosition(mockCoordinates);
       setIsLoading(false);

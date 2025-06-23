@@ -81,13 +81,13 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  // Auto-follow GPS position with the map - ULTRA-CONSERVATIVE debouncing
+  // Auto-follow GPS position with the map - minimal debouncing
   useEffect(() => {
     if (followGPS && trackingPosition) {
       const timeout = setTimeout(() => {
-        console.log(`🗺️ STABLE MAP UPDATE:`, trackingPosition);
+        console.log(`🗺️ MAP UPDATE:`, trackingPosition);
         setMapCenter(trackingPosition);
-      }, 1000); // 1 second delay for maximum stability
+      }, 200); // Reduced to 200ms for responsiveness
       
       return () => clearTimeout(timeout);
     }

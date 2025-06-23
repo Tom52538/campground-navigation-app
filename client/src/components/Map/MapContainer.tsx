@@ -120,11 +120,11 @@ const MapController = ({
   useEffect(() => {
     if (map && center) {
       console.log(`🗺️ MAP CONTROLLER: Setting view to:`, center, `zoom: ${zoom}`);
-      // ULTRA-SMOOTH animation for zero jarring
+      // Quick, responsive map movement
       map.setView([center.lat, center.lng], zoom, { 
         animate: true, 
-        duration: 1.0, // 1 second very smooth transition
-        easeLinearity: 0.05 // Ultra-smooth easing
+        duration: 0.3, // Fast 300ms transition
+        easeLinearity: 0.2
       });
     }
   }, [center, zoom, map]);
