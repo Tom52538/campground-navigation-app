@@ -63,15 +63,43 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
   }).filter(pos => pos[0] !== 0 || pos[1] !== 0);
 
   return (
-    <Polyline 
-      positions={positions} 
-      pathOptions={{ 
-        color: '#2563EB', 
-        weight: 4, 
-        opacity: 0.8,
-        dashArray: '8, 4'
-      }} 
-    />
+    <>
+      {/* Shadow/Glow Effect */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#000000', 
+          weight: 8, 
+          opacity: 0.2,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }} 
+      />
+      {/* Main Gradient Route */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: 'url(#routeGradient)', 
+          weight: 5, 
+          opacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'stylish-route-line'
+        }} 
+      />
+      {/* Animated Progress Overlay */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#ffffff', 
+          weight: 2, 
+          opacity: 0.6,
+          lineCap: 'round',
+          dashArray: '12, 8',
+          className: 'route-animation'
+        }} 
+      />
+    </>
   );
 };
 
@@ -219,6 +247,17 @@ export const MapContainerComponent = ({
           }
           maxZoom={19}
         />
+        
+        {/* SVG Definitions for Route Gradient */}
+        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+          <defs>
+            <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="1" />
+              <stop offset="50%" stopColor="#1d4ed8" stopOpacity="1" />
+              <stop offset="100%" stopColor="#2563eb" stopOpacity="1" />
+            </linearGradient>
+          </defs>
+        </svg>
         
         <GestureController
           onPinchZoom={handlePinchZoom}
