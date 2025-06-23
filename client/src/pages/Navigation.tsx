@@ -81,12 +81,16 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  // GPS Follow Logic - Only update map center manually
-  // useEffect(() => {
-  //   if (followGPS && trackingPosition) {
-  //     setMapCenter(trackingPosition);
-  //   }
-  // }, [trackingPosition, followGPS]);
+  // Smart GPS following - throttled updates to prevent flickering
+  useEffect(() => {
+    if (followGPS && trackingPosition) {
+      const timeoutId = setTimeout(() => {
+        setMapCenter(trackingPosition);
+      }, 500); // 500ms delay to batch rapid updates
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [trackingPosition, followGPS]);
   
   // Update map center when site changes
   useEffect(() => {

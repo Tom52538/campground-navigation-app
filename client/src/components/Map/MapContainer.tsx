@@ -119,8 +119,13 @@ const MapController = ({
   
   useEffect(() => {
     if (map && center) {
+      // Check if this is a significant position change to determine animation
+      const currentCenter = map.getCenter();
+      const distance = currentCenter.distanceTo(L.latLng(center.lat, center.lng));
+      
       map.setView([center.lat, center.lng], zoom, { 
-        animate: false
+        animate: distance > 50, // Only animate if moving more than 50 meters
+        duration: 0.3 // Short animation to reduce flickering
       });
     }
   }, [center, zoom, map]);

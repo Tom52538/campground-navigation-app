@@ -221,4 +221,4 @@ Preferred communication style: Simple, everyday language.
 Weather widget preference: Compact, minimal design with proper German translations - no bulky interfaces.
 Route design preference: Sophisticated visual appearance that matches glassmorphism design - no basic lines.
 Map style toggle issue: Not working on Railway deployment smartphones - requires debugging and fallback mechanisms.
-GPS flickering issue: DIRECT FIX - Disabled automatic GPS map recentering completely. GPS only updates marker position. No animations on map moves to eliminate flickering.
+GPS flickering issue: SMART FILTERING - Added 2-meter movement threshold, 2-second rate limiting, 500ms update batching, and conditional animations based on distance to eliminate flickering while maintaining smooth tracking.
