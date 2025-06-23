@@ -81,13 +81,11 @@ export default function Navigation() {
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
   
-  // DISABLE AUTO-FOLLOW TO TEST
-  // useEffect(() => {
-  //   if (followGPS && trackingPosition) {
-  //     console.log(`🗺️ MAP UPDATE:`, trackingPosition);
-  //     setMapCenter(trackingPosition);
-  //   }
-  // }, [trackingPosition, followGPS]);
+  useEffect(() => {
+    if (followGPS && trackingPosition) {
+      setMapCenter(trackingPosition);
+    }
+  }, [trackingPosition, followGPS]);
   
   // Update map center when site changes
   useEffect(() => {

@@ -43,16 +43,18 @@ export const useLocation = (props?: UseLocationProps) => {
       }
 
       try {
+        let lastUpdate = 0;
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
+            const now = Date.now();
+            if (now - lastUpdate < 2000) return; // 2 second minimum
+            lastUpdate = now;
+            
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
             
-            console.log(`🔍 GPS UPDATE: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)} (${position.coords.accuracy}m)`);
-            
-            // DIRECT UPDATE - NO FILTERING
             setCurrentPosition(coords);
             setIsLoading(false);
             setError(null);
@@ -63,8 +65,8 @@ export const useLocation = (props?: UseLocationProps) => {
           },
           {
             enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 10000, // Allow older positions to reduce rapid updates
+            timeout: 10000,
+            maximumAge: 5000
           }
         );
         

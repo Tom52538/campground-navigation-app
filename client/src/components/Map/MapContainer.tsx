@@ -119,9 +119,10 @@ const MapController = ({
   
   useEffect(() => {
     if (map && center) {
-      console.log(`🗺️ MAP SET:`, center);
-      // NO ANIMATION to test
-      map.setView([center.lat, center.lng], zoom, { animate: false });
+      map.setView([center.lat, center.lng], zoom, { 
+        animate: true,
+        duration: 0.5
+      });
     }
   }, [center, zoom, map]);
   
