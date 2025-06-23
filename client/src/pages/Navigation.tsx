@@ -83,7 +83,10 @@ export default function Navigation() {
   
   useEffect(() => {
     if (followGPS && trackingPosition) {
-      setMapCenter(trackingPosition);
+      const timeout = setTimeout(() => {
+        setMapCenter(trackingPosition);
+      }, 1000);
+      return () => clearTimeout(timeout);
     }
   }, [trackingPosition, followGPS]);
   

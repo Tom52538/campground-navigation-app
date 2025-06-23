@@ -43,13 +43,8 @@ export const useLocation = (props?: UseLocationProps) => {
       }
 
       try {
-        let lastUpdate = 0;
         const newWatchId = navigator.geolocation.watchPosition(
           (position) => {
-            const now = Date.now();
-            if (now - lastUpdate < 2000) return; // 2 second minimum
-            lastUpdate = now;
-            
             const coords: Coordinates = {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
@@ -64,9 +59,9 @@ export const useLocation = (props?: UseLocationProps) => {
             setError(`GPS error: ${error.message}`);
           },
           {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 5000
+            enableHighAccuracy: false,
+            timeout: 30000,
+            maximumAge: 60000
           }
         );
         
