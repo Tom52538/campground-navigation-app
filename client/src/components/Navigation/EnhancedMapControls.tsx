@@ -6,13 +6,17 @@ interface EnhancedMapControlsProps {
   onMapStyleChange: (style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => void;
   isVoiceEnabled: boolean;
   mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  useRealGPS?: boolean;
+  onToggleGPS?: () => void;
 }
 
 export const EnhancedMapControls = ({
   onToggleVoice,
   onMapStyleChange,
   isVoiceEnabled,
-  mapStyle
+  mapStyle,
+  useRealGPS = false,
+  onToggleGPS
 }: EnhancedMapControlsProps) => {
   
   return (

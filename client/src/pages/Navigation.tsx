@@ -564,6 +564,8 @@ export default function Navigation() {
         onMapStyleChange={handleMapStyleChange}
         isVoiceEnabled={voiceEnabled}
         mapStyle={mapStyle}
+        useRealGPS={useRealGPS}
+        onToggleGPS={toggleGPS}
       />
 
 
