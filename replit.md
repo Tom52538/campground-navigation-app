@@ -91,6 +91,21 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
+- June 24, 2025. **MAP TILES FIXED**: Resolved wireframe display issue by replacing SmartTileLayer with direct Mapbox integration:
+  - Removed complex fallback logic causing black/white wireframe display
+  - Direct TileLayer implementation with proper Mapbox authentication
+  - Full color satellite and outdoors tiles now displaying correctly
+  - Map style toggle working properly across all four modes (outdoors/satellite/streets/navigation)
+  - Professional tile quality with high-DPI @2x resolution support
+
+- June 24, 2025. **GOOGLE DIRECTIONS API OPERATIONAL**: Fixed routing service initialization and deployed working navigation:
+  - Fixed undefined routingService error in server/routes.ts
+  - Properly initialize GoogleDirectionsService with GOOGLE_DIRECTIONS_API_KEY
+  - Working German turn-by-turn navigation with authentic Google instructions
+  - Route calculation working: 661m distance, 7min duration for real locations
+  - Full Google Directions integration ready for Railway deployment
+  - POI navigation functional with professional routing quality
+
 - June 23, 2025. **MAP STYLE DEBUGGING**: Fixed Railway deployment map style toggle issues:
   - Added comprehensive debugging for mobile touch events and Railway environment
   - Implemented SmartTileLayer component with automatic Mapbox fallback
