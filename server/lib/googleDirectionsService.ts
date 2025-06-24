@@ -36,7 +36,7 @@ export class GoogleDirectionsService {
       ? `${baseUrl}&alternatives=true&avoid=tolls`
       : `${baseUrl}&alternatives=true`;
 
-    console.log(`🗺️ Google Directions: Routing from ${origin} to ${destination} (${travelMode})`);
+    console.log(`🗺️ Google Directions: Routing from ${origin} to ${destination} (${request.profile || 'walking'} → ${travelMode})`);
 
     try {
       const response = await fetch(url);
@@ -67,7 +67,7 @@ export class GoogleDirectionsService {
         console.log(`🗺️ Selected shortest route from ${data.routes.length} alternatives: ${selectedRoute.legs[0]?.distance?.value}m`);
       }
 
-      const processedRoute = this.processGoogleRoute(selectedRoute);
+      const processedRoute = this.processGoogleRoute(selectedRoute, travelMode);
       console.log(`✅ Google Directions: Route calculated - ${processedRoute.totalDistance}, ${processedRoute.estimatedTime}`);
       
       return processedRoute;
@@ -78,33 +78,51 @@ export class GoogleDirectionsService {
   }
 
   private mapProfile(profile: string): string {
-    const profileMap = {
-      'walking': 'walking', // Back to walking mode for more direct pedestrian paths
-      'cycling': 'bicycling', 
-      'driving': 'driving'
-    };
-    return profileMap[profile] || 'walking';
+    switch (profile) {
+      case 'walking':
+      case 'pedestrian':
+        return 'walking';
+      case 'cycling':
+      case 'bike':
+      case 'bicycle':
+        return 'bicycling';
+      case 'driving':
+      case 'car':
+        return 'driving';
+      default:
+        return 'walking';
+    }
   }
 
-  private processGoogleRoute(route: any): NavigationRoute {
+  private processGoogleRoute(route: any, travelMode: string): NavigationRoute {
     const leg = route.legs[0];
     const distance = leg?.distance?.value || 0; // meters
     
-    // Recalculate duration for 6 km/h campground walking speed
-    const campgroundWalkingSpeed = 6; // km/h
+    // Calculate duration based on travel mode and campground conditions
+    let speedKmh = 6; // Default walking speed
+    let modeDescription = 'walking';
+    
+    if (travelMode === 'driving') {
+      speedKmh = 30; // Slower for campground roads
+      modeDescription = 'driving';
+    } else if (travelMode === 'bicycling') {
+      speedKmh = 12; // Slower for campground paths
+      modeDescription = 'cycling';
+    }
+    
     const distanceKm = distance / 1000;
-    const recalculatedDurationHours = distanceKm / campgroundWalkingSpeed;
+    const recalculatedDurationHours = distanceKm / speedKmh;
     const recalculatedDurationSeconds = Math.round(recalculatedDurationHours * 3600);
     
-    console.log(`🚶 Campground routing: ${distance}m distance, recalculated from Google's time to ${Math.round(recalculatedDurationSeconds/60)} min for 6km/h walking`);
+    console.log(`🚗 Campground routing (${modeDescription}): ${distance}m distance, recalculated to ${Math.round(recalculatedDurationSeconds/60)} min for ${speedKmh}km/h`);
     
-    const duration = recalculatedDurationSeconds; // Use our campground-optimized timing
+    const duration = recalculatedDurationSeconds;
     
     // Process turn-by-turn instructions with recalculated timing for each step
     const instructions = (leg?.steps || []).map((step: any, index: number) => {
       const stepDistance = step.distance?.value || 0;
       const stepDistanceKm = stepDistance / 1000;
-      const stepDurationHours = stepDistanceKm / campgroundWalkingSpeed;
+      const stepDurationHours = stepDistanceKm / speedKmh;
       const stepDurationSeconds = Math.round(stepDurationHours * 3600);
       
       return {

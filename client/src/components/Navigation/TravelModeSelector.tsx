@@ -11,14 +11,14 @@ const TRAVEL_MODES = {
     label: 'Auto',
     description: 'Fahren mit dem Auto',
     color: '#dc2626',
-    speedKmh: 50
+    speedKmh: 30
   },
   bike: {
     icon: Bike,
     label: 'Fahrrad',
     description: 'Radfahren',
     color: '#059669',
-    speedKmh: 15
+    speedKmh: 12
   },
   pedestrian: {
     icon: PersonStanding,

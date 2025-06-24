@@ -225,10 +225,14 @@ export default function Navigation() {
       // 2. Show calculating state
       setIsNavigating(false); // Clear any existing navigation
       
-      // 3. Calculate route directly
+      // 3. Calculate route with selected travel mode
+      const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
+      console.log('🚗 ROUTING WITH PROFILE:', profile, 'from travel mode:', travelMode);
+      
       const route = await getRoute.mutateAsync({
         from: currentPosition,
-        to: poi.coordinates
+        to: poi.coordinates,
+        profile
       });
       
       // 4. Start navigation with panel at bottom
@@ -245,7 +249,7 @@ export default function Navigation() {
         variant: "destructive",
       });
     }
-  }, [currentPosition, getRoute, toast]);
+  }, [currentPosition, getRoute, toast, travelMode]);
 
   const handleEndNavigation = useCallback(() => {
     setCurrentRoute(null);
