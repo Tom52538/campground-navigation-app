@@ -91,15 +91,15 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
-- June 24, 2025. **COMPASS BUTTON MAP ROTATION FIXED**: Completed comprehensive debugging and resolution of map rotation issue:
-  - Fixed critical missing bearing prop in MapContainer component - root cause identified
-  - Added bearing={currentBearing} to properly pass 90° rotation data to map
-  - Removed duplicate props causing build warnings 
-  - Enhanced debugging throughout entire compass click chain with comprehensive logging
-  - RotatableMap component now receives proper bearing values and applies CSS transforms
-  - Map physically rotates 90 degrees east when compass button tapped in driving mode
-  - Mobile debugging system captures all rotation events for verification
-  - Complete data flow: click → state update → prop passing → DOM manipulation → visual rotation
+- June 24, 2025. **COMPASS ROTATION & REROUTING OPTIMIZATION**: Implemented multiple rotation solutions and fixed excessive rerouting:
+  - Added DirectRotateMap component with CSS !important overrides for forced rotation
+  - Enhanced compass click with immediate state updates and comprehensive debugging
+  - Multiple rotation approaches: RotatableMap, ForceRotateMap, DirectRotateMap components
+  - Applied rotation to container, map-pane, tile-pane, overlay-pane elements with !important CSS
+  - Fixed excessive rerouting: increased thresholds from 8m→25m off-route, 5s→15s consideration time
+  - Reduced reroute frequency: 10s→30s between attempts, max attempts 3→2
+  - Enhanced mobile debugging captures all rotation and rerouting events
+  - Force DOM updates with offsetHeight trigger and map invalidation after rotation
 
 - June 24, 2025. **WEATHER API OPTIMIZATION & COMPASS ENHANCEMENT**: Fixed excessive API calls and improved navigation UX:
   - Reduced weather API spam from constant polling to 10-minute cache intervals with coordinate rounding
