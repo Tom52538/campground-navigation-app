@@ -377,11 +377,12 @@ export default function Navigation() {
       const testBearing = 90; // 90 degrees east for obvious rotation
       setCurrentBearing(testBearing);
       mobileLogger.log('COMPASS', `Switched to driving mode with ${testBearing}° bearing`);
-      console.log('🧭 COMPASS DEBUG: Setting bearing to', testBearing, 'degrees');
+      console.log('🧭 COMPASS DEBUG: Setting bearing to', testBearing, 'degrees, orientation:', newOrientation);
+      console.log('🧭 COMPASS DEBUG: State update - mapOrientation will be:', newOrientation, 'currentBearing will be:', testBearing);
     } else {
       setCurrentBearing(0); // Reset to north
       mobileLogger.log('COMPASS', 'Switched to north-up mode');
-      console.log('🧭 COMPASS DEBUG: Reset bearing to 0 degrees');
+      console.log('🧭 COMPASS DEBUG: Reset bearing to 0 degrees, orientation:', newOrientation);
     }
   }, [mapOrientation]);
 
@@ -533,6 +534,8 @@ export default function Navigation() {
         onPOIClick={handlePOIClick}
         onPOINavigate={handleNavigateToPOI}
         onMapClick={handleMapClick}
+        mapOrientation={mapOrientation}
+        bearing={currentBearing}
         mapOrientation={mapOrientation}
         bearing={routeProgress?.heading || 0}
         mapStyle={mapStyle}

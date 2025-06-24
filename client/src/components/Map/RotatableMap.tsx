@@ -15,8 +15,19 @@ export const RotatableMap = ({ bearing, orientation }: RotatableMapProps) => {
 
     const targetRotation = orientation === 'driving' ? -bearing : 0;
     
+    console.log('🧭 RotatableMap DEBUG:', {
+      orientation,
+      bearing,
+      targetRotation,
+      previousRotation: rotationRef.current,
+      willApply: rotationRef.current !== targetRotation
+    });
+    
     // Only rotate if the bearing has actually changed
-    if (rotationRef.current === targetRotation) return;
+    if (rotationRef.current === targetRotation) {
+      console.log('🧭 RotatableMap: Skipping - rotation unchanged');
+      return;
+    }
     
     rotationRef.current = targetRotation;
     
