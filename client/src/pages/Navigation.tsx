@@ -20,7 +20,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { mobileLogger } from '@/utils/mobileLogger';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
-import { calculateDistance, formatDistance } from '@/lib/mapUtils';
+import { calculateDistance, formatDistance, calculateBearing } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
