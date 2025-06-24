@@ -215,6 +215,9 @@ export default function Navigation() {
   }, [selectedPOI]);
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
+    const startTime = performance.now();
+    mobileLogger.log('NAVIGATION', `Starting navigation to ${poi.name} with mode: ${travelMode}`);
+    
     try {
       // 1. IMMEDIATELY hide POI info box - FIRST ACTION
       setSelectedPOI(null);
@@ -241,6 +244,9 @@ export default function Navigation() {
       // 4. Start navigation with panel at bottom
       setCurrentRoute(route);
       setIsNavigating(true);
+      
+      mobileLogger.logPerformance('Navigation setup', startTime);
+      mobileLogger.log('NAVIGATION', `Navigation started successfully to ${poi.name}`);
       setUIMode('navigation');
       setOverlayStates(prev => ({ ...prev, navigation: true }));
       
