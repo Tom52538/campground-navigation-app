@@ -21,6 +21,7 @@ export class GoogleDirectionsService {
     
     // Map profiles to Google travel modes
     const travelMode = this.mapProfile(request.profile || 'walking');
+    console.log('🗺️ Google Directions: Profile mapping:', { requestProfile: request.profile, googleMode: travelMode });
     
     // For campground mode, try multiple routing strategies
     const baseUrl = `https://maps.googleapis.com/maps/api/directions/json?` +

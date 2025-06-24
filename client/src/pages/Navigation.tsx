@@ -218,6 +218,8 @@ export default function Navigation() {
     try {
       // 1. IMMEDIATELY hide POI info box - FIRST ACTION
       setSelectedPOI(null);
+      
+      console.log('🚗 TRAVEL MODE DEBUG:', { selectedMode: travelMode, profileMapping: travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling' });
       setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
       
       // 2. Show calculating state
