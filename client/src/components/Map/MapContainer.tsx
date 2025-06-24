@@ -160,12 +160,12 @@ const PopupController = ({ selectedPOI }: { selectedPOI: POI | null }) => {
   return null;
 };
 
-// Map style configurations for different camping use cases
+// Map style configurations - Railway-optimized with fallbacks
 const MAP_STYLES = {
-  outdoors: 'outdoors-v12',    // Best for camping - shows trails, terrain, elevation
-  satellite: 'satellite-v9',   // Aerial view for campground layout
-  streets: 'streets-v12',      // Urban navigation
-  navigation: 'navigation-day-v1' // Optimized for turn-by-turn navigation
+  outdoors: 'outdoors-v12',     // Best for camping - shows trails, terrain, elevation
+  satellite: 'satellite-v9',    // Aerial view for campground layout  
+  streets: 'streets-v12',       // Urban navigation
+  navigation: 'navigation-preview-day-v4'  // Railway-compatible navigation style
 };
 
 // Fallback URLs for when Mapbox fails on mobile/Railway
@@ -263,17 +263,26 @@ export const MapContainerComponent = ({
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
-          key={mapStyle}
+          key={`mapbox-${mapStyle}-${MAP_STYLES[mapStyle]}-${import.meta.env.MODE}`}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
-          url={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
-            ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
-            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={
+            import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
+              ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
+              : mapStyle === 'satellite' 
+                ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           }
           maxZoom={19}
           eventHandlers={{
-            loading: () => console.log('🗺️ Tiles loading:', mapStyle),
-            load: () => console.log('🗺️ Tiles loaded successfully:', mapStyle),
-            tileerror: (e) => console.error('🗺️ Tile loading error:', e)
+            loading: () => {
+              console.log('🗺️ Railway Tiles loading:', mapStyle, 'Style:', MAP_STYLES[mapStyle], 'Environment:', import.meta.env.MODE);
+            },
+            load: () => {
+              console.log('🗺️ Railway Tiles loaded successfully:', mapStyle, 'Visual change should be visible now');
+            },
+            tileerror: (e) => {
+              console.error('🗺️ Railway Tile error for', mapStyle, '- fallback may be needed:', e);
+            }
           }}
         />
         
