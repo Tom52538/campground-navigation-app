@@ -263,7 +263,7 @@ export const MapContainerComponent = ({
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
-          key={`${mapStyle}-${Date.now()}`}
+          key={mapStyle}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
           url={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
             ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
