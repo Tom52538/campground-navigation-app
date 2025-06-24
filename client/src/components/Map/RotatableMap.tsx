@@ -23,11 +23,9 @@ export const RotatableMap = ({ bearing, orientation }: RotatableMapProps) => {
       willApply: rotationRef.current !== targetRotation
     });
     
-    // Only rotate if the bearing has actually changed
-    if (rotationRef.current === targetRotation) {
-      console.log('🧭 RotatableMap: Skipping - rotation unchanged');
-      return;
-    }
+    // Always apply rotation when orientation or bearing changes
+    // Don't skip - force rotation update
+    console.log('🧭 RotatableMap: Forcing rotation update');
     
     rotationRef.current = targetRotation;
     

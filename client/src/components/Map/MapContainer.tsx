@@ -7,6 +7,7 @@ import { GestureEnhancedMap } from './GestureEnhancedMap';
 import { GestureController } from './GestureController';
 import { ZoomGestureIndicator } from './ZoomGestureIndicator';
 import { RotatableMap } from './RotatableMap';
+import { ForceRotateMap } from './ForceRotateMap';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -280,6 +281,10 @@ export const MapContainerComponent = ({
           bearing={bearing}
         />
         <RotatableMap 
+          bearing={bearing || 0}
+          orientation={mapOrientation || 'north'}
+        />
+        <ForceRotateMap 
           bearing={bearing || 0}
           orientation={mapOrientation || 'north'}
         />
