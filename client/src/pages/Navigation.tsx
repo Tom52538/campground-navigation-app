@@ -369,6 +369,20 @@ export default function Navigation() {
 
 
 
+  // Voice toggle handler
+  const handleToggleVoice = useCallback(() => {
+    const newVoiceState = !voiceEnabled;
+    setVoiceEnabled(newVoiceState);
+    
+    if (voiceGuideRef.current) {
+      if (newVoiceState) {
+        voiceGuideRef.current.enable();
+      } else {
+        voiceGuideRef.current.disable();
+      }
+    }
+  }, [voiceEnabled]);
+
   // Enhanced map style change handler with Railway debugging
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
     console.log('🗺️ DEBUG - Navigation.tsx handleMapStyleChange:', {
@@ -546,15 +560,10 @@ export default function Navigation() {
 
       {/* Enhanced Map Controls - Always Visible (Right Side) */}
       <EnhancedMapControls
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onCenterOnLocation={handleCenterOnLocation}
-        useRealGPS={useRealGPS}
-        onToggleGPS={toggleGPS}
-        mapOrientation={mapOrientation}
-        onToggleOrientation={handleToggleOrientation}
-        mapStyle={mapStyle}
+        onToggleVoice={handleToggleVoice}
         onMapStyleChange={handleMapStyleChange}
+        isVoiceEnabled={voiceEnabled}
+        mapStyle={mapStyle}
       />
 
 
