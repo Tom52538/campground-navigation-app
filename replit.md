@@ -91,6 +91,15 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
+- June 24, 2025. **MOBILE DEBUGGING SYSTEM**: Implemented comprehensive smartphone logging to resolve stability issues:
+  - MobileLogger utility with floating red LOG button for on-device debugging
+  - Captures console errors, unhandled errors, promise rejections, and network failures
+  - Device information logging: screen size, user agent, memory, connection type
+  - Performance monitoring for navigation operations and API calls
+  - Touch event logging for interaction debugging
+  - Floating overlay interface accessible during smartphone testing
+  - Export functionality for sharing debug logs
+
 - June 24, 2025. **MULTI-MODAL ROUTING OPERATIONAL**: Successfully deployed car/bike/pedestrian routing with Google Directions API:
   - TravelModeSelector component with German labels (Auto/Rad/Fuß) positioned bottom-left
   - Compact vertical layout (44px wide) with smart visibility: shows only when NOT navigating

@@ -18,6 +18,7 @@ import { useRouting } from '@/hooks/useRouting';
 import { useWeather } from '@/hooks/useWeather';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
+import { mobileLogger } from '@/utils/mobileLogger';
 import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
 import { calculateDistance, formatDistance } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -252,6 +253,7 @@ export default function Navigation() {
       
       // Navigation started - no confirmation dialog needed
     } catch (error) {
+      mobileLogger.log('ERROR', `Navigation failed: ${error}`);
       toast({
         title: "Route Error",
         description: "Failed to calculate route. Please try again.",
@@ -261,6 +263,7 @@ export default function Navigation() {
   }, [currentPosition, getRoute, toast, travelMode]);
 
   const handleEndNavigation = useCallback(() => {
+    mobileLogger.log('NAVIGATION', 'Navigation ended by user');
     setCurrentRoute(null);
     setIsNavigating(false);
     setUIMode('start');
