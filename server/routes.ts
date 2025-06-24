@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WeatherService } from "../client/src/lib/weatherService";
-
+import { GoogleDirectionsService } from "./lib/googleDirectionsService";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -109,7 +109,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY || ""
   );
   
-  // Navigation services temporarily disabled
+  // Initialize Google Directions service
+  const routingService = new GoogleDirectionsService(
+    process.env.GOOGLE_DIRECTIONS_API_KEY || ""
+  );
 
 
 
@@ -184,37 +187,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("POI search error:", error);
       res.status(500).json({ error: "Failed to search POIs" });
-    }
-  });
-
-  // Google Directions API endpoint
-  app.post('/api/directions', async (req, res) => {
-    try {
-      const { origin, destination, mode = 'walking' } = req.body;
-      
-      const apiKey = process.env.GOOGLE_DIRECTIONS_API_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ error: 'Google Directions API key not configured' });
-      }
-
-      const url = `https://maps.googleapis.com/maps/api/directions/json?` +
-        `origin=${origin.lat},${origin.lng}&` +
-        `destination=${destination.lat},${destination.lng}&` +
-        `mode=${mode}&` +
-        `language=de&` +
-        `key=${apiKey}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.status === 'OK') {
-        res.json(data);
-      } else {
-        res.status(400).json({ error: 'Directions not found', details: data });
-      }
-    } catch (error) {
-      console.error('Directions API error:', error);
-      res.status(500).json({ error: 'Failed to get directions' });
     }
   });
 

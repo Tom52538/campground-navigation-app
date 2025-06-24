@@ -1,17 +1,16 @@
-import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { divIcon } from 'leaflet';
-import L from 'leaflet';
-import { POI } from '@/shared/schema';
-import { Coordinates } from '@/types';
-import { formatDistance } from '@/lib/utils';
-import { useEffect, useState, useMemo } from 'react';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { cn } from '@/lib/utils';
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { Icon, divIcon } from 'leaflet';
+import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
+import { POIMarker } from './POIMarker';
+import { GestureEnhancedMap } from './GestureEnhancedMap';
+import { GestureController } from './GestureController';
+import { ZoomGestureIndicator } from './ZoomGestureIndicator';
+import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
+delete (Icon.Default.prototype as any)._getIconUrl;
+Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -19,18 +18,18 @@ L.Icon.Default.mergeOptions({
 
 interface MapContainerProps {
   center: Coordinates;
-  zoom?: number;
+  zoom: number;
   currentPosition: Coordinates;
   pois: POI[];
   selectedPOI: POI | null;
-  route?: any | null;
-  filteredCategories?: string[];
+  route: NavigationRoute | null;
+  filteredCategories: string[];
   onPOIClick: (poi: POI) => void;
-  onMapClick?: () => void;
+  onPOINavigate?: (poi: POI) => void;
+  onMapClick: () => void;
   mapOrientation?: 'north' | 'driving';
   bearing?: number;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
-  isNavigating?: boolean;
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -53,96 +52,131 @@ const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
   );
 };
 
-// POI Category Colors
-const POI_COLORS: Record<string, string> = {
-  'food-drink': '#FF6B6B',
-  'accommodation': '#4ECDC4', 
-  'recreation': '#45B7D1',
-  'services': '#96CEB4',
-  'facilities': '#FFEAA7',
-  'transportation': '#DDA0DD',
-  'shopping': '#FF7F50',
-  'default': '#6C5CE7'
-};
+const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
+  if (!route.geometry || !Array.isArray(route.geometry) || route.geometry.length === 0) return null;
 
-const POIMarker = ({ 
-  poi, 
-  currentPosition, 
-  isSelected, 
-  isFiltered, 
-  onClick 
-}: { 
-  poi: POI; 
-  currentPosition: Coordinates; 
-  isSelected: boolean;
-  isFiltered: boolean;
-  onClick: () => void;
-}) => {
-  const distance = useMemo(() => {
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (poi.lat - currentPosition.lat) * Math.PI / 180;
-    const dLon = (poi.lng - currentPosition.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(currentPosition.lat * Math.PI / 180) * Math.cos(poi.lat * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c * 1000; // Distance in meters
-  }, [poi.lat, poi.lng, currentPosition.lat, currentPosition.lng]);
-
-  const color = POI_COLORS[poi.category] || POI_COLORS.default;
-  const size = isSelected ? 20 : 16;
-  const opacity = isFiltered ? 1 : 0.3;
-
-  const poiIcon = divIcon({
-    html: `
-      <div class="relative transform transition-all duration-200 ${isSelected ? 'scale-125' : ''}">
-        <div 
-          class="rounded-full shadow-lg border-2 border-white backdrop-blur-sm"
-          style="background-color: ${color}; width: ${size}px; height: ${size}px; opacity: ${opacity};"
-        ></div>
-        ${isSelected ? `
-          <div class="absolute inset-0 rounded-full animate-ping" style="background-color: ${color}; opacity: 0.5;"></div>
-        ` : ''}
-      </div>
-    `,
-    className: 'poi-marker',
-    iconSize: [size, size],
-    iconAnchor: [size/2, size/2],
-  });
+  const positions: [number, number][] = route.geometry.map((coord: any) => {
+    if (Array.isArray(coord) && coord.length >= 2) {
+      return [coord[1], coord[0]] as [number, number]; // Swap lng,lat to lat,lng for Leaflet
+    }
+    return [0, 0] as [number, number]; // Fallback for invalid coordinates
+  }).filter(pos => pos[0] !== 0 || pos[1] !== 0);
 
   return (
-    <Marker 
-      position={[poi.lat, poi.lng]} 
-      icon={poiIcon}
-      eventHandlers={{
-        click: onClick
-      }}
-    >
-      <Popup>
-        <div className="min-w-[200px]">
-          <h3 className="font-semibold text-lg mb-1">{poi.name}</h3>
-          <p className="text-sm text-gray-600 mb-2 capitalize">{poi.category}</p>
-          {poi.description && (
-            <p className="text-sm mb-2">{poi.description}</p>
-          )}
-          <p className="text-xs text-gray-500">
-            {formatDistance(distance)} away
-          </p>
-        </div>
-      </Popup>
-    </Marker>
+    <>
+      {/* Shadow/Glow Base */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#000000', 
+          weight: 10, 
+          opacity: 0.3,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }} 
+      />
+      {/* Main Route with Custom Class */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#ffffff', // This will be overridden by CSS
+          weight: 6, 
+          opacity: 1,
+          lineCap: 'round',
+          lineJoin: 'round',
+          className: 'premium-route-line'
+        }} 
+      />
+      {/* Animated Pulse Overlay */}
+      <Polyline 
+        positions={positions} 
+        pathOptions={{ 
+          color: '#60a5fa', 
+          weight: 3, 
+          opacity: 0.8,
+          lineCap: 'round',
+          lineJoin: 'round',
+          dashArray: '20, 10',
+          className: 'route-pulse-animation'
+        }} 
+      />
+    </>
   );
 };
 
-// Mapbox style mappings
-const MAP_STYLES = {
-  outdoors: 'outdoors-v12',
-  satellite: 'satellite-v9', 
-  streets: 'streets-v12',
-  navigation: 'navigation-day-v1'
+const MapController = ({ 
+  center, 
+  zoom, 
+  mapOrientation, 
+  bearing 
+}: { 
+  center: Coordinates; 
+  zoom: number; 
+  mapOrientation?: 'north' | 'driving';
+  bearing?: number;
+}) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    map.setView([center.lat, center.lng], zoom);
+  }, [center, zoom, map]);
+  
+  useEffect(() => {
+    if (map) {
+      console.log('🧭 MapController: Orientation change -', mapOrientation, 'bearing:', bearing);
+      if (mapOrientation === 'driving' && bearing !== undefined && bearing !== 0) {
+        // Rotate map to driving direction using CSS transform on the leaflet container
+        const mapPane = map.getPane('mapPane');
+        if (mapPane) {
+          mapPane.style.transform = `rotate(${-bearing}deg)`;
+          mapPane.style.transformOrigin = 'center';
+          mapPane.style.transition = 'transform 0.3s ease';
+          console.log('🧭 Map rotated to bearing:', bearing);
+        }
+      } else {
+        // Reset to north-up orientation
+        const mapPane = map.getPane('mapPane');
+        if (mapPane) {
+          mapPane.style.transform = 'rotate(0deg)';
+          mapPane.style.transition = 'transform 0.3s ease';
+          console.log('🧭 Map reset to north-up');
+        }
+      }
+    }
+  }, [mapOrientation, bearing, map]);
+  
+  return null;
 };
 
-// Smart TileLayer with Mapbox and fallback support
+const PopupController = ({ selectedPOI }: { selectedPOI: POI | null }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!selectedPOI) {
+      map.closePopup();
+    }
+  }, [selectedPOI, map]);
+  
+  return null;
+};
+
+// Map style configurations for different camping use cases
+const MAP_STYLES = {
+  outdoors: 'outdoors-v12',    // Best for camping - shows trails, terrain, elevation
+  satellite: 'satellite-v9',   // Aerial view for campground layout
+  streets: 'streets-v12',      // Urban navigation
+  navigation: 'navigation-day-v1' // Optimized for turn-by-turn navigation
+};
+
+// Fallback URLs for when Mapbox fails on mobile/Railway
+const FALLBACK_TILES = {
+  outdoors: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  streets: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  navigation: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+};
+
+// Smart TileLayer component with fallback handling
 const SmartTileLayer = ({ 
   mapStyle, 
   mapboxToken 
@@ -150,92 +184,56 @@ const SmartTileLayer = ({
   mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
   mapboxToken?: string;
 }) => {
+  const [useMapbox, setUseMapbox] = useState(!!mapboxToken);
   const [tileLoadError, setTileLoadError] = useState(false);
-
-  // Use Mapbox if token is available and valid
-  const useMapbox = !!(mapboxToken && mapboxToken.startsWith('pk.') && !tileLoadError);
 
   const mapboxUrl = mapboxToken 
     ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
     : null;
   
-  // Fallback to OpenStreetMap
-  const fallbackUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const finalUrl = useMapbox && mapboxUrl ? mapboxUrl : fallbackUrl;
+  const fallbackUrl = FALLBACK_TILES[mapStyle];
 
-  console.log('🗺️ DEBUG - Direct TileLayer loading for:', mapStyle);
+  console.log('🗺️ DEBUG - SmartTileLayer render:', {
+    mapStyle,
+    useMapbox,
+    tileLoadError,
+    mapboxUrl: mapboxUrl ? 'configured' : 'none',
+    fallbackUrl,
+    tokenValid: mapboxToken?.startsWith('pk.') || false
+  });
 
   return (
     <TileLayer
-      url={finalUrl}
+      key={`${mapStyle}-${useMapbox ? 'mapbox' : 'fallback'}-${Date.now()}`}
+      url={useMapbox && mapboxUrl && !tileLoadError ? mapboxUrl : fallbackUrl}
       attribution={
-        useMapbox 
-          ? '© Mapbox © OpenStreetMap'
-          : '© OpenStreetMap contributors'
+        useMapbox && !tileLoadError 
+          ? '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }
       maxZoom={19}
-      onLoad={() => {
-        console.log('🗺️ DEBUG - Direct TileLayer loaded successfully for:', mapStyle);
+      eventHandlers={{
+        loading: () => {
+          console.log('🗺️ DEBUG - Tiles loading for:', mapStyle, useMapbox ? 'Mapbox' : 'Fallback');
+        },
+        load: () => {
+          console.log('🗺️ DEBUG - Tiles loaded successfully for:', mapStyle);
+          setTileLoadError(false);
+        },
+        tileerror: (e) => {
+          console.error('🗺️ ERROR - Tile loading failed:', e);
+          if (useMapbox && mapboxToken) {
+            console.log('🗺️ DEBUG - Switching to fallback tiles due to error');
+            setUseMapbox(false);
+            setTileLoadError(true);
+          }
+        }
       }}
     />
   );
 };
 
-// Map controller for center and zoom updates
-const MapController = ({ 
-  center, 
-  zoom, 
-  orientation,
-  bearing = 0
-}: { 
-  center: Coordinates; 
-  zoom: number; 
-  orientation?: 'north' | 'driving';
-  bearing?: number;
-}) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (map && center) {
-      // Check if this is a significant position change to determine animation
-      const currentCenter = map.getCenter();
-      const distance = currentCenter.distanceTo(L.latLng(center.lat, center.lng));
-      
-      map.setView([center.lat, center.lng], zoom, { 
-        animate: distance > 50, // Only animate if moving more than 50 meters
-        duration: 0.3 // Short animation to reduce flickering
-      });
-    }
-  }, [center, zoom, map]);
-
-  // Orientation handling disabled for clean slate
-  useEffect(() => {
-    if (map && orientation) {
-      console.log('🧭 MapController: Orientation change -', orientation, 'bearing:', bearing);
-      // setBearing functionality removed - will be reimplemented in new navigation system
-    }
-  }, [map, orientation, bearing]);
-
-  return null;
-};
-
-// Map click handler
-const MapClickHandler = ({ onClick }: { onClick: () => void }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (map) {
-      map.on('click', onClick);
-      return () => {
-        map.off('click', onClick);
-      };
-    }
-  }, [map, onClick]);
-
-  return null;
-};
-
-export function MapContainer({
+export const MapContainerComponent = ({
   center,
   zoom,
   currentPosition,
@@ -244,88 +242,131 @@ export function MapContainer({
   route,
   filteredCategories,
   onPOIClick,
+  onPOINavigate,
   onMapClick,
   mapOrientation = 'north',
   bearing = 0,
-  mapStyle = 'outdoors'
-}: MapContainerProps) {
-  const environment = useEnvironment();
-  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
-  console.log('🗺️ DEBUG - Environment:', {
-    mode: environment.mode,
-    dev: environment.isDev,
-    prod: environment.isProd
+  mapStyle = 'outdoors',
+}: MapContainerProps) => {
+  const [gestureIndicator, setGestureIndicator] = useState<{
+    isVisible: boolean;
+    type: 'pinch-in' | 'pinch-out' | 'rotate' | null;
+    intensity: number;
+  }>({
+    isVisible: false,
+    type: null,
+    intensity: 0
   });
 
+  const handlePinchZoom = (scale: number) => {
+    const intensity = Math.abs(scale - 1);
+    setGestureIndicator({
+      isVisible: true,
+      type: scale > 1 ? 'pinch-out' : 'pinch-in',
+      intensity: Math.min(intensity, 1)
+    });
+
+    setTimeout(() => {
+      setGestureIndicator(prev => ({ ...prev, isVisible: false }));
+    }, 100);
+  };
+
+  const handleDoubleTap = (latlng: any) => {
+    console.log('Double tap zoom at:', latlng);
+  };
+
+  const handleLongPress = (latlng: any) => {
+    console.log('Long press - add POI at:', latlng);
+  };
+
+  // Enhanced debugging for Railway deployment issues
+  const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+  console.log('🗺️ DEBUG - Environment:', {
+    nodeEnv: import.meta.env.NODE_ENV,
+    mode: import.meta.env.MODE,
+    dev: import.meta.env.DEV,
+    prod: import.meta.env.PROD
+  });
   console.log('🗺️ DEBUG - Mapbox token:', {
     exists: !!mapboxToken,
     length: mapboxToken?.length || 0,
-    firstChars: mapboxToken?.substring(0, 7) || 'none',
-    isValid: mapboxToken?.startsWith('pk.') || false,
-    fullToken: mapboxToken
+    firstChars: mapboxToken?.substring(0, 8) || 'none',
+    isValid: mapboxToken?.startsWith('pk.') || false
   });
-
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
   console.log('🗺️ DEBUG - Map style config:', {
     currentStyle: mapStyle,
     mapboxStyle: MAP_STYLES[mapStyle],
     allStyles: MAP_STYLES,
-    isMobile
+    isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   });
 
-  const mapboxUrl = mapboxToken 
-    ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxToken}`
-    : null;
-
-  console.log('🗺️ DEBUG - Using Mapbox URL:', mapboxUrl?.substring(0, 100) + '...');
-
   return (
-    <div className="w-full h-full relative">
-      <LeafletMapContainer
+    <div className="map-container relative">
+      <MapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
-        scrollWheelZoom={true}
-        className="w-full h-full"
+        className="w-full h-full z-0"
         zoomControl={false}
+        attributionControl={false}
       >
-        <SmartTileLayer mapStyle={mapStyle} mapboxToken={mapboxToken} />
-        
         <MapController 
           center={center} 
           zoom={zoom} 
-          orientation={mapOrientation}
+          mapOrientation={mapOrientation}
           bearing={bearing}
         />
+        <PopupController selectedPOI={selectedPOI} />
+        
+        <SmartTileLayer 
+          mapStyle={mapStyle}
+          mapboxToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+        />
+        
+        {/* SVG Gradient Definition for Route */}
+        <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
+          <defs>
+            <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="objectBoundingBox">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="30%" stopColor="#1d4ed8" />
+              <stop offset="70%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#60a5fa" />
+            </linearGradient>
+          </defs>
+        </svg>
+        
 
-        {/* Current position marker */}
+        
+        <GestureController
+          onPinchZoom={handlePinchZoom}
+          onDoubleTap={handleDoubleTap}
+          onLongPress={handleLongPress}
+          onSwipeLeft={() => console.log('Swipe left - next panel')}
+          onSwipeRight={() => console.log('Swipe right - previous panel')}
+          onSwipeUp={() => console.log('Swipe up - show details')}
+          onSwipeDown={() => console.log('Swipe down - hide panels')}
+        />
+        
         <CurrentLocationMarker position={currentPosition} />
-
-        {/* Route polyline */}
-        {route && route.routes && route.routes[0] && (
-          <Polyline
-            positions={decodePolyline(route.routes[0].overview_polyline.points)}
-            color="#2563eb"
-            weight={5}
-            opacity={0.8}
-          />
-        )}
-
-        {/* POI markers */}
-        {pois.filter(poi => poi.lat && poi.lng && !isNaN(poi.lat) && !isNaN(poi.lng)).map((poi) => (
+        
+        {pois.map((poi) => (
           <POIMarker
             key={poi.id}
             poi={poi}
-            currentPosition={currentPosition}
             isSelected={selectedPOI?.id === poi.id}
-            isFiltered={filteredCategories.length === 0 || filteredCategories.includes(poi.category)}
             onClick={() => onPOIClick(poi)}
+            onNavigate={onPOINavigate}
+            showHoverTooltip={true}
           />
         ))}
-
-        <MapClickHandler onClick={onMapClick} />
-      </LeafletMapContainer>
+        
+        {route && <RoutePolyline route={route} />}
+      </MapContainer>
+      
+      <ZoomGestureIndicator
+        isVisible={gestureIndicator.isVisible}
+        gestureType={gestureIndicator.type}
+        intensity={gestureIndicator.intensity}
+      />
     </div>
   );
-}
+};

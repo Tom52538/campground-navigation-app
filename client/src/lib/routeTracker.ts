@@ -1,49 +1,309 @@
-import { Coordinates } from '@/types';
+import { Coordinates, NavigationRoute, RouteInstruction } from '../types/navigation';
 import { calculateDistance } from './mapUtils';
+import { SpeedTracker, ETAUpdate } from './speedTracker';
 
-export interface NavigationRoute {
-  instructions: Array<{
-    instruction: string;
-    distance: string;
-    duration: string;
-  }>;
-  geometry: number[][];
-  totalDistance: string;
-  totalDuration: string;
+export interface RouteProgress {
+  currentStep: number;
+  distanceToNext: number;
+  distanceRemaining: number;
+  shouldAdvance: boolean;
+  isOffRoute: boolean;
+  percentComplete: number;
+  estimatedTimeRemaining: number;
+  currentSpeed: number;
+  averageSpeed: number;
+  dynamicETA: ETAUpdate;
 }
 
 export class RouteTracker {
   private route: NavigationRoute;
   private currentStepIndex: number = 0;
   private onStepChange: (step: number) => void;
-  private onOffRoute: (isOff: boolean) => void;
+  private onRouteComplete: () => void;
+  private onOffRoute: (distance: number) => void;
+  private totalDistance: number;
+  private completedDistance: number = 0;
+  private speedTracker: SpeedTracker;
 
-  private readonly STEP_ADVANCE_THRESHOLD = 0.02; // 20 meters
-  private readonly OFF_ROUTE_THRESHOLD = 0.05; // 50 meters
+  // Thresholds for navigation decisions - Made more conservative for accuracy
+  private readonly STEP_ADVANCE_THRESHOLD = 0.015; // 15 meters - more precise
+  private readonly OFF_ROUTE_THRESHOLD = 0.030; // 30 meters - more responsive
+  private readonly ROUTE_COMPLETE_THRESHOLD = 0.008; // 8 meters - prevent premature completion
 
-  constructor(route: NavigationRoute, onStepChange: (step: number) => void, onOffRoute: (isOff: boolean) => void) {
+  constructor(
+    route: NavigationRoute,
+    onStepChange: (step: number) => void,
+    onRouteComplete: () => void = () => {},
+    onOffRoute: (distance: number) => void = () => {}
+  ) {
     this.route = route;
     this.onStepChange = onStepChange;
+    this.onRouteComplete = onRouteComplete;
     this.onOffRoute = onOffRoute;
+    this.totalDistance = this.calculateTotalDistance();
+    this.speedTracker = new SpeedTracker();
   }
 
-  public updatePosition(position: Coordinates) {
-    if (this.currentStepIndex >= this.route.instructions.length - 1) return;
+  private calculateTotalDistance(): number {
+    if (!this.route.geometry || this.route.geometry.length < 2) return 0;
+    
+    let total = 0;
+    for (let i = 1; i < this.route.geometry.length; i++) {
+      const prev = { lat: this.route.geometry[i-1][1], lng: this.route.geometry[i-1][0] };
+      const curr = { lat: this.route.geometry[i][1], lng: this.route.geometry[i][0] };
+      total += calculateDistance(prev, curr);
+    }
+    return total;
+  }
 
-    const nextWaypoint = {
-      lat: this.route.geometry[this.currentStepIndex + 1][1],
-      lng: this.route.geometry[this.currentStepIndex + 1][0]
+  private findClosestPointOnRoute(position: Coordinates): {
+    point: Coordinates;
+    distance: number;
+    segmentIndex: number;
+  } {
+    if (!this.route.geometry || this.route.geometry.length < 2) {
+      return {
+        point: position,
+        distance: 0,
+        segmentIndex: 0
+      };
+    }
+
+    let minDistance = Infinity;
+    let closestPoint = position;
+    let closestSegmentIndex = 0;
+
+    for (let i = 0; i < this.route.geometry.length - 1; i++) {
+      const segmentStart = { 
+        lat: this.route.geometry[i][1], 
+        lng: this.route.geometry[i][0] 
+      };
+      const segmentEnd = { 
+        lat: this.route.geometry[i + 1][1], 
+        lng: this.route.geometry[i + 1][0] 
+      };
+
+      const closestOnSegment = this.getClosestPointOnSegment(
+        position, 
+        segmentStart, 
+        segmentEnd
+      );
+
+      const distance = calculateDistance(position, closestOnSegment);
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPoint = closestOnSegment;
+        closestSegmentIndex = i;
+      }
+    }
+
+    return {
+      point: closestPoint,
+      distance: minDistance,
+      segmentIndex: closestSegmentIndex
     };
+  }
 
-    const distanceToNext = calculateDistance(position, nextWaypoint);
+  private getClosestPointOnSegment(
+    point: Coordinates,
+    segmentStart: Coordinates,
+    segmentEnd: Coordinates
+  ): Coordinates {
+    const A = point.lat - segmentStart.lat;
+    const B = point.lng - segmentStart.lng;
+    const C = segmentEnd.lat - segmentStart.lat;
+    const D = segmentEnd.lng - segmentStart.lng;
 
-    if (distanceToNext < this.STEP_ADVANCE_THRESHOLD) {
-      this.currentStepIndex++;
-      this.onStepChange(this.currentStepIndex);
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+
+    if (lenSq === 0) return segmentStart;
+
+    let param = dot / lenSq;
+
+    if (param < 0) {
+      return segmentStart;
+    } else if (param > 1) {
+      return segmentEnd;
+    } else {
+      return {
+        lat: segmentStart.lat + param * C,
+        lng: segmentStart.lng + param * D
+      };
     }
   }
 
-  public getCurrentStepIndex(): number {
-    return this.currentStepIndex;
+  updatePosition(position: Coordinates): RouteProgress {
+    if (!this.route.geometry || this.route.geometry.length === 0) {
+      return this.createDefaultProgress();
+    }
+
+    // Add position to speed tracker
+    this.speedTracker.addPosition(position);
+
+    // Find closest point on route
+    const routeInfo = this.findClosestPointOnRoute(position);
+    const isOffRoute = routeInfo.distance > this.OFF_ROUTE_THRESHOLD;
+
+    // Check if we should advance to next step
+    const nextWaypointIndex = Math.min(
+      this.currentStepIndex + 1, 
+      this.route.geometry.length - 1
+    );
+    
+    const nextWaypoint = {
+      lat: this.route.geometry[nextWaypointIndex][1],
+      lng: this.route.geometry[nextWaypointIndex][0]
+    };
+
+    const distanceToNext = calculateDistance(position, nextWaypoint);
+    const shouldAdvance = distanceToNext < this.STEP_ADVANCE_THRESHOLD;
+
+    // Check if route is complete - More accurate destination detection
+    const destination = {
+      lat: this.route.geometry[this.route.geometry.length - 1][1],
+      lng: this.route.geometry[this.route.geometry.length - 1][0]
+    };
+    const distanceToDestination = calculateDistance(position, destination);
+    
+    // Only complete if we're at the final step AND very close to destination
+    const isAtFinalStep = this.currentStepIndex >= this.route.instructions.length - 1;
+    const isComplete = isAtFinalStep && distanceToDestination < this.ROUTE_COMPLETE_THRESHOLD;
+
+    // Advance step if needed
+    if (shouldAdvance && this.currentStepIndex < this.route.instructions.length - 1) {
+      this.currentStepIndex++;
+      this.onStepChange(this.currentStepIndex);
+    }
+
+    // Check for route completion
+    if (isComplete) {
+      this.onRouteComplete();
+    }
+
+    // Trigger off-route callback
+    if (isOffRoute) {
+      this.onOffRoute(routeInfo.distance);
+    }
+
+    // Calculate remaining distance
+    const distanceRemaining = this.calculateRemainingDistance(position);
+    const percentComplete = Math.min(
+      ((this.totalDistance - distanceRemaining) / this.totalDistance) * 100,
+      100
+    );
+
+    // Get speed data and dynamic ETA
+    const speedData = this.speedTracker.getSpeedData();
+    const dynamicETA = this.speedTracker.calculateUpdatedETA(distanceRemaining);
+
+    // Estimate remaining time based on speed tracking
+    const estimatedTimeRemaining = dynamicETA.estimatedTimeRemaining;
+
+    return {
+      currentStep: this.currentStepIndex,
+      distanceToNext,
+      distanceRemaining,
+      shouldAdvance,
+      isOffRoute,
+      percentComplete,
+      estimatedTimeRemaining,
+      currentSpeed: speedData.currentSpeed,
+      averageSpeed: speedData.averageSpeed,
+      dynamicETA
+    };
+  }
+
+  private calculateRemainingDistance(currentPosition: Coordinates): number {
+    if (!this.route.geometry || this.route.geometry.length === 0) return 0;
+
+    // Find closest point on route
+    const routeInfo = this.findClosestPointOnRoute(currentPosition);
+    
+    // Calculate distance from closest point to destination
+    let remaining = 0;
+    
+    // Add distance from closest point to end of current segment
+    if (routeInfo.segmentIndex < this.route.geometry.length - 1) {
+      const segmentEnd = {
+        lat: this.route.geometry[routeInfo.segmentIndex + 1][1],
+        lng: this.route.geometry[routeInfo.segmentIndex + 1][0]
+      };
+      remaining += calculateDistance(routeInfo.point, segmentEnd);
+    }
+
+    // Add distance for all remaining segments
+    for (let i = routeInfo.segmentIndex + 1; i < this.route.geometry.length - 1; i++) {
+      const segmentStart = {
+        lat: this.route.geometry[i][1],
+        lng: this.route.geometry[i][0]
+      };
+      const segmentEnd = {
+        lat: this.route.geometry[i + 1][1],
+        lng: this.route.geometry[i + 1][0]
+      };
+      remaining += calculateDistance(segmentStart, segmentEnd);
+    }
+
+    return remaining;
+  }
+
+  private createDefaultProgress(): RouteProgress {
+    const defaultETA: ETAUpdate = {
+      estimatedTimeRemaining: 0,
+      estimatedArrival: new Date(),
+      speedBasedETA: 0,
+      distanceRemaining: 0
+    };
+
+    return {
+      currentStep: 0,
+      distanceToNext: 0,
+      distanceRemaining: 0,
+      shouldAdvance: false,
+      isOffRoute: false,
+      percentComplete: 0,
+      estimatedTimeRemaining: 0,
+      currentSpeed: 0,
+      averageSpeed: 0,
+      dynamicETA: defaultETA
+    };
+  }
+
+  getCurrentInstruction(): RouteInstruction | null {
+    if (!this.route.instructions || this.currentStepIndex >= this.route.instructions.length) {
+      return null;
+    }
+    return this.route.instructions[this.currentStepIndex];
+  }
+
+  getNextInstruction(): RouteInstruction | null {
+    const nextIndex = this.currentStepIndex + 1;
+    if (!this.route.instructions || nextIndex >= this.route.instructions.length) {
+      return null;
+    }
+    return this.route.instructions[nextIndex];
+  }
+
+  reset(): void {
+    this.currentStepIndex = 0;
+    this.completedDistance = 0;
+    this.speedTracker.reset();
+  }
+
+  // Get current step progress for UI
+  getStepProgress(): {
+    current: number;
+    total: number;
+    instruction: RouteInstruction | null;
+    nextInstruction: RouteInstruction | null;
+  } {
+    return {
+      current: this.currentStepIndex + 1,
+      total: this.route.instructions.length,
+      instruction: this.getCurrentInstruction(),
+      nextInstruction: this.getNextInstruction()
+    };
   }
 }

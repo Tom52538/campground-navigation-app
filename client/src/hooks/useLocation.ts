@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Coordinates, TestSite } from '@/types';
+import { Coordinates, TestSite, TEST_SITES } from '@/types/navigation';
 
 interface UseLocationProps {
   currentSite: TestSite;
@@ -7,11 +7,6 @@ interface UseLocationProps {
 
 export const useLocation = (props?: UseLocationProps) => {
   const currentSite = props?.currentSite || 'kamperland';
-  const TEST_SITES: Record<TestSite, { coordinates: Coordinates; name: string }> = {
-    kamperland: { coordinates: { lat: 51.58979501327052, lng: 3.721826089503387 }, name: 'Kamperland (NL)' },
-    zuhause: { coordinates: { lat: 51.00165397612932, lng: 6.051040465199215 }, name: 'Zuhause (DE)' }
-  };
-  
   const mockCoordinates = TEST_SITES[currentSite].coordinates;
   
   const [currentPosition, setCurrentPosition] = useState<Coordinates>(mockCoordinates);
@@ -19,7 +14,6 @@ export const useLocation = (props?: UseLocationProps) => {
   const [error, setError] = useState<string | null>(null);
   const [useRealGPS, setUseRealGPS] = useState(false);
   const [watchId, setWatchId] = useState<number | undefined>(undefined);
-  const [lastEmittedTime, setLastEmittedTime] = useState<number>(0);
   
   // Debug logging for GPS state changes
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
@@ -54,9 +48,8 @@ export const useLocation = (props?: UseLocationProps) => {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
-            
+            console.log(`🔍 GPS DEBUG: Real GPS position:`, coords);
             setCurrentPosition(coords);
-            setIsLoading(false);
             setError(null);
           },
           (error) => {
@@ -65,8 +58,8 @@ export const useLocation = (props?: UseLocationProps) => {
           },
           {
             enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 5000
+            timeout: 15000,
+            maximumAge: 5000,
           }
         );
         
@@ -160,21 +153,7 @@ export const useLocation = (props?: UseLocationProps) => {
   const toggleGPS = () => {
     const newGPSState = !useRealGPS;
     console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
-    
-    if (newGPSState) {
-      // Switching to Real GPS - reset timing and start loading
-      setLastEmittedTime(0);
-      setIsLoading(true);
-      console.log(`🔍 GPS TOGGLE: Real GPS enabled`);
-    } else {
-      // Switching to Mock GPS - set mock position
-      setLastEmittedTime(0);
-      console.log(`🔍 GPS TOGGLE: Mock GPS enabled - position set to:`, mockCoordinates);
-      setCurrentPosition(mockCoordinates);
-      setIsLoading(false);
-      setError(null);
-    }
-    
+    console.trace('🔍 GPS DEBUG: toggleGPS call stack');
     setUseRealGPS(newGPSState);
   };
 

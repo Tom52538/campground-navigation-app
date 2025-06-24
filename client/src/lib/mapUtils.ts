@@ -63,7 +63,7 @@ export const calculateBearing = (from: Coordinates, to: Coordinates): number => 
   return bearing;
 };
 
-export const decodePolyline = (encoded: string): [number, number][] => {
+export const decodePolyline = (encoded: string): number[][] => {
   const coordinates: number[][] = [];
   let index = 0;
   let lat = 0;

@@ -1,108 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX } from 'lucide-react';
-import { Coordinates, POI } from '@/types';
-import { calculateDistance } from '@/lib/mapUtils';
-import { translateInstruction } from '@/lib/i18n';
+import { NavigationRoute } from '@/types/navigation';
+import { Button } from '@/components/ui/button';
+import { Navigation, Square, Volume2 } from 'lucide-react';
 
 interface NavigationPanelProps {
-  route: any;
-  currentPosition: Coordinates;
-  destination: POI | null;
-  onStop: () => void;
-  language: string;
+  route: NavigationRoute | null;
+  isVisible: boolean;
+  onEndNavigation: () => void;
+  onToggleVoice: () => void;
 }
 
-export function NavigationPanel({ route, currentPosition, destination, onStop, language }: NavigationPanelProps) {
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-
-  const steps = route?.routes?.[0]?.legs?.[0]?.steps || [];
-  const currentStep = steps[currentStepIndex];
-  const totalDistance = route?.routes?.[0]?.legs?.[0]?.distance?.text || '';
-  const totalDuration = route?.routes?.[0]?.legs?.[0]?.duration?.text || '';
-
-  // Voice guidance
-  useEffect(() => {
-    if (voiceEnabled && currentStep && 'speechSynthesis' in window) {
-      const instruction = translateInstruction(currentStep.html_instructions.replace(/<[^>]*>/g, ''), language as any);
-      const utterance = new SpeechSynthesisUtterance(instruction);
-      utterance.lang = language === 'de' ? 'de-DE' : 'en-US';
-      speechSynthesis.speak(utterance);
-    }
-  }, [currentStepIndex, voiceEnabled, language]);
-
-  // Update current step based on position
-  useEffect(() => {
-    if (steps.length > 0 && currentPosition) {
-      // Simple proximity-based step advancement
-      const currentStepEnd = steps[currentStepIndex]?.end_location;
-      if (currentStepEnd) {
-        const distance = calculateDistance(
-          currentPosition,
-          { lat: currentStepEnd.lat, lng: currentStepEnd.lng }
-        );
-        
-        // If within 20m of step end, advance to next step
-        if (distance < 0.02 && currentStepIndex < steps.length - 1) {
-          setCurrentStepIndex(prev => prev + 1);
-        }
-      }
-    }
-  }, [currentPosition, steps, currentStepIndex]);
-
-  if (!currentStep) return null;
-
-  const instruction = translateInstruction(
-    currentStep.html_instructions.replace(/<[^>]*>/g, ''), 
-    language as any
-  );
+export const NavigationPanel = ({ 
+  route, 
+  isVisible, 
+  onEndNavigation, 
+  onToggleVoice 
+}: NavigationPanelProps) => {
+  if (!route) return null;
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
-      {/* Main Navigation Info */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex-1">
-            <div className="text-lg font-semibold text-gray-900 mb-1">
-              {instruction}
-            </div>
-            <div className="text-sm text-gray-600">
-              {currentStep.distance?.text} • {currentStep.duration?.text}
-            </div>
+    <div className={`navigation-panel z-40 ${!isVisible ? 'hidden' : ''}`}>
+      {/* Panel Handle */}
+      <div className="flex justify-center py-3">
+        <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
+      </div>
+      
+      {/* Current Navigation Display */}
+      <div className="px-6 pb-6">
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="bg-blue-600 rounded-xl p-3">
+            <Navigation className="text-white w-6 h-6" />
           </div>
-          <div className="flex items-center space-x-2 ml-4">
-            <button
-              onClick={() => setVoiceEnabled(!voiceEnabled)}
-              className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
-            >
-              {voiceEnabled ? (
-                <Volume2 className="w-5 h-5 text-blue-600" />
-              ) : (
-                <VolumeX className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
-            <button
-              onClick={onStop}
-              className="p-2 rounded-full bg-red-100 hover:bg-red-200 transition-colors"
-            >
-              <X className="w-5 h-5 text-red-600" />
-            </button>
+          <div className="flex-1">
+            <div className="text-lg font-bold text-gray-800">
+              {route.nextInstruction?.instruction || 'Continue straight'}
+            </div>
+            <div className="text-sm text-gray-500">
+              {route.nextInstruction?.distance || 'Keep going'}
+            </div>
           </div>
         </div>
-
+        
         {/* Route Summary */}
-        <div className="flex items-center justify-between text-sm text-gray-600 pt-3 border-t border-gray-200">
-          <div>
-            Step {currentStepIndex + 1} of {steps.length}
+        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+          <div className="flex justify-between items-center">
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-800">{route.totalDistance}</div>
+              <div className="text-xs text-gray-500">Distance</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-800">{route.estimatedTime}</div>
+              <div className="text-xs text-gray-500">Est. Time</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-800">{route.arrivalTime}</div>
+              <div className="text-xs text-gray-500">Arrival</div>
+            </div>
           </div>
-          <div>
-            {totalDistance} • {totalDuration}
-          </div>
-          <div>
-            → {destination?.name}
-          </div>
+        </div>
+        
+        {/* Action Buttons */}
+        <div className="flex space-x-3">
+          <Button
+            variant="destructive"
+            className="flex-1"
+            onClick={onEndNavigation}
+          >
+            <Square className="w-4 h-4 mr-2" />
+            End Route
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onToggleVoice}
+          >
+            <Volume2 className="w-5 h-5" />
+          </Button>
         </div>
       </div>
     </div>
   );
-}
+};

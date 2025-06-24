@@ -1,48 +1,46 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Square } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getTranslation } from '@/lib/i18n';
 
 interface BottomSummaryPanelProps {
-  totalDistance: string;
-  totalDuration: string;
+  timeRemaining: string;
+  distanceRemaining: string;
   eta: string;
-  isVisible: boolean;
   onEndNavigation: () => void;
 }
 
-export const BottomSummaryPanel: React.FC<BottomSummaryPanelProps> = ({
-  totalDistance,
-  totalDuration,
-  eta,
-  isVisible,
-  onEndNavigation
-}) => {
-  if (!isVisible) return null;
+export const BottomSummaryPanel = ({ 
+  timeRemaining, 
+  distanceRemaining, 
+  eta, 
+  onEndNavigation 
+}: BottomSummaryPanelProps) => {
+  const { currentLanguage } = useLanguage();
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-30">
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border-2 border-gray-200 p-4">
-        <div className="flex justify-between items-center">
-          <div className="flex space-x-6">
-            <div>
-              <div className="text-sm text-gray-600">Entfernung</div>
-              <div className="font-bold text-gray-900">{totalDistance}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Zeit</div>
-              <div className="font-bold text-gray-900">{totalDuration}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Ankunft</div>
-              <div className="font-bold text-gray-900">{eta}</div>
-            </div>
-          </div>
-          <button
-            onClick={onEndNavigation}
-            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <div
+      className="absolute bottom-0 left-0 right-0 z-30 p-3"
+      style={{
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="text-left">
+          <p className="text-xl font-bold text-gray-900">{timeRemaining}</p>
+          <p className="text-sm text-gray-600">{distanceRemaining} • ETA {eta}</p>
         </div>
+        <Button 
+          variant="destructive" 
+          size="lg" 
+          onClick={onEndNavigation} 
+          className="rounded-full h-12"
+        >
+          <Square className="w-5 h-5 mr-2" />
+          {getTranslation(currentLanguage, 'navigation.end')}
+        </Button>
       </div>
     </div>
   );

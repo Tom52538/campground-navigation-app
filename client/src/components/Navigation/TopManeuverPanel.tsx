@@ -1,29 +1,34 @@
-import React from 'react';
+import { Navigation } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
+import { translateInstruction } from '@/lib/i18n';
 
 interface TopManeuverPanelProps {
   instruction: string;
   distance: string;
-  isVisible: boolean;
 }
 
-export const TopManeuverPanel: React.FC<TopManeuverPanelProps> = ({
-  instruction,
-  distance,
-  isVisible
-}) => {
-  if (!isVisible) return null;
-
+export const TopManeuverPanel = ({ instruction, distance }: TopManeuverPanelProps) => {
+  const { currentLanguage } = useLanguage();
+  
   return (
-    <div className="absolute top-4 left-4 right-4 z-30">
-      <div className="bg-blue-600 text-white rounded-xl shadow-lg border-2 border-white p-4">
-        <div className="text-lg font-bold mb-1">
-          {instruction || "Route wird berechnet..."}
-        </div>
-        {distance && (
-          <div className="text-sm opacity-90">
-            in {distance}
-          </div>
-        )}
+    <div
+      className="absolute top-4 left-4 right-4 z-30 p-3 rounded-2xl flex items-center gap-4"
+      style={{
+        background: '#1a73e8', // Google Maps Blue
+        color: 'white',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      }}
+    >
+      <div className="flex-shrink-0">
+        <Navigation className="w-8 h-8" />
+      </div>
+      <div className="flex-grow">
+        <h2 className="text-2xl font-bold">
+          {translateInstruction(instruction, currentLanguage)}
+        </h2>
+        <p className="text-lg font-medium opacity-90">
+          {distance}
+        </p>
       </div>
     </div>
   );
