@@ -234,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Google Directions routing endpoint
   app.post("/api/route", async (req, res) => {
     try {
-      const { from, to } = req.body;
+      const { from, to, profile = 'walking' } = req.body;
       
       if (!from || !to || !from.lat || !from.lng || !to.lat || !to.lng) {
         return res.status(400).json({ error: "Valid start and end coordinates are required" });
@@ -251,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const routeData = await googleDirections.getRoute({
         from,
         to,
-        profile: 'walking', // Default for campground navigation
+        profile, // Use requested travel mode
         language: 'de',
         campgroundMode: true // Enable campground-optimized routing
       });

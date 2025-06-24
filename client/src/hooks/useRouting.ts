@@ -3,13 +3,17 @@ import { NavigationRoute, Coordinates } from '@/types/navigation';
 
 export const useRouting = () => {
   const getRoute = useMutation({
-    mutationFn: async ({ from, to }: { from: Coordinates; to: Coordinates }) => {
+    mutationFn: async ({ from, to, profile = 'walking' }: { 
+      from: Coordinates; 
+      to: Coordinates; 
+      profile?: 'walking' | 'cycling' | 'driving';
+    }) => {
       const response = await fetch('/api/route', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ from, to }),
+        body: JSON.stringify({ from, to, profile }),
       });
       
       if (!response.ok) {

@@ -10,6 +10,7 @@ import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOve
 import { TopManeuverPanel } from '@/components/Navigation/TopManeuverPanel';
 import { BottomSummaryPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
+import { TravelModeSelector } from '@/components/Navigation/TravelModeSelector';
 import { CampgroundRerouteDetector } from '@/lib/campgroundRerouting';
 import { useLocation } from '@/hooks/useLocation';
 import { usePOI, useSearchPOI } from '@/hooks/usePOI';
@@ -61,6 +62,9 @@ export default function Navigation() {
   // Map orientation and style state
   const [mapOrientation, setMapOrientation] = useState<'north' | 'driving'>('north');
   const [mapStyle, setMapStyle] = useState<'outdoors' | 'satellite' | 'streets' | 'navigation'>('outdoors');
+  
+  // Travel mode state for routing
+  const [travelMode, setTravelMode] = useState<'car' | 'bike' | 'pedestrian'>('pedestrian');
   
   // Navigation tracking state
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
@@ -602,6 +606,14 @@ export default function Navigation() {
 
 
 
+
+      {/* Travel Mode Selector */}
+      <div className="absolute left-4 bottom-20 z-20">
+        <TravelModeSelector
+          currentMode={travelMode}
+          onModeChange={setTravelMode}
+        />
+      </div>
 
       {/* Filter Modal - Preserved */}
       <FilterModal

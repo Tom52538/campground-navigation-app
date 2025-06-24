@@ -3,7 +3,7 @@ import { Coordinates, NavigationRoute } from '../../client/src/types/navigation'
 export interface RouteRequest {
   from: Coordinates;
   to: Coordinates;
-  profile?: 'walking' | 'cycling' | 'driving';
+  profile?: 'walking' | 'cycling' | 'driving' | 'pedestrian' | 'bike' | 'car';
   language?: string;
   campgroundMode?: boolean; // Direct routing for campgrounds
 }

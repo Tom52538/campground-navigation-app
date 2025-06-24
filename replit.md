@@ -91,6 +91,14 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
+- June 24, 2025. **MULTI-MODAL ROUTING IMPLEMENTED**: Added car/bike/pedestrian routing options with Google Directions API:
+  - TravelModeSelector component with German labels (Auto/Fahrrad/Zu Fuß)
+  - Google Directions API supports driving, bicycling, and walking modes
+  - Speed indicators for each mode (Auto: 50km/h, Fahrrad: 15km/h, Zu Fuß: 6km/h)
+  - Complete routing integration with travel mode selection
+  - Glassmorphism UI design matching campground app aesthetic
+  - Enhanced RouteRequest interface supporting all Google Directions travel modes
+
 - June 24, 2025. **RAILWAY MAP STYLE TOGGLE FIXED**: Resolved production deployment map style switching issues:
   - Enhanced TileLayer key with environment-specific regeneration for Railway
   - Updated navigation style to railway-compatible navigation-preview-day-v4
