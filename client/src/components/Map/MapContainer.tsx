@@ -276,8 +276,6 @@ export const MapContainerComponent = ({
         <MapController 
           center={center} 
           zoom={zoom} 
-          mapOrientation={mapOrientation}
-          bearing={bearing}
         />
 
         <PopupController selectedPOI={selectedPOI} />

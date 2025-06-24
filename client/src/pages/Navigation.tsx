@@ -506,7 +506,7 @@ export default function Navigation() {
   return (
     <div className="relative h-screen w-full overflow-hidden">
       {/* Map Container - 100% Visible, Always Interactive */}
-      <MapContainerComponent
+      <MapContainer
         center={mapCenter}
         zoom={mapZoom}
         currentPosition={trackingPosition}
@@ -517,8 +517,6 @@ export default function Navigation() {
         onPOIClick={handlePOIClick}
         onPOINavigate={handleNavigateToPOI}
         onMapClick={handleMapClick}
-        mapOrientation={mapOrientation}
-        bearing={currentBearing}
         mapStyle={mapStyle}
       />
 

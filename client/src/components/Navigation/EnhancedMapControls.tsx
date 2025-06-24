@@ -1,133 +1,50 @@
-import { useCallback } from 'react';
-import { Navigation as NavigationIcon } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { MapStyleToggle } from './MapStyleToggle';
-import { GPSToggle } from './GPSToggle';
 
 interface EnhancedMapControlsProps {
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onCenterOnLocation: () => void;
-  useRealGPS: boolean;
-  onToggleGPS: () => void;
-  mapOrientation: 'north' | 'driving';
-  onToggleOrientation: () => void;
-  mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  onToggleVoice: () => void;
   onMapStyleChange: (style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => void;
+  isVoiceEnabled: boolean;
+  mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
 }
 
 export const EnhancedMapControls = ({
-  onZoomIn,
-  onZoomOut,
-  onCenterOnLocation,
-  useRealGPS,
-  onToggleGPS,
-  mapOrientation,
-  onToggleOrientation,
-  mapStyle,
-  onMapStyleChange
+  onToggleVoice,
+  onMapStyleChange,
+  isVoiceEnabled,
+  mapStyle
 }: EnhancedMapControlsProps) => {
   
-  const handleZoomIn = useCallback(() => {
-    onZoomIn();
-  }, [onZoomIn]);
-
-  const handleZoomOut = useCallback(() => {
-    onZoomOut();
-  }, [onZoomOut]);
-
-  const handleGPSToggle = useCallback(() => {
-    onToggleGPS();
-    onCenterOnLocation();
-  }, [onToggleGPS, onCenterOnLocation]);
-
   return (
-    <div className="absolute right-4 z-20 flex flex-col justify-center space-y-3" style={{ top: '50%', transform: 'translateY(-50%)' }}>
+    <div className="absolute right-4 top-4 z-20 flex flex-col space-y-3">
       {/* Map Style Toggle */}
       <MapStyleToggle 
         currentStyle={mapStyle}
         onStyleChange={onMapStyleChange}
       />
-      
-      {/* Orientation Toggle - North/Driving Direction */}
-      <div 
-        className="w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-        style={{
-          background: mapOrientation === 'north' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(59, 130, 246, 0.8)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-          minWidth: '48px',
-          minHeight: '48px'
-        }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('🧭 Orientation toggle clicked, current:', mapOrientation);
-          console.log('🧭 EnhancedMapControls: About to call onToggleOrientation');
-          onToggleOrientation();
-        }}
-        title={mapOrientation === 'north' ? 'Switch to Driving Direction' : 'Switch to North Up'}
-      >
-        {mapOrientation === 'north' ? (
-          <div 
-            className="font-bold text-lg"
-            style={{
-              color: '#ea580c',
-              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-            }}
-          >
-            N
-          </div>
-        ) : (
-          <NavigationIcon className="w-5 h-5 text-white" />
-        )}
-      </div>
 
-      {/* Zoom Controls */}
-      <div 
-        className="flex flex-col rounded-full overflow-hidden"
-        style={{
-          background: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-        }}
-      >
-        <button 
-          onClick={handleZoomIn}
-          className="w-12 h-12 flex items-center justify-center text-xl font-bold transition-all duration-200 hover:bg-white/20 active:bg-white/40"
-          style={{
-            color: '#374151',
-            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
-            minWidth: '48px',
-            minHeight: '48px'
-          }}
+      {/* Voice Toggle */}
+      <div className="relative">
+        <button
+          onClick={onToggleVoice}
+          className={`
+            w-12 h-12 rounded-full backdrop-blur-md border border-white/20 
+            transition-all duration-300 hover:scale-105 active:scale-95
+            shadow-lg hover:shadow-xl flex items-center justify-center
+            ${isVoiceEnabled 
+              ? 'bg-green-500/90 hover:bg-green-600/90 text-white' 
+              : 'bg-gray-500/90 hover:bg-gray-600/90 text-white'
+            }
+          `}
+          title={isVoiceEnabled ? 'Sprachansagen deaktivieren' : 'Sprachansagen aktivieren'}
         >
-          +
-        </button>
-        <div 
-          className="h-px"
-          style={{ background: 'rgba(156, 163, 175, 0.3)' }}
-        ></div>
-        <button 
-          onClick={handleZoomOut}
-          className="w-12 h-12 flex items-center justify-center text-xl font-bold transition-all duration-200 hover:bg-white/20 active:bg-white/40"
-          style={{
-            color: '#374151',
-            textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
-            minWidth: '48px',
-            minHeight: '48px'
-          }}
-        >
-          −
+          {isVoiceEnabled ? (
+            <Volume2 className="w-5 h-5" />
+          ) : (
+            <VolumeX className="w-5 h-5" />
+          )}
         </button>
       </div>
-
-      {/* GPS Toggle - Clean single implementation */}
-      <GPSToggle 
-        useRealGPS={useRealGPS}
-        onToggle={onToggleGPS}
-      />
     </div>
   );
 };
