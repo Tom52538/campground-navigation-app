@@ -16,7 +16,7 @@ export const EnhancedMapControls = ({
 }: EnhancedMapControlsProps) => {
   
   return (
-    <div className="absolute right-4 top-4 z-20 flex flex-col space-y-3">
+    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col space-y-3">
       {/* Map Style Toggle */}
       <MapStyleToggle 
         currentStyle={mapStyle}

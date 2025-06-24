@@ -91,13 +91,14 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
-- June 24, 2025. **COMPASS ROTATION FEATURE REMOVED**: Completely removed non-functional compass rotation feature:
+- June 24, 2025. **COMPASS ROTATION FEATURE REMOVED & UI POSITIONING**: Completely removed non-functional compass rotation feature and improved control positioning:
   - Removed compass button from EnhancedMapControls component
   - Deleted RotatableMap, ForceRotateMap, and DirectRotateMap components
   - Removed mapOrientation and bearing props from MapContainer
   - Cleaned up all rotation-related state management and handlers
   - Fixed excessive rerouting: increased thresholds from 8m→25m off-route, 5s→15s consideration time
   - Reduced reroute frequency: 10s→30s between attempts, max attempts 3→2
+  - Repositioned right-side controls to vertical center for better mobile accessibility
   - Simplified map interface without problematic rotation functionality
 
 - June 24, 2025. **WEATHER API OPTIMIZATION & COMPASS ENHANCEMENT**: Fixed excessive API calls and improved navigation UX:
