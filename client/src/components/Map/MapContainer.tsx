@@ -6,6 +6,7 @@ import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
 import { GestureController } from './GestureController';
 import { ZoomGestureIndicator } from './ZoomGestureIndicator';
+import { RotatableMap } from './RotatableMap';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -125,35 +126,40 @@ const MapController = ({
     if (map) {
       console.log('🧭 MapController: Orientation change -', mapOrientation, 'bearing:', bearing);
       
-      // Get the map container element
+      // Get all possible map elements for rotation
       const mapContainer = map.getContainer();
+      const leafletContainer = mapContainer.querySelector('.leaflet-container');
       const mapPane = map.getPane('mapPane');
+      const tilePane = map.getPane('tilePane');
       
-      if (mapOrientation === 'driving' && bearing !== undefined) {
-        // Apply rotation to the entire map container for smooth rotation
-        if (mapContainer) {
-          mapContainer.style.transform = `rotate(${-bearing}deg)`;
-          mapContainer.style.transformOrigin = 'center';
-          mapContainer.style.transition = 'transform 0.5s ease-out';
-          console.log('🧭 Map rotated to bearing:', bearing);
+      const rotationAngle = (mapOrientation === 'driving' && bearing !== undefined) ? -bearing : 0;
+      const transformValue = `rotate(${rotationAngle}deg)`;
+      
+      // Apply rotation to multiple elements to ensure it works
+      const elementsToRotate = [
+        mapContainer,
+        leafletContainer,
+        mapPane,
+        tilePane
+      ].filter(Boolean);
+      
+      elementsToRotate.forEach(element => {
+        if (element) {
+          element.style.transform = transformValue;
+          element.style.transformOrigin = 'center center';
+          element.style.transition = 'transform 0.5s ease-out';
         }
-        // Also apply to mapPane as backup
-        if (mapPane) {
-          mapPane.style.transform = `rotate(${-bearing}deg)`;
-          mapPane.style.transformOrigin = 'center';
-          mapPane.style.transition = 'transform 0.5s ease-out';
-        }
+      });
+      
+      // Force map to refresh
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+      
+      if (rotationAngle !== 0) {
+        console.log('🧭 Map rotated to bearing:', bearing, 'Applied to', elementsToRotate.length, 'elements');
       } else {
-        // Reset to north-up orientation
-        if (mapContainer) {
-          mapContainer.style.transform = 'rotate(0deg)';
-          mapContainer.style.transition = 'transform 0.5s ease-out';
-          console.log('🧭 Map reset to north-up');
-        }
-        if (mapPane) {
-          mapPane.style.transform = 'rotate(0deg)';
-          mapPane.style.transition = 'transform 0.5s ease-out';
-        }
+        console.log('🧭 Map reset to north-up');
       }
     }
   }, [mapOrientation, bearing, map]);
@@ -272,6 +278,10 @@ export const MapContainerComponent = ({
           zoom={zoom} 
           mapOrientation={mapOrientation}
           bearing={bearing}
+        />
+        <RotatableMap 
+          bearing={bearing || 0}
+          orientation={mapOrientation || 'north'}
         />
         <PopupController selectedPOI={selectedPOI} />
         

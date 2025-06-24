@@ -192,6 +192,11 @@ export class MobileLogger {
     this.log('COMPASS', bearing !== undefined ? `${action} - bearing: ${bearing}°` : action);
   }
 
+  // Log map rotation attempts
+  logMapRotation(angle: number, method: string) {
+    this.log('MAP_ROTATION', `Attempting ${angle}° rotation via ${method}`);
+  }
+
   // Touch event logging
   logTouchEvent(event: TouchEvent, action: string) {
     const touch = event.touches[0] || event.changedTouches[0];
