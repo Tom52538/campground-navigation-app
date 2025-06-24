@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { Icon, divIcon } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
@@ -28,8 +28,6 @@ interface MapContainerProps {
   onPOIClick: (poi: POI) => void;
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
-  mapOrientation?: 'north' | 'driving';
-  bearing?: number;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
 }
 
@@ -107,62 +105,16 @@ const RoutePolyline = ({ route }: { route: NavigationRoute }) => {
 
 const MapController = ({ 
   center, 
-  zoom, 
-  mapOrientation, 
-  bearing 
+  zoom 
 }: { 
   center: Coordinates; 
   zoom: number; 
-  mapOrientation?: 'north' | 'driving';
-  bearing?: number;
 }) => {
   const map = useMap();
   
   useEffect(() => {
     map.setView([center.lat, center.lng], zoom);
   }, [center, zoom, map]);
-  
-  useEffect(() => {
-    if (map) {
-      console.log('🧭 MapController: Orientation change -', mapOrientation, 'bearing:', bearing);
-      
-      // Get all possible map elements for rotation
-      const mapContainer = map.getContainer();
-      const leafletContainer = mapContainer.querySelector('.leaflet-container');
-      const mapPane = map.getPane('mapPane');
-      const tilePane = map.getPane('tilePane');
-      
-      const rotationAngle = (mapOrientation === 'driving' && bearing !== undefined) ? -bearing : 0;
-      const transformValue = `rotate(${rotationAngle}deg)`;
-      
-      // Apply rotation to multiple elements to ensure it works
-      const elementsToRotate = [
-        mapContainer,
-        leafletContainer,
-        mapPane,
-        tilePane
-      ].filter(Boolean);
-      
-      elementsToRotate.forEach(element => {
-        if (element) {
-          element.style.transform = transformValue;
-          element.style.transformOrigin = 'center center';
-          element.style.transition = 'transform 0.5s ease-out';
-        }
-      });
-      
-      // Force map to refresh
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 100);
-      
-      if (rotationAngle !== 0) {
-        console.log('🧭 Map rotated to bearing:', bearing, 'Applied to', elementsToRotate.length, 'elements');
-      } else {
-        console.log('🧭 Map reset to north-up');
-      }
-    }
-  }, [mapOrientation, bearing, map]);
   
   return null;
 };
@@ -197,7 +149,7 @@ const FALLBACK_TILES = {
 
 
 
-export const MapContainerComponent = ({
+export const MapContainer = ({
   center,
   zoom,
   currentPosition,
@@ -208,8 +160,6 @@ export const MapContainerComponent = ({
   onPOIClick,
   onPOINavigate,
   onMapClick,
-  mapOrientation = 'north',
-  bearing = 0,
   mapStyle = 'outdoors',
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
@@ -266,7 +216,7 @@ export const MapContainerComponent = ({
 
   return (
     <div className="map-container relative">
-      <MapContainer
+      <LeafletMapContainer
         center={[center.lat, center.lng]}
         zoom={zoom}
         className="w-full h-full z-0"
@@ -342,7 +292,7 @@ export const MapContainerComponent = ({
         ))}
         
         {route && <RoutePolyline route={route} />}
-      </MapContainer>
+      </LeafletMapContainer>
       
       <ZoomGestureIndicator
         isVisible={gestureIndicator.isVisible}

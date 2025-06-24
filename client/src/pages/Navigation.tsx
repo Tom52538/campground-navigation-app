@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { MapContainerComponent } from '@/components/Map/MapContainer';
+import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
