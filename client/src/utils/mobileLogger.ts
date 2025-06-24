@@ -182,6 +182,11 @@ export class MobileLogger {
     this.log('PERFORMANCE', `${label}: ${duration.toFixed(2)}ms`);
   }
 
+  // Log weather API calls to track frequency
+  logWeatherCall(endpoint: string, coords: { lat: number, lng: number }) {
+    this.log('WEATHER_API', `${endpoint} called for ${coords.lat.toFixed(3)},${coords.lng.toFixed(3)}`);
+  }
+
   // Touch event logging
   logTouchEvent(event: TouchEvent, action: string) {
     const touch = event.touches[0] || event.changedTouches[0];

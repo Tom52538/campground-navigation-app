@@ -246,6 +246,9 @@ export default function Navigation() {
       setCurrentRoute(route);
       setIsNavigating(true);
       
+      // Auto-switch to driving orientation during navigation
+      setMapOrientation('driving');
+      
       mobileLogger.logPerformance('Navigation setup', startTime);
       mobileLogger.log('NAVIGATION', `Navigation started successfully to ${poi.name}`);
       setUIMode('navigation');
@@ -268,6 +271,9 @@ export default function Navigation() {
     setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
+    
+    // Reset map orientation to north when navigation ends
+    setMapOrientation('north');
     
     // Clean up navigation tracking
     if (routeTrackerRef.current) {

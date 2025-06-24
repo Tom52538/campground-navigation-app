@@ -91,6 +91,13 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 
 ## Recent Changes
 
+- June 24, 2025. **WEATHER API OPTIMIZATION & COMPASS ENHANCEMENT**: Fixed excessive API calls and improved navigation UX:
+  - Reduced weather API spam from constant polling to 10-minute cache intervals with coordinate rounding
+  - Enhanced compass button with visual mode indicators: orange "N" (north-up) vs blue navigation icon (driving mode)
+  - Smart auto-switching: automatically enters driving orientation during navigation, resets to north when ending
+  - German tooltips for improved mobile user experience
+  - Mobile debugging confirms significant reduction in unnecessary API calls
+
 - June 24, 2025. **MOBILE DEBUGGING SYSTEM**: Implemented comprehensive smartphone logging to resolve stability issues:
   - MobileLogger utility with floating red LOG button for on-device debugging
   - Captures console errors, unhandled errors, promise rejections, and network failures
