@@ -242,7 +242,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🗺️ Google Directions: Routing from ${from.lat},${from.lng} to ${to.lat},${to.lng}`);
 
-      const routeData = await routingService.getRoute({
+      const apiKey = process.env.GOOGLE_DIRECTIONS_API_KEY;
+      if (!apiKey) {
+        throw new Error('Google Directions API key not configured');
+      }
+
+      const googleDirections = new GoogleDirectionsService(apiKey);
+      const routeData = await googleDirections.getRoute({
         from,
         to,
         profile: 'walking', // Default for campground navigation
