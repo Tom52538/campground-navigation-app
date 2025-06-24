@@ -6,9 +6,7 @@ import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
 import { GestureController } from './GestureController';
 import { ZoomGestureIndicator } from './ZoomGestureIndicator';
-import { RotatableMap } from './RotatableMap';
-import { ForceRotateMap } from './ForceRotateMap';
-import { DirectRotateMap } from './DirectRotateMap';
+
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
@@ -281,18 +279,7 @@ export const MapContainerComponent = ({
           mapOrientation={mapOrientation}
           bearing={bearing}
         />
-        <RotatableMap 
-          bearing={bearing || 0}
-          orientation={mapOrientation || 'north'}
-        />
-        <ForceRotateMap 
-          bearing={bearing || 0}
-          orientation={mapOrientation || 'north'}
-        />
-        <DirectRotateMap 
-          bearing={bearing || 0}
-          orientation={mapOrientation || 'north'}
-        />
+
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer

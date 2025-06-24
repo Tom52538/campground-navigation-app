@@ -367,38 +367,7 @@ export default function Navigation() {
     });
   }, []);
 
-  // Map orientation toggle handler
-  const handleToggleOrientation = useCallback(() => {
-    const newOrientation = mapOrientation === 'north' ? 'driving' : 'north';
-    const timestamp = Date.now();
-    
-    console.log('🧭 COMPASS CLICK DETECTED!', {
-      currentOrientation: mapOrientation,
-      newOrientation,
-      timestamp
-    });
-    
-    if (newOrientation === 'driving') {
-      const testBearing = 90; // 90 degrees east for obvious rotation
-      console.log('🧭 COMPASS: Setting states - orientation:', newOrientation, 'bearing:', testBearing);
-      
-      // Force immediate state updates
-      setMapOrientation(newOrientation);
-      setCurrentBearing(testBearing);
-      
-      mobileLogger.log('COMPASS', `DRIVING MODE: ${testBearing}° bearing set`);
-      console.log('🧭 COMPASS: States set - mapOrientation:', newOrientation, 'currentBearing:', testBearing);
-    } else {
-      console.log('🧭 COMPASS: Setting states - orientation:', newOrientation, 'bearing: 0');
-      
-      // Force immediate state updates
-      setMapOrientation(newOrientation);
-      setCurrentBearing(0);
-      
-      mobileLogger.log('COMPASS', 'NORTH MODE: 0° bearing set');
-      console.log('🧭 COMPASS: States set - mapOrientation:', newOrientation, 'currentBearing: 0');
-    }
-  }, [mapOrientation, mobileLogger]);
+
 
   // Enhanced map style change handler with Railway debugging
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
