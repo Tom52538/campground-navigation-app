@@ -536,8 +536,6 @@ export default function Navigation() {
         onMapClick={handleMapClick}
         mapOrientation={mapOrientation}
         bearing={currentBearing}
-        mapOrientation={mapOrientation}
-        bearing={routeProgress?.heading || 0}
         mapStyle={mapStyle}
       />
 
