@@ -263,10 +263,18 @@ export const MapContainerComponent = ({
         <PopupController selectedPOI={selectedPOI} />
         
         <TileLayer
-          key={mapStyle}
-          attribution='&copy; <a href="https://www.mapbox.com/">Mapbox</a>'
-          url={`https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`}
+          key={`${mapStyle}-${Date.now()}`}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
+          url={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN 
+            ? `https://api.mapbox.com/styles/v1/mapbox/${MAP_STYLES[mapStyle]}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}`
+            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          }
           maxZoom={19}
+          eventHandlers={{
+            loading: () => console.log('🗺️ Tiles loading:', mapStyle),
+            load: () => console.log('🗺️ Tiles loaded successfully:', mapStyle),
+            tileerror: (e) => console.error('🗺️ Tile loading error:', e)
+          }}
         />
         
         {/* SVG Gradient Definition for Route */}
