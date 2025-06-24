@@ -1,5 +1,6 @@
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX, Navigation } from 'lucide-react';
 import { MapStyleToggle } from './MapStyleToggle';
+import { Button } from '@/components/ui/button';
 
 interface EnhancedMapControlsProps {
   onToggleVoice: () => void;
@@ -49,6 +50,27 @@ export const EnhancedMapControls = ({
           )}
         </button>
       </div>
+
+      {/* GPS Toggle */}
+      {onToggleGPS && (
+        <div className="relative">
+          <button
+            onClick={onToggleGPS}
+            className={`
+              w-12 h-12 rounded-full backdrop-blur-md border border-white/20 
+              transition-all duration-300 hover:scale-105 active:scale-95
+              shadow-lg hover:shadow-xl flex items-center justify-center
+              ${useRealGPS 
+                ? 'bg-green-500/90 hover:bg-green-600/90 text-white' 
+                : 'bg-gray-500/90 hover:bg-gray-600/90 text-white'
+              }
+            `}
+            title={useRealGPS ? 'Live GPS aktiv' : 'Mock GPS aktiv'}
+          >
+            <Navigation className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
