@@ -616,13 +616,15 @@ export default function Navigation() {
 
 
 
-      {/* Travel Mode Selector - Bottom Left, Clear Positioning */}
-      <div className="absolute left-4 bottom-40 z-20">
-        <TravelModeSelector
-          currentMode={travelMode}
-          onModeChange={setTravelMode}
-        />
-      </div>
+      {/* Travel Mode Selector - Only show when NOT navigating */}
+      {!isNavigating && (
+        <div className="absolute left-4 bottom-40 z-20">
+          <TravelModeSelector
+            currentMode={travelMode}
+            onModeChange={setTravelMode}
+          />
+        </div>
+      )}
 
       {/* Filter Modal - Preserved */}
       <FilterModal
