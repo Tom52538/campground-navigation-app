@@ -222,6 +222,9 @@ export default function Navigation() {
       console.log('🚗 TRAVEL MODE DEBUG:', { selectedMode: travelMode, profileMapping: travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling' });
       setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
       
+      // Clear any existing route to force fresh calculation
+      setCurrentRoute(null);
+      
       // 2. Show calculating state
       setIsNavigating(false); // Clear any existing navigation
       
