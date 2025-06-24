@@ -18,11 +18,11 @@ export interface CampgroundReroutingConfig {
 }
 
 export const CAMPGROUND_REROUTING_CONFIG: CampgroundReroutingConfig = {
-  offRouteThreshold: 8, // 8 meters off-route detection for narrow campground paths
-  minimumMovementThreshold: 3, // Must move at least 3m before checking
-  rerouteConsiderationTime: 5000, // Wait 5 seconds before considering reroute
-  autoRerouteThreshold: 15, // Auto-reroute if 15m+ off planned path
-  maxRerouteAttempts: 3
+  offRouteThreshold: 25, // Increased from 8m to 25m to prevent excessive rerouting during mock GPS testing
+  minimumMovementThreshold: 8, // Increased from 3m to 8m to require more significant movement
+  rerouteConsiderationTime: 15000, // Increased from 5s to 15s to wait longer before rerouting
+  autoRerouteThreshold: 50, // Increased from 15m to 50m to prevent frequent auto-reroutes
+  maxRerouteAttempts: 2 // Reduced from 3 to 2 to limit reroute attempts
 };
 
 export class CampgroundRerouteDetector {
@@ -122,7 +122,7 @@ export class CampgroundRerouteDetector {
       if (distanceToRoute > this.config.autoRerouteThreshold) {
         if (this.rerouteAttempts < this.config.maxRerouteAttempts) {
           const timeSinceLastReroute = now - this.lastRerouteTime;
-          if (timeSinceLastReroute > 10000) { // Wait 10 seconds between reroutes
+          if (timeSinceLastReroute > 30000) { // Wait 30 seconds between reroutes (increased from 10s)
             this.rerouteAttempts++;
             this.lastRerouteTime = now;
             this.offRouteStartTime = null;

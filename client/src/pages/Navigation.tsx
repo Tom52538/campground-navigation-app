@@ -370,21 +370,35 @@ export default function Navigation() {
   // Map orientation toggle handler
   const handleToggleOrientation = useCallback(() => {
     const newOrientation = mapOrientation === 'north' ? 'driving' : 'north';
-    setMapOrientation(newOrientation);
+    const timestamp = Date.now();
     
-    // When switching to driving mode, set a test bearing for demonstration
+    console.log('🧭 COMPASS CLICK DETECTED!', {
+      currentOrientation: mapOrientation,
+      newOrientation,
+      timestamp
+    });
+    
     if (newOrientation === 'driving') {
       const testBearing = 90; // 90 degrees east for obvious rotation
+      console.log('🧭 COMPASS: Setting states - orientation:', newOrientation, 'bearing:', testBearing);
+      
+      // Force immediate state updates
+      setMapOrientation(newOrientation);
       setCurrentBearing(testBearing);
-      mobileLogger.log('COMPASS', `Switched to driving mode with ${testBearing}° bearing`);
-      console.log('🧭 COMPASS DEBUG: Setting bearing to', testBearing, 'degrees, orientation:', newOrientation);
-      console.log('🧭 COMPASS DEBUG: State update - mapOrientation will be:', newOrientation, 'currentBearing will be:', testBearing);
+      
+      mobileLogger.log('COMPASS', `DRIVING MODE: ${testBearing}° bearing set`);
+      console.log('🧭 COMPASS: States set - mapOrientation:', newOrientation, 'currentBearing:', testBearing);
     } else {
-      setCurrentBearing(0); // Reset to north
-      mobileLogger.log('COMPASS', 'Switched to north-up mode');
-      console.log('🧭 COMPASS DEBUG: Reset bearing to 0 degrees, orientation:', newOrientation);
+      console.log('🧭 COMPASS: Setting states - orientation:', newOrientation, 'bearing: 0');
+      
+      // Force immediate state updates
+      setMapOrientation(newOrientation);
+      setCurrentBearing(0);
+      
+      mobileLogger.log('COMPASS', 'NORTH MODE: 0° bearing set');
+      console.log('🧭 COMPASS: States set - mapOrientation:', newOrientation, 'currentBearing: 0');
     }
-  }, [mapOrientation]);
+  }, [mapOrientation, mobileLogger]);
 
   // Enhanced map style change handler with Railway debugging
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
