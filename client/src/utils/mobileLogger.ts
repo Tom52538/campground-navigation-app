@@ -187,6 +187,11 @@ export class MobileLogger {
     this.log('WEATHER_API', `${endpoint} called for ${coords.lat.toFixed(3)},${coords.lng.toFixed(3)}`);
   }
 
+  // Log compass/orientation changes
+  logCompass(action: string, bearing?: number) {
+    this.log('COMPASS', bearing !== undefined ? `${action} - bearing: ${bearing}°` : action);
+  }
+
   // Touch event logging
   logTouchEvent(event: TouchEvent, action: string) {
     const touch = event.touches[0] || event.changedTouches[0];

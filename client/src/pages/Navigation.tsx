@@ -369,8 +369,18 @@ export default function Navigation() {
 
   // Map orientation toggle handler
   const handleToggleOrientation = useCallback(() => {
-    setMapOrientation(prev => prev === 'north' ? 'driving' : 'north');
-  }, []);
+    const newOrientation = mapOrientation === 'north' ? 'driving' : 'north';
+    setMapOrientation(newOrientation);
+    
+    // When switching to driving mode, set a test bearing for demonstration
+    if (newOrientation === 'driving') {
+      setCurrentBearing(45); // 45 degrees northeast for testing
+      mobileLogger.log('COMPASS', 'Switched to driving mode with 45° bearing');
+    } else {
+      setCurrentBearing(0); // Reset to north
+      mobileLogger.log('COMPASS', 'Switched to north-up mode');
+    }
+  }, [mapOrientation]);
 
   // Enhanced map style change handler with Railway debugging
   const handleMapStyleChange = useCallback((style: 'outdoors' | 'satellite' | 'streets' | 'navigation') => {
