@@ -31,29 +31,50 @@ export const ForceRotateMap = ({ bearing, orientation }: ForceRotateMapProps) =>
       timestamp: Date.now()
     });
     
-    // Get the map container
+    // Get the map container and all possible elements
     const container = map.getContainer();
+    const mapPane = container.querySelector('.leaflet-map-pane') as HTMLElement;
+    const tilePane = container.querySelector('.leaflet-tile-pane') as HTMLElement;
     
-    // Force immediate rotation without transition for testing
+    console.log('🧭 ForceRotateMap: Found elements', {
+      container: !!container,
+      mapPane: !!mapPane,
+      tilePane: !!tilePane
+    });
+    
+    // Apply rotation to multiple elements for maximum compatibility
     if (container) {
+      // Main container rotation
       container.style.transform = `rotate(${targetRotation}deg)`;
-      container.style.transformOrigin = 'center';
-      container.style.transition = 'transform 0.3s ease-out';
+      container.style.transformOrigin = 'center center';
+      container.style.transition = 'transform 0.5s ease-out';
       
-      console.log('🧭 ForceRotateMap: Applied', targetRotation, 'degrees to container');
+      console.log('🧭 ForceRotateMap: Applied', targetRotation, 'degrees to main container');
       
-      // Also try rotating the entire leaflet container
-      const leafletContainer = container.querySelector('.leaflet-container');
-      if (leafletContainer) {
-        (leafletContainer as HTMLElement).style.transform = `rotate(${targetRotation}deg)`;
-        (leafletContainer as HTMLElement).style.transformOrigin = 'center';
-        console.log('🧭 ForceRotateMap: Applied to leaflet-container');
+      // Map pane rotation
+      if (mapPane) {
+        mapPane.style.transform = `rotate(${targetRotation}deg)`;
+        mapPane.style.transformOrigin = 'center center';
+        mapPane.style.transition = 'transform 0.5s ease-out';
+        console.log('🧭 ForceRotateMap: Applied to map-pane');
       }
       
-      // Force map to refresh
+      // Tile pane rotation
+      if (tilePane) {
+        tilePane.style.transform = `rotate(${targetRotation}deg)`;
+        tilePane.style.transformOrigin = 'center center';
+        tilePane.style.transition = 'transform 0.5s ease-out';
+        console.log('🧭 ForceRotateMap: Applied to tile-pane');
+      }
+      
+      // Force immediate DOM update
+      container.style.willChange = 'transform';
+      
+      // Force map to refresh after rotation
       setTimeout(() => {
         map.invalidateSize();
-      }, 50);
+        console.log('🧭 ForceRotateMap: Map invalidated for refresh');
+      }, 100);
     }
     
     // Log to mobile logger
