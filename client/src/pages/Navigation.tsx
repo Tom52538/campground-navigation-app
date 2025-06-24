@@ -616,8 +616,8 @@ export default function Navigation() {
 
 
 
-      {/* Travel Mode Selector */}
-      <div className="absolute left-4 bottom-20 z-20">
+      {/* Travel Mode Selector - Above Map Style Toggle */}
+      <div className="absolute left-4 top-60 z-20">
         <TravelModeSelector
           currentMode={travelMode}
           onModeChange={setTravelMode}
