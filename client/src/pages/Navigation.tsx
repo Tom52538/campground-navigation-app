@@ -553,8 +553,6 @@ export default function Navigation() {
           <LightweightPOIButtons
             onCategorySelect={handleCategoryFilter}
             activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
-            onToggleBuildingCentroids={() => setShowBuildingCentroids(prev => !prev)}
-            showBuildingCentroids={showBuildingCentroids}
           />
 
           {/* Camping Weather Widget */}
@@ -570,6 +568,8 @@ export default function Navigation() {
         mapStyle={mapStyle}
         useRealGPS={useRealGPS}
         onToggleGPS={toggleGPS}
+        onToggleBuildingCentroids={() => setShowBuildingCentroids(prev => !prev)}
+        showBuildingCentroids={showBuildingCentroids}
       />
 
 
