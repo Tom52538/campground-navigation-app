@@ -3,9 +3,11 @@ import { useCallback } from 'react';
 interface LightweightPOIButtonsProps {
   onCategorySelect: (category: string) => void;
   activeCategory?: string;
+  onToggleBuildingCentroids: () => void;
+  showBuildingCentroids: boolean;
 }
 
-export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: LightweightPOIButtonsProps) => {
+export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, onToggleBuildingCentroids, showBuildingCentroids }: LightweightPOIButtonsProps) => {
   const poiCategories = [
     { id: 'facilities', icon: '🚿' },
     { id: 'food-drink', icon: '🍽️' },
@@ -50,6 +52,24 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
           <span className="text-lg">{poi.icon}</span>
         </button>
       ))}
+      <button
+        onClick={onToggleBuildingCentroids}
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+        style={{
+          background: showBuildingCentroids
+            ? 'rgba(34, 197, 94, 0.7)' // Light green when active
+            : 'rgba(255, 255, 255, 0.6)', // Very light when inactive
+          backdropFilter: 'blur(6px)', // Subtle blur
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: showBuildingCentroids
+            ? '0 2px 12px rgba(34, 197, 94, 0.3)'
+            : '0 2px 8px rgba(0, 0, 0, 0.08)',
+          minWidth: '40px',
+          minHeight: '40px'
+        }}
+      >
+        <span className="text-lg">🏗️</span>
+      </button>
     </div>
   );
 };
