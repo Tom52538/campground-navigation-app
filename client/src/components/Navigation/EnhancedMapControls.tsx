@@ -9,6 +9,8 @@ interface EnhancedMapControlsProps {
   mapStyle: 'outdoors' | 'satellite' | 'streets' | 'navigation';
   useRealGPS?: boolean;
   onToggleGPS?: () => void;
+  onToggleBuildingCentroids: () => void;
+  showBuildingCentroids: boolean;
 }
 
 export const EnhancedMapControls = ({
@@ -17,7 +19,9 @@ export const EnhancedMapControls = ({
   isVoiceEnabled,
   mapStyle,
   useRealGPS = false,
-  onToggleGPS
+  onToggleGPS,
+  onToggleBuildingCentroids,
+  showBuildingCentroids
 }: EnhancedMapControlsProps) => {
   
   return (
@@ -71,6 +75,23 @@ export const EnhancedMapControls = ({
           </button>
         </div>
       )}
+      <div className="relative">
+        <button
+          onClick={onToggleBuildingCentroids}
+          className={`
+            w-12 h-12 rounded-full backdrop-blur-md border border-white/20
+            transition-all duration-300 hover:scale-105 active:scale-95
+            shadow-lg hover:shadow-xl flex items-center justify-center
+            ${showBuildingCentroids
+              ? 'bg-green-500/90 hover:bg-green-600/90 text-white'
+              : 'bg-gray-500/90 hover:bg-gray-600/90 text-white'
+            }
+          `}
+          title={showBuildingCentroids ? 'Hide Building Centroids' : 'Show Building Centroids'}
+        >
+          <span className="text-lg">🏗️</span>
+        </button>
+      </div>
     </div>
   );
 };
