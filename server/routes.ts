@@ -7,7 +7,7 @@ import { join } from "path";
 
 
 // Category mapping for campsite navigation
-const categoryMapping: Record<string, string> = {
+const osmCategoryMapping: Record<string, string> = {
   'restaurant': 'food-drink',
   'cafe': 'food-drink',
   'bar': 'food-drink',
@@ -17,30 +17,70 @@ const categoryMapping: Record<string, string> = {
   'pharmacy': 'services',
   'bank': 'services',
   'atm': 'services',
-  'information': 'services',
+  'information': 'activities',
   'fuel': 'services',
   'supermarket': 'services',
-  'swimming_pool': 'recreation',
-  'playground': 'recreation',
-  'sports_centre': 'recreation',
-  'attraction': 'recreation',
+  'swimming_pool': 'camping',
+  'playground': 'camping',
+  'sports_centre': 'activities',
+  'attraction': 'activities',
   'parking': 'facilities',
   'toilets': 'facilities',
   'waste_disposal': 'facilities',
-  'bicycle_parking': 'facilities'
+  'bicycle_parking': 'facilities',
+  'marina': 'camping'
+};
+
+const buildingCategoryMapping: Record<string, string> = {
+  'static_caravan': 'camping',
+  'bungalow': 'camping',
+  'house': 'camping',
+  'retail': 'services',
+  'office': 'services',
+  'commercial': 'services',
+  'shed': 'facilities',
+  'industrial': 'facilities'
 };
 
 // Load authentic OpenStreetMap POI data
 async function getPOIData(site: string) {
   try {
-    const filename = site === 'zuhause' ? 'zuhause_pois.geojson' : 'kamperland_pois.geojson';
-    const filePath = join(process.cwd(), 'server', 'data', filename);
-    const data = readFileSync(filePath, 'utf-8');
-    const geojson = JSON.parse(data);
+    const poiFilenames = site === 'zuhause' ? ['zuhause_pois.geojson'] : site === 'beach_resort' ? ['Beach Resort Zentroide Layer.geojson'] : ['kamperland_pois.geojson'];
     
-    return geojson.features
-      .filter((feature: any) => feature.properties?.name) // Only named features
+    let allFeatures: any[] = [];
+
+    for (const filename of poiFilenames) {
+      const filePath = join(process.cwd(), 'server', 'data', filename);
+      const data = readFileSync(filePath, 'utf-8');
+      const geojson = JSON.parse(data);
+      allFeatures = allFeatures.concat(geojson.features);
+    }
+
+    return allFeatures
       .map((feature: any, index: number) => {
+        const props = feature.properties;
+        let name = props.name;
+        let category = 'unknown';
+
+        if (filename === 'Beach Resort Zentroide Layer.geojson') {
+          const buildingType = props.BUILDING;
+          const houseNumber = props.A_HSNMBR;
+          if (buildingType && houseNumber) {
+            name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
+            category = buildingCategoryMapping[buildingType] || 'buildings';
+          }
+        } else {
+          if (props.amenity && osmCategoryMapping[props.amenity]) {
+            category = osmCategoryMapping[props.amenity];
+          } else if (props.leisure && osmCategoryMapping[props.leisure]) {
+            category = osmCategoryMapping[props.leisure];
+          } else if (props.tourism && osmCategoryMapping[props.tourism]) {
+            category = osmCategoryMapping[props.tourism];
+          } else if (props.shop) {
+            category = 'services';
+          }
+        }
+
         // Extract coordinates from geometry
         let coordinates;
         if (feature.geometry.type === 'Point') {
@@ -62,20 +102,6 @@ async function getPOIData(site: string) {
           return null;
         }
 
-        // Categorize using OSM tags
-        const props = feature.properties;
-        let category = 'services'; // default
-        
-        if (props.amenity && categoryMapping[props.amenity]) {
-          category = categoryMapping[props.amenity];
-        } else if (props.leisure && categoryMapping[props.leisure]) {
-          category = categoryMapping[props.leisure];
-        } else if (props.tourism && categoryMapping[props.tourism]) {
-          category = categoryMapping[props.tourism];
-        } else if (props.shop) {
-          category = 'services';
-        }
-
         // Extract amenities
         const amenities = [];
         if (props.cuisine) amenities.push(`Cuisine: ${props.cuisine}`);
@@ -87,7 +113,7 @@ async function getPOIData(site: string) {
 
         return {
           id: feature.id?.toString() || `${site}_${index}`,
-          name: props.name,
+          name: name,
           category,
           coordinates,
           description: [props.amenity, props.leisure, props.tourism, props.shop]
@@ -97,7 +123,7 @@ async function getPOIData(site: string) {
           hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
         };
       })
-      .filter(Boolean); // Remove null entries
+      .filter(feature => feature && (feature.name || (feature.properties?.amenity || feature.properties?.leisure || feature.properties?.tourism || feature.properties?.shop)));
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
     return [];
