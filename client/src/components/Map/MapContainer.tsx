@@ -6,7 +6,6 @@ import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
 import { GestureController } from './GestureController';
 import { ZoomGestureIndicator } from './ZoomGestureIndicator';
-import BuildingCentroidsLayer from './BuildingCentroidsLayer';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -26,7 +25,6 @@ interface MapContainerProps {
   selectedPOI: POI | null;
   route: NavigationRoute | null;
   filteredCategories: string[];
-  showBuildingCentroids: boolean;
   onPOIClick: (poi: POI) => void;
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
@@ -159,7 +157,6 @@ export const MapContainer = ({
   selectedPOI,
   route,
   filteredCategories,
-  showBuildingCentroids,
   onPOIClick,
   onPOINavigate,
   onMapClick,
@@ -295,7 +292,6 @@ export const MapContainer = ({
         ))}
         
         {route && <RoutePolyline route={route} />}
-        <BuildingCentroidsLayer show={showBuildingCentroids} />
       </LeafletMapContainer>
       
       <ZoomGestureIndicator
