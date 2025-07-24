@@ -9,10 +9,10 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
   const poiCategories = [
     { id: 'facilities', icon: '🚿' },
     { id: 'food-drink', icon: '🍽️' },
-    { id: 'recreation', icon: '🔥' },
+    { id: 'activities', icon: '🔥' },
     { id: 'services', icon: '🥾' },
     { id: 'services', icon: '⛽' },
-    { id: 'recreation', icon: '🏕️' }
+    { id: 'camping', icon: '🏕️' }
   ];
 
   const handleCategoryClick = useCallback((category: string) => {

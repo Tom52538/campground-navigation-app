@@ -57,13 +57,14 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities';
+export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'buildings';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Food & Drink' },
   'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Essential Services' },
   'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Recreation' },
-  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Practical Facilities' }
+  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Practical Facilities' },
+  'buildings': { icon: 'Building', color: 'bg-gray-500', label: 'Buildings' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
@@ -76,9 +77,10 @@ export const ZUHAUSE_COORDINATES: Coordinates = {
   lng: 6.051040465199215
 };
 
-export type TestSite = 'kamperland' | 'zuhause';
+export type TestSite = 'kamperland' | 'zuhause' | 'beach_resort';
 
 export const TEST_SITES: Record<TestSite, { name: string; coordinates: Coordinates }> = {
   kamperland: { name: 'Kamperland', coordinates: KAMPERLAND_COORDINATES },
-  zuhause: { name: 'Zuhause', coordinates: ZUHAUSE_COORDINATES }
+  zuhause: { name: 'Zuhause', coordinates: ZUHAUSE_COORDINATES },
+  beach_resort: { name: 'Beach Resort', coordinates: { lat: 51.587, lng: 3.720 } }
 };

@@ -16,6 +16,7 @@ const getEmojiIcon = (iconName: string) => {
     case 'Building2': return '🏢';
     case 'Waves': return '🌊';
     case 'Car': return '🚗';
+    case 'Building': return '🏗️';
     default: return '📍';
   }
 };

@@ -15,6 +15,9 @@ const getEmojiForCategory = (iconName: string) => {
     case 'Building2': return '🏢';
     case 'Waves': return '🌊';
     case 'Car': return '🚗';
+    case 'Building': return '🏗️';
+    case 'Campground': return '🏕️';
+    case 'Activity': return '🔥';
     default: return '📍';
   }
 };
