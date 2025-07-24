@@ -43,7 +43,6 @@ export default function Navigation() {
   const [currentRoute, setCurrentRoute] = useState<NavigationRoute | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
-  const [showBuildingCentroids, setShowBuildingCentroids] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
@@ -529,7 +528,6 @@ export default function Navigation() {
         selectedPOI={selectedPOI}
         route={currentRoute}
         filteredCategories={filteredCategories}
-        showBuildingCentroids={showBuildingCentroids}
         onPOIClick={handlePOIClick}
         onPOINavigate={handleNavigateToPOI}
         onMapClick={handleMapClick}
@@ -568,8 +566,6 @@ export default function Navigation() {
         mapStyle={mapStyle}
         useRealGPS={useRealGPS}
         onToggleGPS={toggleGPS}
-        onToggleBuildingCentroids={() => setShowBuildingCentroids(prev => !prev)}
-        showBuildingCentroids={showBuildingCentroids}
       />
 
 
