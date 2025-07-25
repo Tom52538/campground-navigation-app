@@ -14,32 +14,39 @@ const osmCategoryMapping: Record<string, string> = {
   'pub': 'food-drink',
   'fast_food': 'food-drink',
   'shop': 'services',
-  'pharmacy': 'services',
+  'pharmacy': 'necessities',
   'bank': 'services',
   'atm': 'services',
-  'information': 'activities',
+  'information': 'services',
   'fuel': 'services',
   'supermarket': 'services',
-  'swimming_pool': 'camping',
-  'playground': 'camping',
-  'sports_centre': 'activities',
-  'attraction': 'activities',
-  'parking': 'facilities',
-  'toilets': 'facilities',
-  'waste_disposal': 'facilities',
-  'bicycle_parking': 'facilities',
-  'marina': 'camping'
+  'swimming_pool': 'leisure',
+  'playground': 'leisure',
+  'sports_centre': 'leisure',
+  'attraction': 'leisure',
+  'parking': 'parking',
+  'toilets': 'services',
+  'waste_disposal': 'services',
+  'bicycle_parking': 'services',
+  'marina': 'services',
+  'first_aid': 'necessities',
+  'clinic': 'necessities',
+  'hospital': 'necessities',
 };
 
 const buildingCategoryMapping: Record<string, string> = {
-  'static_caravan': 'camping',
-  'bungalow': 'camping',
-  'house': 'camping',
+  'static_caravan': 'campgrounds',
+  'bungalow': 'bungalows',
+  'house': 'bungalows',
   'retail': 'services',
   'office': 'services',
   'commercial': 'services',
-  'shed': 'facilities',
-  'industrial': 'facilities'
+  'shed': 'services',
+  'industrial': 'services',
+  'beach_house': 'beach-houses',
+  'chalet': 'chalets',
+  'lodge': 'lodges-water',
+  'bungalow_water': 'bungalows-water',
 };
 
 // Load authentic OpenStreetMap POI data
@@ -47,17 +54,14 @@ async function getPOIData(site: string) {
   try {
     const poiFilenames = site === 'zuhause' ? ['zuhause_pois.geojson'] : site === 'beach_resort' ? ['Beach Resort Zentroide Layer.geojson'] : ['kamperland_pois.geojson'];
     
-    let allFeatures: any[] = [];
+    let allPois: any[] = [];
 
     for (const filename of poiFilenames) {
       const filePath = join(process.cwd(), 'server', 'data', filename);
       const data = readFileSync(filePath, 'utf-8');
       const geojson = JSON.parse(data);
-      allFeatures = allFeatures.concat(geojson.features);
-    }
 
-    return allFeatures
-      .map((feature: any, index: number) => {
+      const pois = geojson.features.map((feature: any, index: number) => {
         const props = feature.properties;
         let name = props.name;
         let category = 'unknown';
@@ -78,6 +82,8 @@ async function getPOIData(site: string) {
             category = osmCategoryMapping[props.tourism];
           } else if (props.shop) {
             category = 'services';
+          } else if (props.building && buildingCategoryMapping[props.building]) {
+            category = buildingCategoryMapping[props.building];
           }
         }
 
@@ -122,8 +128,11 @@ async function getPOIData(site: string) {
           amenities: amenities.length > 0 ? amenities : undefined,
           hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
         };
-      })
-      .filter(feature => feature && (feature.name || (feature.properties?.amenity || feature.properties?.leisure || feature.properties?.tourism || feature.properties?.shop)));
+      }).filter(Boolean);
+      allPois = allPois.concat(pois);
+    }
+
+    return allPois.filter(feature => feature && (feature.name || (feature.properties?.amenity || feature.properties?.leisure || feature.properties?.tourism || feature.properties?.shop)));
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
     return [];

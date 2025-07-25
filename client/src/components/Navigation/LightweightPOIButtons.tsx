@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface LightweightPOIButtonsProps {
   onCategorySelect: (category: string) => void;
@@ -104,45 +105,22 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
               >
                 <span className="text-2xl">{poi.icon}</span>
               </button>
-              {visibleTooltip === poi.id && (
-                <div
-                  className="poi-tooltip"
-                  style={{
-                    position: 'fixed',
-                    left: '90px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    zIndex: 99999,
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: 'white',
-                    whiteSpace: 'nowrap',
-                    background: 'rgba(17, 24, 39, 0.95)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                    animation: 'fadeInFromLeft 0.3s ease-out',
-                  }}
-                >
+              {visibleTooltip === poi.id && createPortal(
+                <div style={{
+                  position: 'fixed',
+                  left: '90px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 999999,
+                  padding: '8px 12px',
+                  background: 'rgba(17, 24, 39, 0.95)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  pointerEvents: 'none',
+                }}>
                   {poi.label}
-                  <div
-                    className="poi-tooltip-arrow"
-                    style={{
-                      content: "''",
-                      position: 'absolute',
-                      left: '-4px',
-                      top: '50%',
-                      transform: 'translateY(-50%) rotate(45deg)',
-                      width: '8px',
-                      height: '8px',
-                      background: 'rgba(17, 24, 39, 0.8)',
-                      borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-                    }}
-                  />
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           );
