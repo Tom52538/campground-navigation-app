@@ -111,7 +111,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
                     left: '64px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    zIndex: 50,
+                    zIndex: 9999,
                     padding: '8px 12px',
                     borderRadius: '8px',
                     fontSize: '14px',
