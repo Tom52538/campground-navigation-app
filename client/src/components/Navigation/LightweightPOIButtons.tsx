@@ -67,6 +67,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
         overflowY: 'auto',
         scrollBehavior: 'smooth',
+        zIndex: 1000,
       }}
     >
       <div className="flex flex-col items-center py-3 space-y-3">
@@ -107,18 +108,18 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
                 <div
                   className="poi-tooltip"
                   style={{
-                    position: 'absolute',
-                    left: '64px',
+                    position: 'fixed',
+                    left: '90px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    zIndex: 9999,
+                    zIndex: 99999,
                     padding: '8px 12px',
                     borderRadius: '8px',
                     fontSize: '14px',
                     fontWeight: 500,
                     color: 'white',
                     whiteSpace: 'nowrap',
-                    background: 'rgba(17, 24, 39, 0.8)',
+                    background: 'rgba(17, 24, 39, 0.95)',
                     backdropFilter: 'blur(16px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
