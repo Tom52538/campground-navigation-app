@@ -59,7 +59,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
         top: '50%',
         transform: 'translateY(-50%)',
         width: '60px',
-        height: '400px',
+        height: '480px',
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(20px) saturate(180%)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
