@@ -23,7 +23,10 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
 
   if (isLoading) {
     return (
-      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]">
+      <div 
+        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
+        style={{ marginTop: '80px' }}
+      >
         <div className="text-center">
           <Loader2 className="w-5 h-5 animate-spin text-gray-400 mx-auto mb-1" />
           <div className="text-xs text-gray-500">Loading...</div>
@@ -34,7 +37,10 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
 
   if (error || !weather) {
     return (
-      <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]">
+      <div 
+        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
+        style={{ marginTop: '80px' }}
+      >
         <div className="text-center">
           <Cloud className="w-5 h-5 text-gray-400 mx-auto mb-1" />
           <div className="text-xs text-gray-500">Weather unavailable</div>
@@ -58,7 +64,10 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 min-w-[120px]">
+    <div 
+      className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[120px]"
+      style={{ marginTop: '80px' }}
+    >
       <div className="flex items-center space-x-2 mb-2">
         {getWeatherIcon(weather.condition)}
         <div className="text-lg font-semibold text-gray-800">{weather.temperature}°</div>
