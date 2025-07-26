@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Marker } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import { POI, POI_CATEGORIES } from '@/types/navigation';
