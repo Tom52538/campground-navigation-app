@@ -12,12 +12,13 @@
     border-radius: 20px !important;
   }
 
+  /* Glass morphism utilities */
   .glass-button {
-    background: rgba(255, 255, 255, 0.01) !important;
-    backdrop-filter: blur(40px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.02) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
     border-radius: 50% !important;
     transition: all 0.3s ease !important;
   }
@@ -102,71 +103,71 @@
   .map-container {
     @apply w-full h-full relative overflow-hidden;
   }
-  
+
   .poi-marker {
     @apply w-8 h-8 rounded-full flex items-center justify-center shadow-lg text-white text-sm cursor-pointer transition-transform hover:scale-110;
   }
-  
+
   .poi-marker.pulse {
     @apply animate-pulse;
   }
-  
+
   .navigation-panel {
     @apply absolute bottom-0 left-0 right-0 rounded-t-3xl shadow-2xl border-t border-white/30 transition-transform duration-300;
     background-color: rgba(255, 255, 255, 0.85) !important;
   }
-  
+
   .navigation-panel.hidden {
     @apply translate-y-full;
   }
-  
+
   .floating-button {
     @apply rounded-xl shadow-lg border border-white/30 flex items-center justify-center transition-colors;
     background-color: rgba(255, 255, 255, 0.75) !important;
   }
-  
+
   .floating-button:hover {
     background-color: rgba(255, 255, 255, 0.85) !important;
   }
-  
+
   .floating-button.primary {
     @apply bg-blue-600 text-white hover:bg-blue-700;
   }
-  
+
   .search-input {
     @apply flex-1 text-base font-medium text-gray-700 placeholder-gray-400 bg-transparent border-none outline-none;
   }
-  
+
   .weather-widget {
     @apply rounded-xl shadow-lg border border-white/30 p-4 min-w-[120px];
     background-color: rgba(255, 255, 255, 0.8) !important;
   }
-  
+
   .status-dot {
     @apply w-3 h-3 rounded-full;
   }
-  
+
   .status-dot.success {
     @apply bg-green-500;
   }
-  
+
   .status-dot.warning {
     @apply bg-yellow-500;
   }
-  
+
   .status-dot.error {
     @apply bg-red-500;
   }
-  
+
   /* POI Marker Styling */
   .poi-marker-container {
     @apply pointer-events-auto;
   }
-  
+
   .poi-marker-wrapper {
     @apply cursor-pointer transform transition-transform duration-200 hover:scale-110;
   }
-  
+
   .poi-marker-wrapper:hover {
     @apply scale-110;
   }
@@ -174,17 +175,17 @@
   .category-button {
     @apply w-12 h-12 floating-button;
   }
-  
+
   /* Premium Route Styling */
   .premium-route-line {
     stroke: url(#routeGradient) !important;
     filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) !important;
   }
-  
+
   .route-pulse-animation {
     animation: routePulse 2s ease-in-out infinite !important;
   }
-  
+
   @keyframes routePulse {
     0% { 
       stroke-dashoffset: 0;
@@ -204,12 +205,12 @@
   .touch-manipulation {
     touch-action: manipulation;
   }
-  
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -241,11 +242,11 @@
   .floating-button {
     @apply w-12 h-12;
   }
-  
+
   .weather-widget {
     @apply min-w-[100px] p-3;
   }
-  
+
   .navigation-panel {
     @apply max-h-[70vh] overflow-y-auto;
   }
@@ -279,12 +280,12 @@
   --earth-brown: #8b4513;
   --sky-blue: #87ceeb;
   --sunset-orange: #ff6b35;
-  
+
   /* Transparent Overlays */
   --overlay-light: rgba(255, 255, 255, 0.9);
   --overlay-dark: rgba(0, 0, 0, 0.7);
   --glass-border: rgba(255, 255, 255, 0.2);
-  
+
   /* Outdoor Visibility */
   --high-contrast-text: #000000;
   --emergency-red: #dc3545;
@@ -322,8 +323,17 @@
   .floating-button:active {
     @apply scale-95;
   }
-  
+
   button:active {
     @apply scale-95;
   }
+}
+
+/* Safe area support for mobile devices */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top);
 }

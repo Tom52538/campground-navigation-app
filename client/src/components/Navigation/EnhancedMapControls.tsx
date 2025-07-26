@@ -23,7 +23,7 @@ export const EnhancedMapControls = ({
   useRealGPS = false,
   onToggleGPS
 }: EnhancedMapControlsProps) => {
-  
+
   const transportButtons = [
     { icon: <Car className="w-6 h-6" />, id: 'car' },
     { icon: <Bike className="w-6 h-6" />, id: 'bike' },

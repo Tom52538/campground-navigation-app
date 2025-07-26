@@ -33,7 +33,8 @@ export const PermanentHeader = ({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40" 
+    <div
+      className="fixed top-0 left-0 right-0 z-40"
          style={{
            background: 'rgba(255, 255, 255, 0.7)',
            backdropFilter: 'blur(6px)',
@@ -79,7 +80,7 @@ export const PermanentHeader = ({
               Clear
             </Button>
           )}
-          
+
           {/* Site Selector */}
           <Button
             variant="outline"
