@@ -83,7 +83,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
             <div key={poi.id} className="relative">
               <button
                 onClick={() => handleCategoryClick(poi.id as string)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none
                   ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
                   hover:scale-110 active:scale-95`}
                 style={{
@@ -95,7 +95,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
                 }}
                 aria-label={poi.label}
               >
-                <span className="text-xl">{poi.icon}</span>
+                <span className="text-lg">{poi.icon}</span>
               </button>
               {visibleTooltip === poi.id && createPortal(
                 <div style={{
@@ -125,7 +125,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
             <div key={poi.id} className="relative">
               <button
                 onClick={() => handleCategoryClick(poi.id as string)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none
                   ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
                   hover:scale-110 active:scale-95`}
                 style={{
@@ -137,7 +137,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
                 }}
                 aria-label={poi.label}
               >
-                <span className="text-xl">{poi.icon}</span>
+                <span className="text-lg">{poi.icon}</span>
               </button>
               {visibleTooltip === poi.id && createPortal(
                 <div style={{
