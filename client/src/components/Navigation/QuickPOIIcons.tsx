@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { POICategory } from '@/types/navigation';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -79,132 +78,95 @@ const CAMPING_POI_ICONS = [
 
 export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOIIconsProps) => {
   const { t } = useLanguage();
-  
+
+  const renderPOIButton = (poi: typeof CAMPING_POI_ICONS[0], index: number, keyPrefix: string) => {
+    const isActive = filteredCategories.includes(poi.category);
+
+    return (
+      <Button
+        key={`${keyPrefix}-${poi.category}-${index}`}
+        variant="ghost"
+        size="sm"
+        className={`
+          flex-1 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+          ${isActive 
+            ? `${poi.color} text-white scale-105 shadow-xl` 
+            : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
+          }
+        `}
+        style={{
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+        }}
+        onClick={() => onToggleCategory(poi.category)}
+        title={t(`categories.${poi.category}`)}
+      >
+        <span className="text-xl mb-1">{poi.icon}</span>
+        <span 
+          className="text-xs font-semibold text-center leading-tight"
+          style={{
+            color: isActive ? 'white' : '#374151',
+            textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
+          }}
+        >
+          {poi.label}
+        </span>
+      </Button>
+    );
+  };
+
   return (
     <div className="absolute bottom-4 left-4 right-4 z-20">
-      <div className="space-y-3">
-        {/* ROW 1 - First 4 icons */}
-        <div className="flex justify-between space-x-2">
-          {CAMPING_POI_ICONS.slice(0, 4).map((poi, index) => {
-            const isActive = filteredCategories.includes(poi.category);
-            
-            return (
-              <Button
-                key={`row1-${poi.category}-${index}`}
-                variant="ghost"
-                size="sm"
-                className={`
-                  flex-1 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
-                  ${isActive 
-                    ? `${poi.color} text-white scale-105 shadow-xl` 
-                    : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
-                  }
-                `}
-                style={{
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}
-                onClick={() => onToggleCategory(poi.category)}
-                title={t(`categories.${poi.category}`)}
-              >
-                <span className="text-xl mb-1">{poi.icon}</span>
-                <span 
-                  className="text-xs font-semibold text-center leading-tight"
-                  style={{
-                    color: isActive ? 'white' : '#374151',
-                    textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  {poi.label}
-                </span>
-              </Button>
-            );
-          })}
-        </div>
-        
-        {/* ROW 2 - Next 4 icons */}
-        <div className="flex justify-between space-x-2">
-          {CAMPING_POI_ICONS.slice(4, 8).map((poi, index) => {
-            const isActive = filteredCategories.includes(poi.category);
-            
-            return (
-              <Button
-                key={`row2-${poi.category}-${index}`}
-                variant="ghost"
-                size="sm"
-                className={`
-                  flex-1 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
-                  ${isActive 
-                    ? `${poi.color} text-white scale-105 shadow-xl` 
-                    : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
-                  }
-                `}
-                style={{
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-                }}
-                onClick={() => onToggleCategory(poi.category)}
-                title={t(`categories.${poi.category}`)}
-              >
-                <span className="text-xl mb-1">{poi.icon}</span>
-                <span 
-                  className="text-xs font-semibold text-center leading-tight"
-                  style={{
-                    color: isActive ? 'white' : '#374151',
-                    textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
-                  }}
-                >
-                  {poi.label}
-                </span>
-              </Button>
-            );
-          })}
+      <div className="flex flex-col space-y-2">
+        {/* ROW 1: First 4 icons */}
+        <div className="flex space-x-2">
+          {CAMPING_POI_ICONS.slice(0, 4).map((poi, index) => 
+            renderPOIButton(poi, index, 'row1')
+          )}
         </div>
 
-        {/* ROW 3 - Last 3 icons (centered) */}
-        <div className="flex justify-center">
-          <div className="flex space-x-2" style={{ width: 'fit-content' }}>
-            {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => {
-              const isActive = filteredCategories.includes(poi.category);
-              
-              return (
-                <Button
-                  key={`row3-${poi.category}-${index}`}
-                  variant="ghost"
-                  size="sm"
-                  className={`
-                    h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
-                    ${isActive 
-                      ? `${poi.color} text-white scale-105 shadow-xl` 
-                      : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
-                    }
-                  `}
-                  style={{
-                    backdropFilter: 'blur(8px)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    width: '90px',
-                    flex: 'none'
-                  }}
-                  onClick={() => onToggleCategory(poi.category)}
-                  title={t(`categories.${poi.category}`)}
-                >
-                  <span className="text-xl mb-1">{poi.icon}</span>
-                  <span 
-                    className="text-xs font-semibold text-center leading-tight"
-                    style={{
-                      color: isActive ? 'white' : '#374151',
-                      textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
-                    }}
-                  >
-                    {poi.label}
-                  </span>
-                </Button>
-              );
-            })}
-          </div>
+        {/* ROW 2: Next 4 icons */}
+        <div className="flex space-x-2">
+          {CAMPING_POI_ICONS.slice(4, 8).map((poi, index) => 
+            renderPOIButton(poi, index, 'row2')
+          )}
+        </div>
+
+        {/* ROW 3: Last 3 icons (centered) */}
+        <div className="flex justify-center space-x-2">
+          {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => (
+            <Button
+              key={`row3-${poi.category}-${index}`}
+              variant="ghost"
+              size="sm"
+              className={`
+                w-20 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+                ${filteredCategories.includes(poi.category)
+                  ? `${poi.color} text-white scale-105 shadow-xl` 
+                  : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
+                }
+              `}
+              style={{
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+              onClick={() => onToggleCategory(poi.category)}
+              title={t(`categories.${poi.category}`)}
+            >
+              <span className="text-xl mb-1">{poi.icon}</span>
+              <span 
+                className="text-xs font-semibold text-center leading-tight"
+                style={{
+                  color: filteredCategories.includes(poi.category) ? 'white' : '#374151',
+                  textShadow: filteredCategories.includes(poi.category) ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
+                {poi.label}
+              </span>
+            </Button>
+          ))}
         </div>
       </div>
     </div>
