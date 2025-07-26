@@ -294,15 +294,28 @@ export const MapContainer = ({
         <CurrentLocationMarker position={currentPosition} />
         
         {pois.map((poi, index) => {
-          // Debug logging for POI rendering
-          if (index < 5) {
-            console.log(`🔍 POI Render Debug [${index}]:`, {
+          // Enhanced debug logging for POI rendering
+          const isVisible = filteredCategories.length === 0 || filteredCategories.includes(poi.category);
+          
+          if (index < 10) { // Debug first 10 POIs
+            console.log(`🔍 MapContainer POI [${index}/${pois.length}]:`, {
               id: poi.id,
               name: poi.name,
               coordinates: poi.coordinates,
               category: poi.category,
-              isVisible: filteredCategories.length === 0 || filteredCategories.includes(poi.category)
+              isVisible,
+              isSelected: selectedPOI?.id === poi.id,
+              filteredCategories
             });
+          }
+          
+          if (index === 0) {
+            console.log(`🔍 MapContainer TOTAL POIs: ${pois.length}, FIRST POI:`, poi);
+          }
+          
+          // Only render visible POIs
+          if (!isVisible) {
+            return null;
           }
           
           return (
