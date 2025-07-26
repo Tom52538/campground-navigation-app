@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { POICategory } from '@/types/navigation';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -119,21 +120,21 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
   return (
     <div className="absolute bottom-4 left-4 right-4 z-20">
       <div className="flex flex-col space-y-2">
-        {/* ROW 1: First 4 icons */}
+        {/* ROW 1: First 4 icons (🚿, 🍽️, 🔥, 🥾) */}
         <div className="flex space-x-2">
           {CAMPING_POI_ICONS.slice(0, 4).map((poi, index) => 
             renderPOIButton(poi, index, 'row1')
           )}
         </div>
 
-        {/* ROW 2: Next 4 icons */}
+        {/* ROW 2: Next 4 icons (⛽, 🏕️, 🏊, 🅿️) */}
         <div className="flex space-x-2">
           {CAMPING_POI_ICONS.slice(4, 8).map((poi, index) => 
             renderPOIButton(poi, index, 'row2')
           )}
         </div>
 
-        {/* ROW 3: Last 3 icons (centered) */}
+        {/* ROW 3: Last 3 icons (🏪, 🎯, 🔧) - centered */}
         <div className="flex justify-center space-x-2">
           {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => (
             <Button
@@ -150,7 +151,8 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
               style={{
                 backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                flex: 'none'
               }}
               onClick={() => onToggleCategory(poi.category)}
               title={t(`categories.${poi.category}`)}
