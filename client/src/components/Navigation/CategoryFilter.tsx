@@ -47,7 +47,7 @@ export const CategoryFilter = ({ filteredCategories, onToggleCategory }: Categor
   };
 
   return (
-    <div className="absolute left-4 right-4 bottom-4 z-20">
+    <div className="absolute left-4 right-4 bottom-6 z-20">
       <div className="space-y-2">
         {/* First row */}
         <div className="flex justify-center space-x-3">

@@ -63,15 +63,15 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
 
   return (
     <div 
-      className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[120px]"
+      className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-2 min-w-[100px] max-w-[140px]"
     >
       <div className="flex items-center space-x-2 mb-2">
         {getWeatherIcon(weather.condition)}
         <div className="text-lg font-semibold text-gray-800">{weather.temperature}°</div>
       </div>
       <div className="text-xs text-gray-500 mb-2">{weather.condition}</div>
-      <div className="space-y-1">
-        {[1, 2].map((dayOffset) => (
+      <div className="space-y-0.5">
+        {[1].map((dayOffset) => (
           <div key={dayOffset} className="flex items-center justify-between">
             <div className="text-xs text-gray-600">
               {getDayName(dayOffset)}
