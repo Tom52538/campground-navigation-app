@@ -62,7 +62,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
       style={{
         position: 'absolute',
         left: '16px',
-        right: '16px',
+        right: '120px',
         bottom: '16px',
         background: 'rgba(255, 255, 255, 0.1)',
         backdropFilter: 'blur(20px) saturate(180%)',
