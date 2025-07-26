@@ -69,10 +69,10 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
   const { t } = useLanguage();
   
   return (
-    <div className="absolute top-20 left-4 right-4 z-20">
+    <div className="absolute bottom-4 left-4 right-4 z-20">
       <div className="space-y-2">
         {/* First row - 4 buttons */}
-        <div className="flex justify-between space-x-2">
+        <div className="flex justify-between space-x-1">
           {CAMPING_POI_ICONS.slice(0, 4).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
@@ -114,7 +114,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
         </div>
         
         {/* Second row - 4 buttons */}
-        <div className="flex justify-between space-x-2">
+        <div className="flex justify-between space-x-1">
           {CAMPING_POI_ICONS.slice(4, 8).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
@@ -155,9 +155,8 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
           })}
         </div>
 
-        {/* Third row - 3 buttons (centered with spacing) */}
-        <div className="flex justify-center space-x-2">
-          <div className="flex-1"></div> {/* Empty space */}
+        {/* Third row - 3 buttons (centered) */}
+        <div className="flex justify-center space-x-1">
           {CAMPING_POI_ICONS.slice(8).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
@@ -177,9 +176,8 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                   backdropFilter: 'blur(8px)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  minWidth: '75px',
-                  maxWidth: '95px',
-                  width: '75px'
+                  width: '80px',
+                  flex: 'none'
                 }}
                 onClick={() => onToggleCategory(poi.category)}
                 title={t(`categories.${poi.category}`)}
@@ -197,7 +195,6 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
               </Button>
             );
           })}
-          <div className="flex-1"></div> {/* Empty space */}
         </div>
       </div>
     </div>
