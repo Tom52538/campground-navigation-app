@@ -35,18 +35,18 @@ const osmCategoryMapping: Record<string, string> = {
 };
 
 const buildingCategoryMapping: Record<string, string> = {
-  'static_caravan': 'campgrounds',
-  'bungalow': 'bungalows',
-  'house': 'bungalows',
+  'static_caravan': 'facilities',
+  'bungalow': 'buildings',
+  'house': 'buildings',
   'retail': 'services',
   'office': 'services',
   'commercial': 'services',
-  'shed': 'services',
+  'shed': 'facilities',
   'industrial': 'services',
-  'beach_house': 'beach-houses',
-  'chalet': 'chalets',
-  'lodge': 'lodges-water',
-  'bungalow_water': 'bungalows-water',
+  'beach_house': 'buildings',
+  'chalet': 'buildings',
+  'lodge': 'buildings',
+  'bungalow_water': 'buildings',
 };
 
 // Load authentic OpenStreetMap POI data
@@ -72,6 +72,7 @@ async function getPOIData(site: string) {
           if (buildingType && houseNumber) {
             name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
             category = buildingCategoryMapping[buildingType] || 'buildings';
+            console.log(`Beach Resort POI: ${name}, Building: ${buildingType}, Category: ${category}`);
           }
         } else {
           if (props.amenity && osmCategoryMapping[props.amenity]) {
@@ -207,6 +208,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const site = req.query.site || 'kamperland';
       const pois = await getPOIData(site as string);
+      console.log(`POI API: Loaded ${pois.length} POIs for site ${site}`);
+      if (site === 'beach_resort') {
+        const categoryCount = pois.reduce((acc, poi) => {
+          acc[poi.category] = (acc[poi.category] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        console.log('Beach Resort POI categories:', categoryCount);
+      }
       res.json(pois);
     } catch (error) {
       console.error("POI API error:", error);
