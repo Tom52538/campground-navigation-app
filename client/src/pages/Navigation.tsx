@@ -506,26 +506,17 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
-  // Safe POI filtering - initialize with empty array to prevent initialization errors
-  const [filteredPOIs, setFilteredPOIs] = useState<POI[]>([]);
+  // Bulletproof POI filtering with inline computation
+  const filteredPOIs = React.useMemo(() => {
+    // Guard clause - ensure dependencies exist
+    if (!allPOIs || !Array.isArray(allPOIs)) return [];
+    if (!filteredCategories || !Array.isArray(filteredCategories)) return allPOIs;
+    if (filteredCategories.length === 0) return allPOIs;
 
-  // Update filtered POIs when data changes
-  useEffect(() => {
-    if (!allPOIs || !Array.isArray(allPOIs)) {
-      setFilteredPOIs([]);
-      return;
-    }
-
-    if (!filteredCategories || filteredCategories.length === 0) {
-      setFilteredPOIs(allPOIs);
-      return;
-    }
-
-    const filtered = allPOIs.filter(poi => {
-      return poi && poi.category && filteredCategories.includes(poi.category);
-    });
-
-    setFilteredPOIs(filtered);
+    // Safe filtering
+    return allPOIs.filter(poi => 
+      poi && poi.category && filteredCategories.includes(poi.category)
+    );
   }, [allPOIs, filteredCategories]);
 
   console.log('🔍 Navigation: Starting render...', {
