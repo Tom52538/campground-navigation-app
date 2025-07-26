@@ -7,23 +7,23 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // POI Categories (5)
+  // POI Categories - Using actual data categories from server logs
   { icon: '🍽️', label: 'Food & Drinks', id: 'food-drink' },
   { icon: '🛠️', label: 'Services', id: 'services' },
-  { icon: '🚑', label: 'Hilfe im Notfall', id: 'necessities' },
-  { icon: '🎯', label: 'Freizeit', id: 'leisure' },
-  { icon: '🅿️', label: 'Parkplätze', id: 'parking' },
+  { icon: '🚑', label: 'Facilities', id: 'facilities' }, // Server shows 'facilities' category
+  { icon: '🎯', label: 'Recreation', id: 'recreation' },
+  { icon: '🅿️', label: 'Parking', id: 'parking' },
 
   // Visual separator
   { divider: true },
 
-  // Accommodation Categories (6)
-  { icon: '🏕️', label: 'Stellplätze', id: 'campgrounds' },
-  { icon: '🏠', label: 'Bungalows', id: 'bungalows' },
-  { icon: '🏖️', label: 'Strandhäuser', id: 'beach-houses' },
-  { icon: '🏘️', label: 'Chalets', id: 'chalets' },
-  { icon: '🏰', label: 'Lodges Water Village', id: 'lodges-water' },
-  { icon: '🌊', label: 'Bungalows Water Village', id: 'bungalows-water' }
+  // Building Categories - Using actual data categories
+  { icon: '🏕️', label: 'Campgrounds', id: 'campgrounds' },
+  { icon: '🏠', label: 'Buildings', id: 'buildings' }, // Server shows 'buildings' category
+  { icon: '🏖️', label: 'Accommodations', id: 'accommodations' },
+  { icon: '🏘️', label: 'Amenities', id: 'amenities' },
+  { icon: '🏰', label: 'Attractions', id: 'attractions' },
+  { icon: '🌊', label: 'Water Features', id: 'water-features' }
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: LightweightPOIButtonsProps) => {

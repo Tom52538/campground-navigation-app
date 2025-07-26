@@ -140,18 +140,26 @@ export default function Navigation() {
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
   const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
 
-  // Filter POIs based on search and category selection - only show when searched
+  // Filter POIs based on search and category selection
   let displayPOIs: POI[] = [];
 
   if (searchQuery.length > 0) {
     // Use search results (already filtered by category if single category selected)
     displayPOIs = searchResults;
   } else if (filteredCategories.length > 0) {
-    // Apply category filtering to all POIs
-    displayPOIs = allPOIs.filter(poi => filteredCategories.includes(poi.category));
+    // Use the filtered POIs from useMemo
+    displayPOIs = filteredPOIs;
   }
-  // Don't show POIs by default - only when searched or filtered
+  // Show POIs when searched or filtered
   const shouldShowPOIs = displayPOIs.length > 0;
+
+  console.log('🔍 DISPLAY POIs DEBUG:', {
+    searchQuery: searchQuery.length,
+    filteredCategoriesCount: filteredCategories.length,
+    displayPOIsCount: displayPOIs.length,
+    shouldShowPOIs,
+    firstPOI: displayPOIs[0]?.name || 'none'
+  });
 
   // Add distance to POIs
   const poisWithDistance = displayPOIs.map(poi => ({
@@ -514,18 +522,32 @@ export default function Navigation() {
         return [];
       }
 
+      // Debug: Show actual categories in POI data
+      const actualCategories = [...new Set(allPOIs.map(poi => poi.category))];
+      console.log('🔍 POI CATEGORIES IN DATA:', actualCategories);
+      console.log('🔍 SELECTED FILTER CATEGORIES:', filteredCategories);
+
       if (filteredCategories.length === 0) {
         console.log('🔍 Navigation: Showing all POIs');
         return allPOIs;
       }
 
       const filtered = allPOIs.filter(poi => {
-        return filteredCategories.includes(poi.category);
+        const matches = filteredCategories.includes(poi.category);
+        if (!matches) {
+          console.log('🔍 POI Filter Mismatch:', { 
+            poiCategory: poi.category, 
+            filteredCategories,
+            poiName: poi.name?.substring(0, 30) || 'unnamed'
+          });
+        }
+        return matches;
       });
 
       console.log('🔍 Navigation: Filtered POIs:', { 
         original: allPOIs.length, 
-        filtered: filtered.length 
+        filtered: filtered.length,
+        sampleFilteredPOIs: filtered.slice(0, 3).map(p => ({ name: p.name, category: p.category }))
       });
 
       return filtered;
