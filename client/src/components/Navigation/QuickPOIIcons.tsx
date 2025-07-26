@@ -183,7 +183,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 style={{
                   backdropFilter: 'blur(8px)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
-                  boxShador: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                   width: '90px',
                   flex: 'none'
                 }}
