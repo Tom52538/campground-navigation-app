@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
@@ -509,152 +509,204 @@ export default function Navigation() {
     );
   }
 
-  // Filter POIs based on selected categories
+  // Filter POIs based on selected categories with error handling
   const filteredPOIs = useMemo(() => {
-    console.log('🔍 POI FILTERING DEBUG:', {
-      totalPOIs: allPOIs.length,
-      selectedCategories,
-      categoriesInData: [...new Set(allPOIs.map(p => p.category))]
+    console.log('🔍 POI FILTERING DEBUG:', { 
+      poisCount: allPOIs?.length || 0, 
+      filteredCategories
     });
 
-    if (filteredCategories.length === 0) {
-      console.log('✅ No category filter - showing all POIs:', allPOIs.length);
-      return allPOIs;
+    try {
+      if (!allPOIs) {
+        console.log('🔍 Navigation: No POIs available, returning empty array');
+        return [];
+      }
+
+      if (filteredCategories.length === 0) {
+        console.log('🔍 Navigation: Showing all POIs');
+        return allPOIs;
+      }
+
+      const filtered = allPOIs.filter(poi => {
+        return filteredCategories.includes(poi.category);
+      });
+
+      console.log('🔍 Navigation: Filtered POIs:', { 
+        original: allPOIs.length, 
+        filtered: filtered.length 
+      });
+
+      return filtered;
+    } catch (error) {
+      console.error('🚨 Navigation: Error in filteredPOIs useMemo:', error);
+      return [];
     }
-
-    const filtered = allPOIs.filter(poi => filteredCategories.includes(poi.category));
-    console.log('🔍 Filtered POIs:', {
-      originalCount: allPOIs.length,
-      filteredCount: filtered.length,
-      selectedCategories: filteredCategories
-    });
-
-    return filtered;
   }, [allPOIs, filteredCategories]);
 
-  return (
-    <div className="relative h-screen w-full overflow-hidden">
-      {/* Map Container - 100% Visible, Always Interactive */}
-      <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
-        currentPosition={trackingPosition}
-        pois={poisWithDistance}
-        selectedPOI={selectedPOI}
-        route={currentRoute}
-        filteredCategories={filteredCategories}
-        onPOIClick={handlePOIClick}
-        onPOINavigate={handleNavigateToPOI}
-        onMapClick={handleMapClick}
-        mapStyle={mapStyle}
-      />
+  console.log('🔍 Navigation: Starting render...', {
+    position: !!trackingPosition,
+    filteredPOIsCount: filteredPOIs?.length || 0,
+    isNavigating,
+    selectedPOI: !!selectedPOI
+  });
 
-      {/* EXPLORATION MODE - Only visible when NOT navigating */}
-      {!isNavigating && (
-        <>
-          {/* Permanent Header - Search and Location Selection */}
-          <PermanentHeader
-            searchQuery={searchQuery}
-            onSearch={handleSearch}
-            currentSite={currentSite}
-            onSiteChange={handleSiteChange}
-            showClearButton={shouldShowPOIs}
-            onClear={handleClearPOIs}
-          />
-
-          {/* Lightweight POI Buttons - Left Side */}
-          <LightweightPOIButtons
-            onCategorySelect={handleCategoryFilter}
-            activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
-          />
-
-          {/* Camping Weather Widget */}
-          <CampingWeatherWidget coordinates={currentPosition} />
-        </>
-      )}
-
-      {/* Enhanced Map Controls - Always Visible (Right Side) */}
-      <EnhancedMapControls
-        onToggleVoice={handleToggleVoice}
-        onMapStyleChange={handleMapStyleChange}
-        isVoiceEnabled={voiceEnabled}
-        mapStyle={mapStyle}
-        useRealGPS={useRealGPS}
-        onToggleGPS={toggleGPS}
-        travelMode={travelMode}
-        onTravelModeChange={setTravelMode}
-      />
-
-      {/* POI Info Overlay - Positioned below button rows */}
-      {selectedPOI && (
-        <TransparentPOIOverlay 
-          poi={selectedPOI}
-          onNavigate={handleNavigateToPOI}
-          onClose={() => setSelectedPOI(null)}
+  try {
+    return (
+      <div className="relative h-screen w-full overflow-hidden">
+        {/* Map Container - 100% Visible, Always Interactive */}
+        <MapContainer
+          center={mapCenter}
+          zoom={mapZoom}
+          currentPosition={trackingPosition}
+          pois={poisWithDistance}
+          selectedPOI={selectedPOI}
+          route={currentRoute}
+          filteredCategories={filteredCategories}
+          onPOIClick={handlePOIClick}
+          onPOINavigate={handleNavigateToPOI}
+          onMapClick={handleMapClick}
+          mapStyle={mapStyle}
         />
-      )}
 
-      {/* NAVIGATION MODE - Only visible when actively navigating */}
-      {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
-        <>
-          {/* Top: Current Maneuver */}
-          <TopManeuverPanel
-            instruction={currentInstruction || currentRoute.instructions[0].instruction}
-            distance={nextDistance || currentRoute.instructions[0].distance}
+        {/* EXPLORATION MODE - Only visible when NOT navigating */}
+        {!isNavigating && (
+          <>
+            {/* Permanent Header - Search and Location Selection */}
+            <PermanentHeader
+              searchQuery={searchQuery}
+              onSearch={handleSearch}
+              currentSite={currentSite}
+              onSiteChange={handleSiteChange}
+              showClearButton={shouldShowPOIs}
+              onClear={handleClearPOIs}
+            />
+
+            {/* Lightweight POI Buttons - Left Side */}
+            <LightweightPOIButtons
+              onCategorySelect={handleCategoryFilter}
+              activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+            />
+
+            {/* Camping Weather Widget */}
+            <CampingWeatherWidget coordinates={currentPosition} />
+          </>
+        )}
+
+        {/* Enhanced Map Controls - Always Visible (Right Side) */}
+        <EnhancedMapControls
+          onToggleVoice={handleToggleVoice}
+          onMapStyleChange={handleMapStyleChange}
+          isVoiceEnabled={voiceEnabled}
+          mapStyle={mapStyle}
+          useRealGPS={useRealGPS}
+          onToggleGPS={toggleGPS}
+          travelMode={travelMode}
+          onTravelModeChange={setTravelMode}
+        />
+
+        {/* POI Info Overlay - Positioned below button rows */}
+        {selectedPOI && (
+          <TransparentPOIOverlay 
+            poi={selectedPOI}
+            onNavigate={handleNavigateToPOI}
+            onClose={() => setSelectedPOI(null)}
           />
+        )}
 
-          {/* Floating Voice Controls */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className="absolute z-30 right-4 w-12 h-12 rounded-full"
-            style={{ 
-              top: '120px',
-              background: 'rgba(255, 255, 255, 0.01)',
-              backdropFilter: 'blur(40px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-              border: '1px solid rgba(255, 255, 255, 0.02)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
-            }}
+        {/* NAVIGATION MODE - Only visible when actively navigating */}
+        {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
+          <>
+            {/* Top: Current Maneuver */}
+            <TopManeuverPanel
+              instruction={currentInstruction || currentRoute.instructions[0].instruction}
+              distance={nextDistance || currentRoute.instructions[0].distance}
+            />
+
+            {/* Floating Voice Controls */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className="absolute z-30 right-4 w-12 h-12 rounded-full"
+              style={{ 
+                top: '120px',
+                background: 'rgba(255, 255, 255, 0.01)',
+                backdropFilter: 'blur(40px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                border: '1px solid rgba(255, 255, 255, 0.02)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              {voiceEnabled ? <Volume2 className="w-6 h-6 text-blue-600" /> : <VolumeX className="w-6 h-6 text-gray-500" />}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowSettings(!showSettings)}
+              className="absolute z-30 right-4 w-12 h-12 rounded-full"
+              style={{ 
+                top: '180px',
+                background: 'rgba(255, 255, 255, 0.01)',
+                backdropFilter: 'blur(40px) saturate(200%)',
+                WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+                border: '1px solid rgba(255, 255, 255, 0.02)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              <Settings className="w-6 h-6 text-gray-600" />
+            </Button>
+
+            {/* Bottom: Trip Summary */}
+            <BottomSummaryPanel
+              timeRemaining={currentRoute.estimatedTime}
+              distanceRemaining={currentRoute.totalDistance}
+              eta={currentRoute.arrivalTime}
+              onEndNavigation={handleEndNavigation}
+            />
+          </>
+        )}
+
+        {/* Filter Modal - Preserved */}
+        <FilterModal
+          isOpen={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          filteredCategories={filteredCategories}
+          onToggleCategory={handleToggleCategory}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error('🚨 Navigation: Render error:', error);
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 max-w-md w-full shadow-lg border border-white/20">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-6 h-6 text-red-500">⚠️</div>
+            <h2 className="text-lg font-semibold text-gray-900">Navigation Error</h2>
+          </div>
+
+          <p className="text-gray-600 mb-4">
+            The navigation component encountered an error. Check the console for details.
+          </p>
+
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {voiceEnabled ? <Volume2 className="w-6 h-6 text-blue-600" /> : <VolumeX className="w-6 h-6 text-gray-500" />}
-          </Button>
+            Reload App
+          </button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSettings(!showSettings)}
-            className="absolute z-30 right-4 w-12 h-12 rounded-full"
-            style={{ 
-              top: '180px',
-              background: 'rgba(255, 255, 255, 0.01)',
-              backdropFilter: 'blur(40px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-              border: '1px solid rgba(255, 255, 255, 0.02)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)'
-            }}
-          >
-            <Settings className="w-6 h-6 text-gray-600" />
-          </Button>
-
-          {/* Bottom: Trip Summary */}
-          <BottomSummaryPanel
-            timeRemaining={currentRoute.estimatedTime}
-            distanceRemaining={currentRoute.totalDistance}
-            eta={currentRoute.arrivalTime}
-            onEndNavigation={handleEndNavigation}
-          />
-        </>
-      )}
-
-      {/* Filter Modal - Preserved */}
-      <FilterModal
-        isOpen={showFilterModal}
-        onClose={() => setShowFilterModal(false)}
-        filteredCategories={filteredCategories}
-        onToggleCategory={handleToggleCategory}
-      />
-    </div>
-  );
+          {debugMode && (
+            <details className="mt-4 text-xs">
+              <summary className="cursor-pointer text-gray-500">Error Details</summary>
+              <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto">
+                {error?.toString()}
+              </pre>
+            </details>
+          )}
+        </div>
+      </div>
+    );
+  }
 }
