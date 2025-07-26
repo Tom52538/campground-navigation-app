@@ -57,7 +57,10 @@ const buildingCategoryMapping: Record<string, string> = {
 // Load authentic OpenStreetMap POI data
 async function getPOIData(site: string) {
   try {
-    const poiFilenames = site === 'zuhause' ? ['zuhause_pois.geojson'] : site === 'beach_resort' ? ['Beach Resort Zentroide Layer.geojson'] : ['kamperland_pois.geojson'];
+    // For Kamperland: load both GeoJSON files, for Zuhause: only its own file
+    const poiFilenames = site === 'zuhause' 
+      ? ['zuhause_pois.geojson'] 
+      : ['kamperland_pois.geojson', 'Beach Resort Zentroide Layer.geojson'];
 
     let allPois: any[] = [];
 
@@ -269,6 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { q: query, category, site } = req.query;
 
       // Get POIs for the specific site directly from data files
+      // Now supports combined Kamperland data (kamperland_pois.geojson + Beach Resort Zentroide Layer.geojson)
       const siteName = (site as string) || 'kamperland';
       const allPOIs = await getPOIData(siteName);
 

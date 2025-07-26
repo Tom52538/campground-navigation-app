@@ -77,10 +77,9 @@ export const ZUHAUSE_COORDINATES: Coordinates = {
   lng: 6.051040465199215
 };
 
-export type TestSite = 'kamperland' | 'zuhause' | 'beach_resort';
+export type TestSite = 'kamperland' | 'zuhause';
 
 export const TEST_SITES: Record<TestSite, { name: string; coordinates: Coordinates }> = {
   kamperland: { name: 'Kamperland', coordinates: KAMPERLAND_COORDINATES },
-  zuhause: { name: 'Zuhause', coordinates: ZUHAUSE_COORDINATES },
-  beach_resort: { name: 'Beach Resort', coordinates: { lat: 51.587, lng: 3.720 } }
+  zuhause: { name: 'Zuhause', coordinates: ZUHAUSE_COORDINATES }
 };
