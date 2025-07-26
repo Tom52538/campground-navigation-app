@@ -558,7 +558,7 @@ export default function Navigation() {
       console.error('🚨 Navigation: Error in filteredPOIs useMemo:', error);
       return [];
     }
-  }, [allPOIs, filteredCategories]);
+  }, [allPOIs?.length, filteredCategories]);
 
   console.log('🔍 Navigation: Starting render...', {
     position: !!trackingPosition,
