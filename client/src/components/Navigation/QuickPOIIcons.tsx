@@ -164,7 +164,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
         </div>
 
         {/* ROW 3 - Last 3 icons (centered) */}
-        <div className="flex justify-center space-x-6">
+        <div className="flex justify-center space-x-8">
           {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
@@ -184,7 +184,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                   backdropFilter: 'blur(8px)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  width: '90px',
+                  width: '100px',
                   flex: 'none'
                 }}
                 onClick={() => onToggleCategory(poi.category)}
