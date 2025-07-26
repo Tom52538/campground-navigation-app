@@ -45,6 +45,8 @@ const POIButton = ({ category, icon, label, isActive, onClick }: {
 export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuickAccessProps) => {
   const { t } = useLanguage();
 
+  console.log('🎯 POI QUICK ACCESS DEBUG: Component rendering started');
+
   // Reorganized POI categories for three-row layout with 2 buttons each
   const firstRowPOIs = [
     { 
@@ -86,8 +88,19 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
   ];
 
   const handleCategoryClick = useCallback((category: string) => {
+    console.log('🎯 POI QUICK ACCESS DEBUG: Button clicked:', category);
     onCategorySelect(category);
   }, [onCategorySelect]);
+
+  console.log('🎯 POI QUICK ACCESS DEBUG: Data prepared:', {
+    firstRowPOIs: firstRowPOIs.length,
+    secondRowPOIs: secondRowPOIs.length,
+    thirdRowPOIs: thirdRowPOIs.length,
+    selectedCategories,
+    firstRowDetails: firstRowPOIs.map(p => p.label),
+    secondRowDetails: secondRowPOIs.map(p => p.label),
+    thirdRowDetails: thirdRowPOIs.map(p => p.label)
+  });
 
   return (
     <div className="absolute top-20 left-4 right-4 z-20">
@@ -96,6 +109,7 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
         <div className="flex justify-between space-x-3">
           {firstRowPOIs.map((poi, index) => {
             const isActive = selectedCategories.includes(poi.category);
+            console.log('🎯 POI QUICK ACCESS DEBUG: Rendering first row button:', poi.label, 'active:', isActive);
             return (
               <POIButton
                 key={`first-${poi.category}-${index}`}
@@ -113,6 +127,7 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
         <div className="flex justify-between space-x-3">
           {secondRowPOIs.map((poi, index) => {
             const isActive = selectedCategories.includes(poi.category);
+            console.log('🎯 POI QUICK ACCESS DEBUG: Rendering second row button:', poi.label, 'active:', isActive);
             return (
               <POIButton
                 key={`second-${poi.category}-${index}`}
@@ -130,6 +145,7 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
         <div className="flex justify-between space-x-3">
           {thirdRowPOIs.map((poi, index) => {
             const isActive = selectedCategories.includes(poi.category);
+            console.log('🎯 POI QUICK ACCESS DEBUG: Rendering third row button:', poi.label, 'active:', isActive);
             return (
               <POIButton
                 key={`third-${poi.category}-${index}`}
