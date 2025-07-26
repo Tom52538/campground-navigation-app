@@ -559,6 +559,7 @@ export default function Navigation() {
             <LightweightPOIButtons
               onCategorySelect={handleCategoryFilter}
               activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+              selectedPOI={!!selectedPOI}
             />
 
             {/* Camping Weather Widget */}

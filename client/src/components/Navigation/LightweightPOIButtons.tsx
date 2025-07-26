@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 interface LightweightPOIButtonsProps {
   onCategorySelect: (category: string) => void;
   activeCategory?: string;
+  selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
 const poiCategories = [
@@ -26,7 +27,7 @@ const poiCategories = [
   { icon: '🌊', label: 'Water Features', id: 'water-features' }
 ];
 
-export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: LightweightPOIButtonsProps) => {
+export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
   const tooltipTimeoutRef = useRef<number | null>(null);
 
@@ -70,6 +71,9 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory }: Ligh
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
         padding: '12px',
+        opacity: selectedPOI ? 0.3 : 1,
+        transition: 'opacity 0.3s ease-in-out',
+        pointerEvents: selectedPOI ? 'none' : 'auto',
       }}
     >
       <div className="space-y-3">
