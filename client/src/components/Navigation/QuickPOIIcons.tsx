@@ -50,11 +50,11 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
   const { t } = useLanguage();
   
   return (
-    <div className="absolute left-4 right-4 bottom-4 z-30">
-      <div className="space-y-2">
+    <div className="absolute left-4 right-4 bottom-20 z-30">
+      <div className="space-y-3">
         {/* First row */}
-        <div className="flex justify-center space-x-3">
-          {CAMPING_POI_ICONS.slice(0, Math.ceil(CAMPING_POI_ICONS.length / 2)).map((poi, index) => {
+        <div className="flex justify-center space-x-4">
+          {CAMPING_POI_ICONS.slice(0, 3).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
             return (
@@ -63,7 +63,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 variant="ghost"
                 size="sm"
                 className={`
-                  w-11 h-11 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
+                  w-12 h-12 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
                   ${isActive 
                     ? `${poi.color} text-white scale-105 shadow-xl` 
                     : 'bg-white/90 text-gray-700 hover:scale-105 hover:shadow-xl'
@@ -79,8 +79,8 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
         </div>
         
         {/* Second row */}
-        <div className="flex justify-center space-x-3">
-          {CAMPING_POI_ICONS.slice(Math.ceil(CAMPING_POI_ICONS.length / 2)).map((poi, index) => {
+        <div className="flex justify-center space-x-4">
+          {CAMPING_POI_ICONS.slice(3).map((poi, index) => {
             const isActive = filteredCategories.includes(poi.category);
             
             return (
@@ -89,7 +89,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 variant="ghost"
                 size="sm"
                 className={`
-                  w-11 h-11 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
+                  w-12 h-12 p-0 rounded-full shadow-lg border border-white/20 backdrop-blur-md transition-all duration-300
                   ${isActive 
                     ? `${poi.color} text-white scale-105 shadow-xl` 
                     : 'bg-white/90 text-gray-700 hover:scale-105 hover:shadow-xl'
@@ -104,8 +104,6 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
           })}
         </div>
       </div>
-    </div>
-      
     </div>
   );
 };
