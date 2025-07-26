@@ -61,7 +61,7 @@ export class MobileLogger {
     logContainer.id = 'mobile-log-container';
     logContainer.style.cssText = `
       position: fixed;
-      bottom: 60px;
+      top: 100px;
       right: 10px;
       width: 40px;
       height: 40px;
