@@ -52,9 +52,10 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
     };
   }, []);
 
-  // Split POI categories into two rows
-  const firstRowPOIs = poiCategories.slice(0, 6).filter(poi => !poi.divider);
-  const secondRowPOIs = poiCategories.slice(6).filter(poi => !poi.divider);
+  // Split POI categories into three rows: 4, 4, and 3 buttons
+  const firstRowPOIs = poiCategories.slice(0, 4).filter(poi => !poi.divider);
+  const secondRowPOIs = poiCategories.slice(4, 8).filter(poi => !poi.divider);
+  const thirdRowPOIs = poiCategories.slice(8).filter(poi => !poi.divider);
 
   return (
     <div
@@ -122,6 +123,48 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
         {/* Second row */}
         <div className="flex justify-between items-center space-x-2">
           {secondRowPOIs.map((poi, index) => (
+            <div key={poi.id} className="relative">
+              <button
+                onClick={() => handleCategoryClick(poi.id as string)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none
+                  ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
+                  hover:scale-110 active:scale-95`}
+                style={{
+                  background: activeCategory === poi.id
+                    ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(59, 130, 246, 0.7))'
+                    : 'rgba(255, 255, 255, 0.2)',
+                  border: activeCategory === poi.id ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: activeCategory === poi.id ? '0 4px 16px rgba(34, 197, 94, 0.3)' : 'none',
+                }}
+                aria-label={poi.label}
+              >
+                <span className="text-lg">{poi.icon}</span>
+              </button>
+              {visibleTooltip === poi.id && createPortal(
+                <div style={{
+                  position: 'fixed',
+                  left: '50%',
+                  bottom: '100px',
+                  transform: 'translateX(-50%)',
+                  zIndex: 999999,
+                  padding: '8px 12px',
+                  background: 'rgba(17, 24, 39, 0.95)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  pointerEvents: 'none',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {poi.label}
+                </div>,
+                document.body
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Third row */}
+        <div className="flex justify-center items-center space-x-2">
+          {thirdRowPOIs.map((poi, index) => (
             <div key={poi.id} className="relative">
               <button
                 onClick={() => handleCategoryClick(poi.id as string)}
