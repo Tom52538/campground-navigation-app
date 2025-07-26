@@ -46,7 +46,7 @@ export default function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
-  
+
   // Transparent Overlay UI state
   const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
   const [overlayStates, setOverlayStates] = useState({
@@ -59,14 +59,14 @@ export default function Navigation() {
   // Voice control state
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  
+
   // Map orientation and style state
   const [mapOrientation, setMapOrientation] = useState<'north' | 'driving'>('north');
   const [mapStyle, setMapStyle] = useState<'outdoors' | 'satellite' | 'streets' | 'navigation'>('outdoors');
-  
+
   // Travel mode state for routing
   const [travelMode, setTravelMode] = useState<'car' | 'bike' | 'pedestrian'>('pedestrian');
-  
+
   // Navigation tracking state
   const voiceGuideRef = useRef<VoiceGuide | null>(null);
   const routeTrackerRef = useRef<RouteTracker | null>(null);
@@ -74,21 +74,21 @@ export default function Navigation() {
   const [currentInstruction, setCurrentInstruction] = useState<string>('');
   const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);
-  
+
   // Initialize navigation tracking - but only when using real GPS
   const { currentPosition: livePosition } = useNavigationTracking(isNavigating && useRealGPS, {
     enableHighAccuracy: true,
     updateInterval: 1000,
     adaptiveTracking: true
   });
-  
+
   // Use live position only when navigating AND using real GPS, otherwise use mock position
   const trackingPosition = (isNavigating && useRealGPS && livePosition) ? livePosition.position : currentPosition;
-  
+
   // Calculate bearing for driving direction mode
   const [currentBearing, setCurrentBearing] = useState(0);
   const lastPositionRef = useRef<Coordinates | null>(null);
-  
+
   useEffect(() => {
     if (mapOrientation === 'driving' && isNavigating) {
       // Calculate bearing from movement when using real GPS
@@ -122,15 +122,15 @@ export default function Navigation() {
       }
     }
   }, [livePosition, mapOrientation, isNavigating, useRealGPS, currentRoute, routeProgress]);
-  
+
   // Debug logging for position tracking
   useEffect(() => {
     console.log(`🔍 NAVIGATION DEBUG: Position tracking - isNavigating: ${isNavigating}, useRealGPS: ${useRealGPS}, livePosition:`, livePosition, 'trackingPosition:', trackingPosition);
-    
+
     if (isNavigating && !useRealGPS) {
       console.log(`🔍 NAVIGATION DEBUG: Navigation started with MOCK GPS - position should stay locked to:`, currentPosition);
     }
-    
+
     if (isNavigating && useRealGPS) {
       console.log(`🔍 NAVIGATION DEBUG: Navigation started with REAL GPS - using live tracking`);
     }
@@ -139,10 +139,10 @@ export default function Navigation() {
   // Search functionality - include category filter for search
   const selectedCategory = filteredCategories.length === 1 ? filteredCategories[0] : undefined;
   const { data: searchResults = [] } = useSearchPOI(searchQuery, currentSite, selectedCategory);
-  
+
   // Filter POIs based on search and category selection - only show when searched
   let displayPOIs: POI[] = [];
-  
+
   if (searchQuery.length > 0) {
     // Use search results (already filtered by category if single category selected)
     displayPOIs = searchResults;
@@ -158,10 +158,6 @@ export default function Navigation() {
     ...poi,
     distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
   }));
-
-
-
-
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -218,42 +214,42 @@ export default function Navigation() {
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     const startTime = performance.now();
     mobileLogger.log('NAVIGATION', `Starting navigation to ${poi.name} with mode: ${travelMode}`);
-    
+
     try {
       // 1. IMMEDIATELY hide POI info box - FIRST ACTION
       setSelectedPOI(null);
-      
+
       console.log('🚗 TRAVEL MODE DEBUG:', { selectedMode: travelMode, profileMapping: travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling' });
       setOverlayStates({ search: false, poiInfo: false, routePlanning: false, navigation: false });
-      
+
       // Clear any existing route to force fresh calculation
       setCurrentRoute(null);
-      
+
       // 2. Show calculating state
       setIsNavigating(false); // Clear any existing navigation
-      
+
       // 3. Calculate route with selected travel mode
       const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
       console.log('🚗 ROUTING WITH PROFILE:', profile, 'from travel mode:', travelMode);
-      
+
       const route = await getRoute.mutateAsync({
         from: currentPosition,
         to: poi.coordinates,
         profile
       });
-      
+
       // 4. Start navigation with panel at bottom
       setCurrentRoute(route);
       setIsNavigating(true);
-      
+
       // Auto-switch to driving orientation during navigation
       setMapOrientation('driving');
-      
+
       mobileLogger.logPerformance('Navigation setup', startTime);
       mobileLogger.log('NAVIGATION', `Navigation started successfully to ${poi.name}`);
       setUIMode('navigation');
       setOverlayStates(prev => ({ ...prev, navigation: true }));
-      
+
       // Navigation started - no confirmation dialog needed
     } catch (error) {
       mobileLogger.log('ERROR', `Navigation failed: ${error}`);
@@ -271,18 +267,16 @@ export default function Navigation() {
     setIsNavigating(false);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, navigation: false }));
-    
+
     // Reset map orientation to north when navigation ends
     setMapOrientation('north');
-    
+
     // Clean up navigation tracking
     if (routeTrackerRef.current) {
       routeTrackerRef.current.reset();
       routeTrackerRef.current = null;
     }
   }, []);
-
-
 
   const handleClosePOIPanel = useCallback(() => {
     setSelectedPOI(null);
@@ -311,7 +305,7 @@ export default function Navigation() {
     setIsNavigating(false);
     setSearchQuery('');
     setFilteredCategories([]);
-    
+
     toast({
       title: t('alerts.siteChanged'),
       description: `${t('alerts.siteSwitched')} ${TEST_SITES[site].name}`,
@@ -324,7 +318,7 @@ export default function Navigation() {
     setSelectedPOI(null);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false }));
-    
+
     toast({
       title: t('alerts.poisCleared'),
       description: t('alerts.poisHidden'),
@@ -367,13 +361,11 @@ export default function Navigation() {
     });
   }, []);
 
-
-
   // Voice toggle handler
   const handleToggleVoice = useCallback(() => {
     const newVoiceState = !voiceEnabled;
     setVoiceEnabled(newVoiceState);
-    
+
     if (voiceGuideRef.current) {
       if (newVoiceState) {
         voiceGuideRef.current.enable();
@@ -393,22 +385,22 @@ export default function Navigation() {
       userAgent: navigator.userAgent.substring(0, 100),
       timestamp: new Date().toISOString()
     });
-    
+
     try {
       setMapStyle(style);
       console.log('🗺️ DEBUG - setMapStyle completed successfully');
-      
+
       // Auto-switch to navigation mode when using navigation style during active navigation
       if (style === 'navigation' && isNavigating) {
         console.log('🗺️ DEBUG - Auto-switching to driving orientation for navigation style');
         setMapOrientation('driving');
       }
-      
+
       // Force re-render of map component
       setTimeout(() => {
         console.log('🗺️ DEBUG - Map style change should be visible now');
       }, 100);
-      
+
     } catch (error) {
       console.error('🗺️ ERROR - handleMapStyleChange failed:', error);
       // Fallback to default style if something goes wrong
@@ -447,7 +439,7 @@ export default function Navigation() {
   useEffect(() => {
     if (isNavigating && currentRoute && trackingPosition) {
       console.log('Initializing route tracker for navigation');
-      
+
       routeTrackerRef.current = new RouteTracker(
         currentRoute,
         (step) => {
@@ -455,7 +447,7 @@ export default function Navigation() {
           if (currentRoute.instructions[step]) {
             const instruction = currentRoute.instructions[step].instruction;
             setCurrentInstruction(instruction);
-            
+
             // Voice announcement with native German instructions from OpenRouteService
             if (voiceGuideRef.current && voiceEnabled) {
               voiceGuideRef.current.speak(instruction, 'high');
@@ -500,7 +492,7 @@ export default function Navigation() {
       const progress = routeTrackerRef.current.updatePosition(trackingPosition);
       setRouteProgress(progress);
       setNextDistance(formatDistance(progress.distanceToNext));
-      
+
       // Update map center to follow user during navigation
       setMapCenter(trackingPosition);
     }
@@ -516,6 +508,29 @@ export default function Navigation() {
       </div>
     );
   }
+
+  // Filter POIs based on selected categories
+  const filteredPOIs = useMemo(() => {
+    console.log('🔍 POI FILTERING DEBUG:', {
+      totalPOIs: allPOIs.length,
+      selectedCategories,
+      categoriesInData: [...new Set(allPOIs.map(p => p.category))]
+    });
+
+    if (filteredCategories.length === 0) {
+      console.log('✅ No category filter - showing all POIs:', allPOIs.length);
+      return allPOIs;
+    }
+
+    const filtered = allPOIs.filter(poi => filteredCategories.includes(poi.category));
+    console.log('🔍 Filtered POIs:', {
+      originalCount: allPOIs.length,
+      filteredCount: filtered.length,
+      selectedCategories: filteredCategories
+    });
+
+    return filtered;
+  }, [allPOIs, filteredCategories]);
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
@@ -570,8 +585,6 @@ export default function Navigation() {
         onTravelModeChange={setTravelMode}
       />
 
-
-
       {/* POI Info Overlay - Positioned below button rows */}
       {selectedPOI && (
         <TransparentPOIOverlay 
@@ -624,7 +637,7 @@ export default function Navigation() {
           >
             <Settings className="w-6 h-6 text-gray-600" />
           </Button>
-          
+
           {/* Bottom: Trip Summary */}
           <BottomSummaryPanel
             timeRemaining={currentRoute.estimatedTime}
@@ -634,11 +647,6 @@ export default function Navigation() {
           />
         </>
       )}
-
-
-
-
-
 
       {/* Filter Modal - Preserved */}
       <FilterModal

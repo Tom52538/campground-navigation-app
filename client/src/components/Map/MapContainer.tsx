@@ -201,6 +201,19 @@ export const MapContainer = ({
     dev: import.meta.env.DEV,
     prod: import.meta.env.PROD
   });
+  
+  // Debug POI rendering
+  console.log('🔍 POI RENDERING DEBUG:', {
+    totalPOIs: pois.length,
+    filteredCategories,
+    selectedPOI: selectedPOI?.id,
+    firstFewPOIs: pois.slice(0, 3).map(poi => ({
+      id: poi.id,
+      name: poi.name,
+      category: poi.category,
+      coordinates: poi.coordinates
+    }))
+  });
   console.log('🗺️ DEBUG - Mapbox token:', {
     exists: !!mapboxToken,
     length: mapboxToken?.length || 0,
@@ -280,16 +293,29 @@ export const MapContainer = ({
         
         <CurrentLocationMarker position={currentPosition} />
         
-        {pois.map((poi) => (
-          <POIMarker
-            key={poi.id}
-            poi={poi}
-            isSelected={selectedPOI?.id === poi.id}
-            onClick={() => onPOIClick(poi)}
-            onNavigate={onPOINavigate}
-            showHoverTooltip={true}
-          />
-        ))}
+        {pois.map((poi, index) => {
+          // Debug logging for POI rendering
+          if (index < 5) {
+            console.log(`🔍 POI Render Debug [${index}]:`, {
+              id: poi.id,
+              name: poi.name,
+              coordinates: poi.coordinates,
+              category: poi.category,
+              isVisible: filteredCategories.length === 0 || filteredCategories.includes(poi.category)
+            });
+          }
+          
+          return (
+            <POIMarker
+              key={poi.id}
+              poi={poi}
+              isSelected={selectedPOI?.id === poi.id}
+              onClick={() => onPOIClick(poi)}
+              onNavigate={onPOINavigate}
+              showHoverTooltip={true}
+            />
+          );
+        })}
         
         {route && <RoutePolyline route={route} />}
       </LeafletMapContainer>

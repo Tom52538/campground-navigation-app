@@ -22,6 +22,11 @@ const getEmojiIcon = (iconName: string) => {
 };
 
 export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverTooltip = true }: POIMarkerProps) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Debug logging
+  console.log(`🔍 POIMarker rendering: ${poi.name} at [${poi.coordinates.lat}, ${poi.coordinates.lng}]`);
+
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
   const iconName = category?.icon || 'MapPin';
   const colorClass = category?.color || 'bg-gray-500';
@@ -53,7 +58,7 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverToolt
             ${poi.distance ? `<div style="color: #059669; font-weight: 500; font-size: 11px;">📍 ${poi.distance}</div>` : ''}
           </div>
         `;
-        
+
         marker.bindTooltip(tooltipContent, {
           permanent: false,
           direction: 'top',

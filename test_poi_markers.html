@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>POI Marker Test</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        #map { height: 400px; width: 100%; }
+        .debug-info { margin: 20px; padding: 10px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>POI Marker Rendering Test</h1>
+    <div id="map"></div>
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <div id="debug-output"></div>
+    </div>
+
+    <script>
+        console.log('🔍 Starting POI Marker Test...');
+        
+        // Initialize map
+        const map = L.map('map').setView([51.58979501327052, 3.721826089503387], 15);
+        
+        // Add tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        const debugOutput = document.getElementById('debug-output');
+        
+        function addDebugInfo(message) {
+            debugOutput.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        addDebugInfo('✅ Map initialized');
+        
+        // Test 1: Add a simple marker
+        const testMarker = L.marker([51.58979501327052, 3.721826089503387])
+            .addTo(map)
+            .bindPopup('Test Marker - Should be visible');
+        
+        addDebugInfo('✅ Test marker added');
+        
+        // Test 2: Fetch and display POI data
+        fetch('/api/pois?site=kamperland')
+            .then(response => response.json())
+            .then(data => {
+                addDebugInfo(`✅ POI data loaded: ${data.length} POIs`);
+                
+                // Add first 10 POIs as markers
+                const first10POIs = data.slice(0, 10);
+                
+                first10POIs.forEach((poi, index) => {
+                    if (poi.coordinates && typeof poi.coordinates.lat === 'number' && typeof poi.coordinates.lng === 'number') {
+                        try {
+                            const marker = L.marker([poi.coordinates.lat, poi.coordinates.lng])
+                                .addTo(map)
+                                .bindPopup(`${poi.name}<br>Category: ${poi.category}`);
+                            
+                            addDebugInfo(`✅ Added POI marker: ${poi.name} at [${poi.coordinates.lat}, ${poi.coordinates.lng}]`);
+                        } catch (error) {
+                            addDebugInfo(`❌ Error adding POI marker ${poi.name}: ${error.message}`);
+                        }
+                    } else {
+                        addDebugInfo(`❌ Invalid coordinates for POI: ${poi.name} - ${JSON.stringify(poi.coordinates)}`);
+                    }
+                });
+                
+                // Check if any POIs are within current map bounds
+                const bounds = map.getBounds();
+                const poisInView = data.filter(poi => 
+                    poi.coordinates && 
+                    bounds.contains([poi.coordinates.lat, poi.coordinates.lng])
+                );
+                
+                addDebugInfo(`🔍 POIs within map bounds: ${poisInView.length}`);
+                
+                // Zoom to show all POIs
+                if (first10POIs.length > 0) {
+                    const group = new L.featureGroup(map._layers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                    addDebugInfo('🗺️ Map bounds adjusted to show POIs');
+                }
+                
+            })
+            .catch(error => {
+                addDebugInfo(`❌ Error fetching POI data: ${error.message}`);
+            });
+        
+        // Test 3: Check marker visibility after 5 seconds
+        setTimeout(() => {
+            const markerCount = Object.keys(map._layers).filter(key => 
+                map._layers[key] instanceof L.Marker
+            ).length;
+            
+            addDebugInfo(`🔍 Final marker count on map: ${markerCount}`);
+            
+            // Check DOM for marker elements
+            const domMarkers = document.querySelectorAll('.leaflet-marker-icon');
+            addDebugInfo(`🔍 Marker elements in DOM: ${domMarkers.length}`);
+            
+        }, 5000);
+        
+    </script>
+</body>
+</html>
