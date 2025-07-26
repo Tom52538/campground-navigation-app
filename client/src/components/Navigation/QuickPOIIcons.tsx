@@ -68,7 +68,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
   };
 
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-20" style={{ marginBottom: '16px' }}>
+    <div className="absolute bottom-6 left-4 right-4 z-20">
       <div className="flex flex-col gap-3">
         {/* ROW 1: Icons 0-3 (🚿, 🍽️, 🔥, 🥾) */}
         <div className="flex gap-2">

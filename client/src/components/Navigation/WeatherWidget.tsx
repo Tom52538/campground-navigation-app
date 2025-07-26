@@ -63,8 +63,7 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
 
   return (
     <div 
-      className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[120px]"
-      style={{ marginTop: '80px' }}
+      className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[120px]"
     >
       <div className="flex items-center space-x-2 mb-2">
         {getWeatherIcon(weather.condition)}
