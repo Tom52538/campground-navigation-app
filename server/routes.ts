@@ -47,6 +47,12 @@ const buildingCategoryMapping: Record<string, string> = {
   'chalet': 'buildings',
   'lodge': 'buildings',
   'bungalow_water': 'buildings',
+  'yes': 'buildings',
+  'toilets': 'facilities',
+  'service': 'facilities',
+  'semidetached_house': 'buildings',
+  'detached': 'buildings',
+  'garage': 'facilities',
 };
 
 // Load authentic OpenStreetMap POI data
@@ -69,8 +75,18 @@ async function getPOIData(site: string) {
         if (filename === 'Beach Resort Zentroide Layer.geojson') {
           const buildingType = props.BUILDING;
           const houseNumber = props.A_HSNMBR;
-          if (buildingType && houseNumber) {
-            name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
+          const poiName = props.NAME;
+          
+          if (buildingType || poiName) {
+            if (buildingType && houseNumber) {
+              name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
+            } else if (poiName) {
+              name = poiName;
+            } else if (buildingType) {
+              name = buildingType.charAt(0).toUpperCase() + buildingType.slice(1);
+            } else {
+              name = 'Beach Resort POI';
+            }
             category = buildingCategoryMapping[buildingType] || 'buildings';
             console.log(`Beach Resort POI: ${name}, Building: ${buildingType}, Category: ${category}`);
           }
@@ -133,7 +149,21 @@ async function getPOIData(site: string) {
       allPois = allPois.concat(pois);
     }
 
-    return allPois.filter(feature => feature && (feature.name || (feature.properties?.amenity || feature.properties?.leisure || feature.properties?.tourism || feature.properties?.shop)));
+    return allPois.filter(poi => {
+      if (!poi) return false;
+      
+      // Always include POIs with valid names
+      if (poi.name && poi.name.trim() !== '') return true;
+      
+      // Include POIs with important properties
+      const props = poi.properties;
+      if (props?.amenity || props?.leisure || props?.tourism || props?.shop) return true;
+      
+      // For Beach Resort, include building-based POIs
+      if (poi.category && poi.category !== 'unknown') return true;
+      
+      return false;
+    });
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
     return [];

@@ -24,7 +24,7 @@ export const useSearchPOI = (query: string, site: TestSite = 'kamperland', categ
       if (query) params.append('q', query);
       params.append('site', site);
       if (category) params.append('category', category);
-      
+
       const response = await fetch(`/api/pois/search?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to search POIs');

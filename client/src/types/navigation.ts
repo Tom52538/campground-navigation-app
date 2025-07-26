@@ -63,8 +63,8 @@ export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; 
   'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Food & Drink' },
   'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Essential Services' },
   'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Recreation' },
-  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Practical Facilities' },
-  'buildings': { icon: 'Building', color: 'bg-gray-500', label: 'Buildings' }
+  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Facilities' },
+  'buildings': { icon: 'Building', color: 'bg-gray-600', label: 'Accommodations' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
