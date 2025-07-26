@@ -146,9 +146,9 @@ export default function Navigation() {
   if (searchQuery.length > 0) {
     // Use search results (already filtered by category if single category selected)
     displayPOIs = searchResults;
-  } else if (filteredCategories.length > 0) {
-    // Use the filtered POIs from useMemo
-    displayPOIs = filteredPOIs;
+  } else if (filteredCategories.length > 0 && allPOIs) {
+    // Filter POIs directly without problematic memoization
+    displayPOIs = allPOIs.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
   }
   // Show POIs when searched or filtered
   const shouldShowPOIs = displayPOIs.length > 0;
@@ -508,20 +508,6 @@ export default function Navigation() {
 
   console.log('🔍 Navigation: Starting render...', {
     position: !!trackingPosition,
-    isNavigating,
-    selectedPOI: !!selectedPOI
-  });
-
-  // Simple, safe POI filtering without complex dependencies
-  const filteredPOIs = (() => {
-    if (!allPOIs || !Array.isArray(allPOIs)) return [];
-    if (!filteredCategories || !Array.isArray(filteredCategories) || filteredCategories.length === 0) return allPOIs;
-    return allPOIs.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
-  })();
-
-  console.log('🔍 Navigation: Starting render...', {
-    position: !!trackingPosition,
-    filteredPOIsCount: filteredPOIs?.length || 0,
     isNavigating,
     selectedPOI: !!selectedPOI
   });
