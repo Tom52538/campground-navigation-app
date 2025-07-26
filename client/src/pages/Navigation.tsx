@@ -506,59 +506,27 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
-  // Filter POIs based on selected categories with error handling - MUST BE BEFORE ANY EARLY RETURNS
-  const filteredPOIs = useMemo(() => {
-    try {
-      // Ensure allPOIs is defined and is an array
-      const pois = Array.isArray(allPOIs) ? allPOIs : [];
-      
-      console.log('🔍 POI FILTERING DEBUG:', { 
-        poisCount: pois.length, 
-        filteredCategories,
-        allPOIsType: typeof allPOIs,
-        allPOIsIsArray: Array.isArray(allPOIs)
-      });
+  // Safe POI filtering - initialize with empty array to prevent initialization errors
+  const [filteredPOIs, setFilteredPOIs] = useState<POI[]>([]);
 
-      if (pois.length === 0) {
-        console.log('🔍 Navigation: No POIs available, returning empty array');
-        return [];
-      }
-
-      // Debug: Show actual categories in POI data
-      const actualCategories = [...new Set(pois.map(poi => poi?.category).filter(Boolean))];
-      console.log('🔍 POI CATEGORIES IN DATA:', actualCategories);
-      console.log('🔍 SELECTED FILTER CATEGORIES:', filteredCategories);
-
-      if (!Array.isArray(filteredCategories) || filteredCategories.length === 0) {
-        console.log('🔍 Navigation: Showing all POIs');
-        return pois;
-      }
-
-      const filtered = pois.filter(poi => {
-        if (!poi || !poi.category) return false;
-        const matches = filteredCategories.includes(poi.category);
-        if (!matches) {
-          console.log('🔍 POI Filter Mismatch:', { 
-            poiCategory: poi.category, 
-            filteredCategories,
-            poiName: poi.name?.substring(0, 30) || 'unnamed'
-          });
-        }
-        return matches;
-      });
-
-      console.log('🔍 Navigation: Filtered POIs:', { 
-        original: pois.length, 
-        filtered: filtered.length,
-        sampleFilteredPOIs: filtered.slice(0, 3).map(p => ({ name: p?.name || 'unnamed', category: p?.category || 'unknown' }))
-      });
-
-      return filtered;
-    } catch (error) {
-      console.error('🚨 Navigation: Error in filteredPOIs useMemo:', error);
-      return [];
+  // Update filtered POIs when data changes
+  useEffect(() => {
+    if (!allPOIs || !Array.isArray(allPOIs)) {
+      setFilteredPOIs([]);
+      return;
     }
-  }, [allPOIs?.length, filteredCategories]);
+
+    if (!filteredCategories || filteredCategories.length === 0) {
+      setFilteredPOIs(allPOIs);
+      return;
+    }
+
+    const filtered = allPOIs.filter(poi => {
+      return poi && poi.category && filteredCategories.includes(poi.category);
+    });
+
+    setFilteredPOIs(filtered);
+  }, [allPOIs, filteredCategories]);
 
   console.log('🔍 Navigation: Starting render...', {
     position: !!trackingPosition,
