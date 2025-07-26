@@ -506,18 +506,12 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
-  // Bulletproof POI filtering with inline computation
-  const filteredPOIs = React.useMemo(() => {
-    // Guard clause - ensure dependencies exist
+  // Simple, safe POI filtering without complex dependencies
+  const filteredPOIs = (() => {
     if (!allPOIs || !Array.isArray(allPOIs)) return [];
-    if (!filteredCategories || !Array.isArray(filteredCategories)) return allPOIs;
-    if (filteredCategories.length === 0) return allPOIs;
-
-    // Safe filtering
-    return allPOIs.filter(poi => 
-      poi && poi.category && filteredCategories.includes(poi.category)
-    );
-  }, [allPOIs, filteredCategories]);
+    if (!filteredCategories || !Array.isArray(filteredCategories) || filteredCategories.length === 0) return allPOIs;
+    return allPOIs.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
+  })();
 
   console.log('🔍 Navigation: Starting render...', {
     position: !!trackingPosition,
