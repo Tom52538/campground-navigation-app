@@ -45,7 +45,7 @@ const POIButton = ({ category, icon, label, isActive, onClick }: {
 export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuickAccessProps) => {
   const { t } = useLanguage();
 
-  // Reorganized POI categories for better labeling and two-row layout
+  // Reorganized POI categories for three-row layout with 2 buttons each
   const firstRowPOIs = [
     { 
       category: 'facilities', 
@@ -56,20 +56,23 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
       category: 'food-drink', 
       icon: '🍽️', 
       label: 'Food'
-    },
-    { 
-      category: 'recreation', 
-      icon: '🔥', 
-      label: 'Fire Pits'
     }
   ];
 
   const secondRowPOIs = [
     { 
+      category: 'recreation', 
+      icon: '🔥', 
+      label: 'Fire Pits'
+    },
+    { 
       category: 'services', 
       icon: '🥾', 
       label: 'Trails'
-    },
+    }
+  ];
+
+  const thirdRowPOIs = [
     { 
       category: 'services', 
       icon: '⛽', 
@@ -89,7 +92,7 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
   return (
     <div className="absolute top-20 left-4 right-4 z-20">
       <div className="space-y-2">
-        {/* First row - 3 buttons */}
+        {/* First row - 2 buttons */}
         <div className="flex justify-between space-x-3">
           {firstRowPOIs.map((poi, index) => {
             const isActive = selectedCategories.includes(poi.category);
@@ -106,13 +109,30 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
           })}
         </div>
         
-        {/* Second row - 3 buttons */}
+        {/* Second row - 2 buttons */}
         <div className="flex justify-between space-x-3">
           {secondRowPOIs.map((poi, index) => {
             const isActive = selectedCategories.includes(poi.category);
             return (
               <POIButton
                 key={`second-${poi.category}-${index}`}
+                category={poi.category}
+                icon={poi.icon}
+                label={poi.label}
+                isActive={isActive}
+                onClick={handleCategoryClick}
+              />
+            );
+          })}
+        </div>
+        
+        {/* Third row - 2 buttons */}
+        <div className="flex justify-between space-x-3">
+          {thirdRowPOIs.map((poi, index) => {
+            const isActive = selectedCategories.includes(poi.category);
+            return (
+              <POIButton
+                key={`third-${poi.category}-${index}`}
                 category={poi.category}
                 icon={poi.icon}
                 label={poi.label}
