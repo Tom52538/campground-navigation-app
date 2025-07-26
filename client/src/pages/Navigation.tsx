@@ -506,6 +506,12 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
+  console.log('🔍 Navigation: Starting render...', {
+    position: !!trackingPosition,
+    isNavigating,
+    selectedPOI: !!selectedPOI
+  });
+
   // Simple, safe POI filtering without complex dependencies
   const filteredPOIs = (() => {
     if (!allPOIs || !Array.isArray(allPOIs)) return [];
