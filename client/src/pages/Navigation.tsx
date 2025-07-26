@@ -506,10 +506,7 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
-  // Early return must come after ALL hooks to maintain hook order
-  // Note: poisLoading check moved to end of component to ensure hook consistency
-
-  // Filter POIs based on selected categories with error handling
+  // Filter POIs based on selected categories with error handling - MUST BE BEFORE ANY EARLY RETURNS
   const filteredPOIs = useMemo(() => {
     console.log('🔍 POI FILTERING DEBUG:', { 
       poisCount: allPOIs?.length || 0, 
