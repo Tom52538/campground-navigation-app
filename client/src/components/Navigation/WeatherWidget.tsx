@@ -8,7 +8,7 @@ interface WeatherWidgetProps {
 
 const getWeatherIcon = (condition: string) => {
   const conditionLower = condition.toLowerCase();
-  
+
   if (conditionLower.includes('sun') || conditionLower.includes('clear')) {
     return <Sun className="text-yellow-500 w-6 h-6" />;
   } else if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) {
@@ -24,8 +24,7 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   if (isLoading) {
     return (
       <div 
-        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
-        style={{ marginTop: '80px' }}
+        className="absolute bottom-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
       >
         <div className="text-center">
           <Loader2 className="w-5 h-5 animate-spin text-gray-400 mx-auto mb-1" />
@@ -38,8 +37,7 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   if (error || !weather) {
     return (
       <div 
-        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
-        style={{ marginTop: '80px' }}
+        className="absolute bottom-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
       >
         <div className="text-center">
           <Cloud className="w-5 h-5 text-gray-400 mx-auto mb-1" />
