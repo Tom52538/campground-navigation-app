@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RouteTracker } from '@/lib/routeTracker';
-import { POIQuickAccess } from '@/components/Navigation/POIQuickAccess';
+
 
 export default function Navigation() {
   const [currentSite, setCurrentSite] = useState<TestSite>('kamperland');
@@ -563,11 +563,7 @@ export default function Navigation() {
               selectedPOI={!!selectedPOI}
             />
 
-            {/* POI Quick Access Buttons */}
-            <POIQuickAccess 
-              onCategorySelect={handleCategoryFilter}
-              selectedCategories={filteredCategories}
-            />
+            
 
             {/* Camping Weather Widget */}
             <CampingWeatherWidget coordinates={currentPosition} />
