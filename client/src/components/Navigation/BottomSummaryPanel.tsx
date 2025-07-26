@@ -18,11 +18,16 @@ export const BottomSummaryPanel: React.FC<BottomSummaryPanelProps> = ({
 }) => {
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 z-30 p-4 safe-area-pb"
+      className="fixed bottom-0 left-0 right-0 z-30 p-3"
       style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+        background: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderBottom: 'none',
+        borderTopLeftRadius: '16px',
+        borderTopRightRadius: '16px',
+        boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.1)',
+        paddingBottom: 'max(12px, env(safe-area-inset-bottom))'
       }}
     >
       <div className="flex items-center justify-between">

@@ -640,12 +640,14 @@ export default function Navigation() {
             </Button>
 
             {/* Bottom: Trip Summary */}
-            <BottomSummaryPanel
-              timeRemaining={currentRoute.estimatedTime}
-              distanceRemaining={currentRoute.totalDistance}
-              eta={currentRoute.arrivalTime}
-              onEndNavigation={handleEndNavigation}
-            />
+            <div style={{ zIndex: 35 }}>
+              <BottomSummaryPanel
+                timeRemaining={currentRoute.estimatedTime}
+                distanceRemaining={currentRoute.totalDistance}
+                eta={currentRoute.arrivalTime}
+                onEndNavigation={handleEndNavigation}
+              />
+            </div>
           </>
         )}
 
