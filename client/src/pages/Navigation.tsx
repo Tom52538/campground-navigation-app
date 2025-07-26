@@ -508,28 +508,34 @@ export default function Navigation() {
 
   // Filter POIs based on selected categories with error handling - MUST BE BEFORE ANY EARLY RETURNS
   const filteredPOIs = useMemo(() => {
-    console.log('🔍 POI FILTERING DEBUG:', { 
-      poisCount: allPOIs?.length || 0, 
-      filteredCategories
-    });
-
     try {
-      if (!allPOIs) {
+      // Ensure allPOIs is defined and is an array
+      const pois = Array.isArray(allPOIs) ? allPOIs : [];
+      
+      console.log('🔍 POI FILTERING DEBUG:', { 
+        poisCount: pois.length, 
+        filteredCategories,
+        allPOIsType: typeof allPOIs,
+        allPOIsIsArray: Array.isArray(allPOIs)
+      });
+
+      if (pois.length === 0) {
         console.log('🔍 Navigation: No POIs available, returning empty array');
         return [];
       }
 
       // Debug: Show actual categories in POI data
-      const actualCategories = [...new Set(allPOIs.map(poi => poi.category))];
+      const actualCategories = [...new Set(pois.map(poi => poi?.category).filter(Boolean))];
       console.log('🔍 POI CATEGORIES IN DATA:', actualCategories);
       console.log('🔍 SELECTED FILTER CATEGORIES:', filteredCategories);
 
-      if (filteredCategories.length === 0) {
+      if (!Array.isArray(filteredCategories) || filteredCategories.length === 0) {
         console.log('🔍 Navigation: Showing all POIs');
-        return allPOIs;
+        return pois;
       }
 
-      const filtered = allPOIs.filter(poi => {
+      const filtered = pois.filter(poi => {
+        if (!poi || !poi.category) return false;
         const matches = filteredCategories.includes(poi.category);
         if (!matches) {
           console.log('🔍 POI Filter Mismatch:', { 
@@ -542,9 +548,9 @@ export default function Navigation() {
       });
 
       console.log('🔍 Navigation: Filtered POIs:', { 
-        original: allPOIs.length, 
+        original: pois.length, 
         filtered: filtered.length,
-        sampleFilteredPOIs: filtered.slice(0, 3).map(p => ({ name: p.name, category: p.category }))
+        sampleFilteredPOIs: filtered.slice(0, 3).map(p => ({ name: p?.name || 'unnamed', category: p?.category || 'unknown' }))
       });
 
       return filtered;
