@@ -128,9 +128,9 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       }`}
       style={{
         background: getWeatherGradient(weather?.condition),
-        minWidth: isExpanded ? '140px' : '120px',
-        maxWidth: isExpanded ? '150px' : '160px',
-        maxHeight: isExpanded ? '120px' : 'auto'
+        minWidth: isExpanded ? '160px' : '120px',
+        maxWidth: isExpanded ? '180px' : '160px',
+        maxHeight: isExpanded ? '140px' : 'auto'
       }}
       onClick={handleToggleExpanded}
     >
@@ -161,26 +161,26 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
         </div>
       </div>
 
-      {/* Ultra-Compact 3-Day Forecast */}
+      {/* Compact 3-Day Forecast */}
       {isExpanded && forecastData?.forecast && (
-        <div className="mt-0.5 space-y-0 max-h-12 overflow-hidden">
-          <div className="text-xs font-medium text-white/90 mb-0.5 text-center">
+        <div className="mt-1 space-y-0.5 max-h-16 overflow-hidden">
+          <div className="text-xs font-medium text-white/90 mb-1 text-center border-b border-white/20 pb-0.5">
             3-Tage
           </div>
           
           {forecastData.forecast.slice(0, 3).map((day: any, index: number) => (
             <div 
               key={day.date}
-              className="flex items-center justify-between px-1 py-0 text-xs bg-white/5 rounded-sm"
+              className="flex items-center justify-between px-1 py-0.5 text-xs bg-white/10 rounded-sm"
             >
-              <div className="flex items-center space-x-0.5 flex-1 min-w-0">
-                <div className="w-6 text-xs font-medium text-white/90 truncate">
+              <div className="flex items-center space-x-1 flex-1 min-w-0">
+                <div className="w-8 text-xs font-medium text-white/90 truncate">
                   {day.day.slice(0, 2)}
                 </div>
                 <span className="text-xs flex-shrink-0">{getWeatherIcon(day.condition)}</span>
               </div>
               
-              <div className="flex items-center space-x-0.5 flex-shrink-0 text-xs">
+              <div className="flex items-center space-x-1 flex-shrink-0 text-xs">
                 <span className="text-white/70">{day.precipitation}%</span>
                 <span className="text-white font-medium">
                   {day.temp_low}°/{day.temp_high}°
