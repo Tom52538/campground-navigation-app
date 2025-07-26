@@ -164,45 +164,47 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
         </div>
 
         {/* ROW 3 - Last 3 icons (centered) */}
-        <div className="flex justify-center space-x-8">
-          {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => {
-            const isActive = filteredCategories.includes(poi.category);
-            
-            return (
-              <Button
-                key={`row3-${poi.category}-${index}`}
-                variant="ghost"
-                size="sm"
-                className={`
-                  h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
-                  ${isActive 
-                    ? `${poi.color} text-white scale-105 shadow-xl` 
-                    : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
-                  }
-                `}
-                style={{
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  width: '100px',
-                  flex: 'none'
-                }}
-                onClick={() => onToggleCategory(poi.category)}
-                title={t(`categories.${poi.category}`)}
-              >
-                <span className="text-lg mb-1">{poi.icon}</span>
-                <span 
-                  className="text-xs font-semibold text-center leading-tight"
+        <div className="flex justify-center">
+          <div className="flex space-x-4" style={{ width: 'fit-content' }}>
+            {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => {
+              const isActive = filteredCategories.includes(poi.category);
+              
+              return (
+                <Button
+                  key={`row3-${poi.category}-${index}`}
+                  variant="ghost"
+                  size="sm"
+                  className={`
+                    h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+                    ${isActive 
+                      ? `${poi.color} text-white scale-105 shadow-xl` 
+                      : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
+                    }
+                  `}
                   style={{
-                    color: isActive ? 'white' : '#374151',
-                    textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    width: '90px',
+                    flex: 'none'
                   }}
+                  onClick={() => onToggleCategory(poi.category)}
+                  title={t(`categories.${poi.category}`)}
                 >
-                  {poi.label}
-                </span>
-              </Button>
-            );
-          })}
+                  <span className="text-lg mb-1">{poi.icon}</span>
+                  <span 
+                    className="text-xs font-semibold text-center leading-tight"
+                    style={{
+                      color: isActive ? 'white' : '#374151',
+                      textShadow: isActive ? 'none' : '0 1px 2px rgba(255, 255, 255, 0.8)'
+                    }}
+                  >
+                    {poi.label}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
