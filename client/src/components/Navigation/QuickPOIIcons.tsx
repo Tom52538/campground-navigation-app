@@ -82,7 +82,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
   
   return (
     <div className="absolute bottom-4 left-4 right-4 z-20">
-      <div className="space-y-2">
+      <div className="space-y-3">
         {/* ROW 1 - First 4 icons */}
         <div className="flex justify-between space-x-2">
           {CAMPING_POI_ICONS.slice(0, 4).map((poi, index) => {
@@ -94,7 +94,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 variant="ghost"
                 size="sm"
                 className={`
-                  flex-1 h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+                  flex-1 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
                   ${isActive 
                     ? `${poi.color} text-white scale-105 shadow-xl` 
                     : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
@@ -108,7 +108,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 onClick={() => onToggleCategory(poi.category)}
                 title={t(`categories.${poi.category}`)}
               >
-                <span className="text-lg mb-1">{poi.icon}</span>
+                <span className="text-xl mb-1">{poi.icon}</span>
                 <span 
                   className="text-xs font-semibold text-center leading-tight"
                   style={{
@@ -134,7 +134,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 variant="ghost"
                 size="sm"
                 className={`
-                  flex-1 h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+                  flex-1 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
                   ${isActive 
                     ? `${poi.color} text-white scale-105 shadow-xl` 
                     : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
@@ -148,7 +148,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                 onClick={() => onToggleCategory(poi.category)}
                 title={t(`categories.${poi.category}`)}
               >
-                <span className="text-lg mb-1">{poi.icon}</span>
+                <span className="text-xl mb-1">{poi.icon}</span>
                 <span 
                   className="text-xs font-semibold text-center leading-tight"
                   style={{
@@ -165,7 +165,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
 
         {/* ROW 3 - Last 3 icons (centered) */}
         <div className="flex justify-center">
-          <div className="flex space-x-4" style={{ width: 'fit-content' }}>
+          <div className="flex space-x-2" style={{ width: 'fit-content' }}>
             {CAMPING_POI_ICONS.slice(8, 11).map((poi, index) => {
               const isActive = filteredCategories.includes(poi.category);
               
@@ -175,7 +175,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                   variant="ghost"
                   size="sm"
                   className={`
-                    h-14 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
+                    h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95
                     ${isActive 
                       ? `${poi.color} text-white scale-105 shadow-xl` 
                       : 'bg-white/80 text-gray-700 hover:bg-gray-50/90'
@@ -191,7 +191,7 @@ export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOI
                   onClick={() => onToggleCategory(poi.category)}
                   title={t(`categories.${poi.category}`)}
                 >
-                  <span className="text-lg mb-1">{poi.icon}</span>
+                  <span className="text-xl mb-1">{poi.icon}</span>
                   <span 
                     className="text-xs font-semibold text-center leading-tight"
                     style={{
