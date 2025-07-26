@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
@@ -498,16 +498,8 @@ export default function Navigation() {
     }
   }, [isNavigating, trackingPosition]);
 
-  if (poisLoading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('status.loading')}</p>
-        </div>
-      </div>
-    );
-  }
+  // Early return must come after ALL hooks to maintain hook order
+  // Note: poisLoading check moved to end of component to ensure hook consistency
 
   // Filter POIs based on selected categories with error handling
   const filteredPOIs = useMemo(() => {
@@ -549,6 +541,18 @@ export default function Navigation() {
     isNavigating,
     selectedPOI: !!selectedPOI
   });
+
+  // Check loading state AFTER all hooks are called
+  if (poisLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">{t('status.loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
   try {
     return (
