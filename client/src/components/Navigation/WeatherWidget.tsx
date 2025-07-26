@@ -10,11 +10,11 @@ const getWeatherIcon = (condition: string) => {
   const conditionLower = condition.toLowerCase();
 
   if (conditionLower.includes('sun') || conditionLower.includes('clear')) {
-    return <Sun className="text-yellow-500 w-6 h-6" />;
+    return <Sun className="text-yellow-500 w-4 h-4" />;
   } else if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) {
-    return <CloudRain className="text-blue-500 w-6 h-6" />;
+    return <CloudRain className="text-blue-500 w-4 h-4" />;
   } else {
-    return <Cloud className="text-gray-500 w-6 h-6" />;
+    return <Cloud className="text-gray-500 w-4 h-4" />;
   }
 };
 
@@ -24,10 +24,10 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   if (isLoading) {
     return (
       <div 
-        className="absolute bottom-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
+        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 p-1.5 min-w-[80px]"
       >
         <div className="text-center">
-          <Loader2 className="w-5 h-5 animate-spin text-gray-400 mx-auto mb-1" />
+          <Loader2 className="w-4 h-4 animate-spin text-gray-400 mx-auto mb-1" />
           <div className="text-xs text-gray-500">Loading...</div>
         </div>
       </div>
@@ -37,11 +37,11 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   if (error || !weather) {
     return (
       <div 
-        className="absolute bottom-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-3 min-w-[140px]"
+        className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 p-1.5 min-w-[80px]"
       >
         <div className="text-center">
-          <Cloud className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-          <div className="text-xs text-gray-500">Weather unavailable</div>
+          <Cloud className="w-4 h-4 text-gray-400 mx-auto mb-1" />
+          <div className="text-xs text-gray-500">Unavailable</div>
         </div>
       </div>
     );
@@ -63,17 +63,17 @@ export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
 
   return (
     <div 
-      className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-2 min-w-[100px] max-w-[140px]"
+      className="absolute top-20 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 p-1.5 min-w-[80px] max-w-[100px]"
     >
-      <div className="flex items-center space-x-2 mb-2">
-        {getWeatherIcon(weather.condition)}
-        <div className="text-lg font-semibold text-gray-800">{weather.temperature}°</div>
+      <div className="flex items-center space-x-1 mb-1">
+        <div className="w-4 h-4">{getWeatherIcon(weather.condition)}</div>
+        <div className="text-sm font-semibold text-gray-800">{weather.temperature}°</div>
       </div>
-      <div className="text-xs text-gray-500 mb-2">{weather.condition}</div>
+      <div className="text-xs text-gray-500 mb-1 truncate">{weather.condition}</div>
       <div className="space-y-0.5">
         {[1].map((dayOffset) => (
           <div key={dayOffset} className="flex items-center justify-between">
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-gray-600 truncate">
               {getDayName(dayOffset)}
             </div>
             <div className="text-xs text-gray-600">
