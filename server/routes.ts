@@ -36,36 +36,47 @@ const osmCategoryMapping: Record<string, string> = {
 
 const buildingCategoryMapping: Record<string, string> = {
   'static_caravan': 'facilities',
-  'bungalow': 'buildings',
-  'house': 'buildings',
   'retail': 'services',
+  'yes': 'buildings',
+  'bungalow': 'facilities',
+  'house': 'buildings',
+  'semidetached_house': 'buildings',
   'office': 'services',
   'commercial': 'services',
-  'shed': 'facilities',
   'industrial': 'services',
-  'beach_house': 'buildings',
-  'chalet': 'buildings',
-  'lodge': 'buildings',
-  'bungalow_water': 'buildings',
-  'yes': 'buildings',
-  'toilets': 'facilities',
-  'service': 'facilities',
-  'semidetached_house': 'buildings',
+  'shed': 'services',
+  'garage': 'services',
+  'service': 'services',
   'detached': 'buildings',
-  'garage': 'facilities',
+  'toilets': 'services',
+  'swimming_pool': 'recreation',
+  'restaurant': 'food-drink',
+  'hotel': 'facilities'
 };
 
 // Load authentic OpenStreetMap POI data
 async function getPOIData(site: string) {
   try {
     const poiFilenames = site === 'zuhause' ? ['zuhause_pois.geojson'] : site === 'beach_resort' ? ['Beach Resort Zentroide Layer.geojson'] : ['kamperland_pois.geojson'];
-    
+
     let allPois: any[] = [];
 
     for (const filename of poiFilenames) {
       const filePath = join(process.cwd(), 'server', 'data', filename);
       const data = readFileSync(filePath, 'utf-8');
       const geojson = JSON.parse(data);
+
+      console.log(`POI DATA DEBUG: File ${filename} contains ${geojson.features.length} features`);
+
+    if (filename === 'Beach Resort Zentroide Layer.geojson') {
+      console.log('Beach Resort features breakdown:');
+      const buildingTypes = geojson.features.reduce((acc: Record<string, number>, feature: any) => {
+        const building = feature.properties?.BUILDING || 'no_building_type';
+        acc[building] = (acc[building] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('Building types:', buildingTypes);
+    }
 
       const pois = geojson.features.map((feature: any, index: number) => {
         const props = feature.properties;
@@ -76,7 +87,7 @@ async function getPOIData(site: string) {
           const buildingType = props.BUILDING;
           const houseNumber = props.A_HSNMBR;
           const poiName = props.NAME;
-          
+
           if (buildingType || poiName) {
             if (buildingType && houseNumber) {
               name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
@@ -149,21 +160,20 @@ async function getPOIData(site: string) {
       allPois = allPois.concat(pois);
     }
 
-    return allPois.filter(poi => {
-      if (!poi) return false;
-      
+    // Filter POIs to only include useful ones
+    const filteredPOIs = allPois.filter((poi: any) => {
       // Always include POIs with valid names
       if (poi.name && poi.name.trim() !== '') return true;
-      
-      // Include POIs with important properties
-      const props = poi.properties;
-      if (props?.amenity || props?.leisure || props?.tourism || props?.shop) return true;
-      
+
       // For Beach Resort, include building-based POIs
       if (poi.category && poi.category !== 'unknown') return true;
-      
+
+      // For Beach Resort static caravans and buildings, include all
+      if (poi.name && (poi.name.includes('Stellplatz') || poi.name.includes('static_caravan'))) return true;
+
       return false;
     });
+    return filteredPOIs;
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
     return [];
@@ -174,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const weatherService = new WeatherService(
     process.env.OPENWEATHER_API_KEY || process.env.WEATHER_API_KEY || ""
   );
-  
+
   // Initialize Google Directions service
   const routingService = new GoogleDirectionsService(
     process.env.GOOGLE_DIRECTIONS_API_KEY || ""
@@ -186,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/weather", async (req, res) => {
     try {
       const { lat, lng } = req.query;
-      
+
       if (!lat || !lng) {
         return res.status(400).json({ error: "Latitude and longitude are required" });
       }
@@ -257,18 +267,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pois/search", async (req, res) => {
     try {
       const { q: query, category, site } = req.query;
-      
+
       // Get POIs for the specific site directly from data files
       const siteName = (site as string) || 'kamperland';
       const allPOIs = await getPOIData(siteName);
-      
+
       let filteredPOIs = allPOIs;
-      
+
       // Filter by category if specified
       if (category) {
         filteredPOIs = filteredPOIs.filter((poi: any) => poi.category === category);
       }
-      
+
       // Filter by search query if specified
       if (query) {
         const searchTerm = (query as string).toLowerCase();
@@ -278,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poi.category.toLowerCase().includes(searchTerm)
         );
       }
-      
+
       res.json(filteredPOIs);
     } catch (error) {
       console.error("POI search error:", error);
@@ -291,22 +301,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const lat = req.query.lat as string;
       const lng = req.query.lng as string;
-      
+
       if (!lat || !lng) {
         return res.status(400).json({ error: 'Latitude and longitude are required' });
       }
 
       const conditions = ['Clear', 'Clouds', 'Rain', 'Partly Cloudy', 'Thunderstorm'];
       const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-      
+
       const forecast = Array.from({ length: 7 }, (_, index) => {
         const date = new Date();
         date.setDate(date.getDate() + index);
-        
+
         const baseTemp = 20 + Math.sin(index * 0.5) * 5;
         const tempHigh = Math.round(baseTemp + 3 + Math.random() * 4);
         const tempLow = Math.round(baseTemp - 3 - Math.random() * 4);
-        
+
         return {
           date: date.toISOString().split('T')[0],
           day: index === 0 ? 'Heute' : days[date.getDay()],
@@ -331,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/route", async (req, res) => {
     try {
       const { from, to, profile = 'walking' } = req.body;
-      
+
       if (!from || !to || !from.lat || !from.lng || !to.lat || !to.lng) {
         return res.status(400).json({ error: "Valid start and end coordinates are required" });
       }
