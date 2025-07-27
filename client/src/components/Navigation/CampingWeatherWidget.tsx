@@ -10,7 +10,7 @@ interface CampingWeatherWidgetProps {
 
 const getWeatherIcon = (condition?: string) => {
   if (!condition) return '☀️';
-  
+
   const cond = condition.toLowerCase();
   if (cond.includes('clear') || cond.includes('sunny')) return '☀️';
   if (cond.includes('cloud')) return '☁️';
@@ -24,27 +24,27 @@ const getWeatherIcon = (condition?: string) => {
 
 const getCampingAlerts = (weather: any) => {
   const alerts = [];
-  
+
   if (weather?.windSpeed > 20) {
     alerts.push({ icon: '💨', text: 'Windig', color: '#f59e0b' });
   }
-  
+
   if (weather?.temperature < 5) {
     alerts.push({ icon: '🥶', text: 'Kalt', color: '#3b82f6' });
   }
-  
+
   if (weather?.condition?.toLowerCase().includes('rain')) {
     alerts.push({ icon: '🌧️', text: 'Regen', color: '#3b82f6' });
   }
-  
+
   if (weather?.condition?.toLowerCase().includes('storm')) {
     alerts.push({ icon: '⛈️', text: 'Sturm', color: '#dc2626' });
   }
-  
+
   if (weather?.humidity > 80) {
     alerts.push({ icon: '💧', text: 'Feucht', color: '#06b6d4' });
   }
-  
+
   return alerts;
 };
 
@@ -60,7 +60,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
 
   const translateWeatherCondition = (condition?: string) => {
     if (!condition) return '';
-    
+
     // Direct German translations
     const translations: { [key: string]: string } = {
       'clear': 'Klar',
@@ -75,7 +75,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       'fog': 'Nebel',
       'mist': 'Dunst'
     };
-    
+
     return translations[condition.toLowerCase()] || condition;
   };
 
@@ -96,7 +96,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
         return 'linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(37, 99, 235, 0.6) 100%)';
     }
   };
-  
+
   if (isLoading) {
     return (
       <div 
@@ -116,14 +116,14 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       </div>
     );
   }
-  
+
   if (!weather) return null;
-  
+
   const campingAlerts = getCampingAlerts(weather);
-  
+
   return (
     <div 
-      className={`absolute bottom-4 right-4 z-30 rounded-xl shadow-lg backdrop-blur-md border border-white/20 cursor-pointer transition-all duration-300 hover:scale-105 ${
+      className={`absolute bottom-16 right-4 z-30 rounded-xl shadow-lg backdrop-blur-md border border-white/20 cursor-pointer transition-all duration-300 hover:scale-105 ${
         isExpanded ? 'p-2' : 'p-3'
       }`}
       style={{
@@ -138,7 +138,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-lg">{getWeatherIcon(weather.condition)}</span>
-          
+
           <div className="flex flex-col">
             <div className="text-lg font-bold text-white drop-shadow-lg">
               {weather?.temperature}°C
@@ -148,7 +148,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-1">
           <div className="text-xs text-white/80">
             {weather?.humidity}%
@@ -167,7 +167,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
           <div className="text-xs font-medium text-white/90 mb-1 text-center border-b border-white/20 pb-0.5">
             3-Tage
           </div>
-          
+
           {forecastData.forecast.slice(0, 3).map((day: any, index: number) => (
             <div 
               key={day.date}
@@ -179,7 +179,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
                 </div>
                 <span className="text-xs flex-shrink-0">{getWeatherIcon(day.condition)}</span>
               </div>
-              
+
               <div className="flex items-center space-x-1.5 flex-shrink-0 text-xs">
                 <span className="text-white/70">{day.precipitation}%</span>
                 <span className="text-white font-medium">
