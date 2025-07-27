@@ -102,10 +102,10 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
   const rightColumn = poiCategories.slice(6, 11); // Remaining 5 buttons
 
   const renderVerticalButton = (poi: any, index: number) => (
-    <div key={poi.id} className="relative mb-2">
+    <div key={poi.id} className="relative mb-1">
       <button
         onClick={() => handleCategoryClick(poi.id as string)}
-        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 focus:outline-none
+        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 focus:outline-none
           ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
           hover:scale-105 active:scale-95`}
         style={{
@@ -113,26 +113,26 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
             ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(59, 130, 246, 0.7))'
             : 'rgba(255, 255, 255, 0.2)',
           border: activeCategory === poi.id ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: activeCategory === poi.id ? '0 4px 16px rgba(34, 197, 94, 0.3)' : 'none',
+          boxShadow: activeCategory === poi.id ? '0 3px 12px rgba(34, 197, 94, 0.3)' : 'none',
         }}
         aria-label={poi.label}
       >
-        <span className="text-lg">{poi.icon}</span>
+        <span className="text-sm">{poi.icon}</span>
       </button>
       {visibleTooltip === poi.id && createPortal(
         <div style={{
           position: 'fixed',
-          left: '120px',
+          left: '70px',
           top: '50%',
           transform: 'translateY(-50%)',
           zIndex: 999999,
-          padding: '8px 12px',
+          padding: '6px 10px',
           background: 'rgba(17, 24, 39, 0.95)',
           color: 'white',
-          borderRadius: '8px',
+          borderRadius: '6px',
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: '500'
         }}>
           {poi.label}
@@ -155,22 +155,15 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
         borderRadius: '16px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
-        padding: '12px',
+        padding: '8px',
         opacity: selectedPOI ? 0.3 : 1,
         transition: 'opacity 0.3s ease-in-out',
         pointerEvents: selectedPOI ? 'none' : 'auto',
       }}
     >
-      <div className="flex space-x-3">
-        {/* Left column - 6 buttons */}
-        <div className="flex flex-col">
-          {leftColumn.map((poi, index) => renderVerticalButton(poi, index))}
-        </div>
-
-        {/* Right column - 5 buttons */}
-        <div className="flex flex-col">
-          {rightColumn.map((poi, index) => renderVerticalButton(poi, index))}
-        </div>
+      <div className="flex flex-col">
+        {/* Single column - all 11 buttons */}
+        {poiCategories.map((poi, index) => renderVerticalButton(poi, index))}
       </div>
       <style>{`
         .poi-left-panel {
