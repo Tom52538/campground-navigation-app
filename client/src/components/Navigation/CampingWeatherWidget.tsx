@@ -130,7 +130,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
         background: getWeatherGradient(weather?.condition),
         minWidth: isExpanded ? '160px' : '140px',
         maxWidth: isExpanded ? '180px' : '160px',
-        maxHeight: isExpanded ? '140px' : 'auto'
+        maxHeight: isExpanded ? '160px' : 'auto'
       }}
       onClick={handleToggleExpanded}
     >
