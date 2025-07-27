@@ -128,9 +128,9 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
       }`}
       style={{
         background: getWeatherGradient(weather?.condition),
-        minWidth: isExpanded ? '200px' : '140px',
-        maxWidth: isExpanded ? '220px' : '160px',
-        maxHeight: isExpanded ? '180px' : 'auto'
+        minWidth: isExpanded ? '160px' : '140px',
+        maxWidth: isExpanded ? '180px' : '160px',
+        maxHeight: isExpanded ? '140px' : 'auto'
       }}
       onClick={handleToggleExpanded}
     >
@@ -163,24 +163,24 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
 
       {/* Compact 3-Day Forecast */}
       {isExpanded && forecastData?.forecast && (
-        <div className="mt-2 space-y-1 max-h-24 overflow-hidden">
-          <div className="text-sm font-medium text-white/90 mb-1 text-center border-b border-white/20 pb-1">
+        <div className="mt-1.5 space-y-0.5 max-h-20 overflow-hidden">
+          <div className="text-xs font-medium text-white/90 mb-1 text-center border-b border-white/20 pb-0.5">
             3-Tage
           </div>
           
           {forecastData.forecast.slice(0, 3).map((day: any, index: number) => (
             <div 
               key={day.date}
-              className="flex items-center justify-between px-2 py-1 text-sm bg-white/10 rounded"
+              className="flex items-center justify-between px-1.5 py-0.5 text-xs bg-white/10 rounded"
             >
-              <div className="flex items-center space-x-2 flex-1 min-w-0">
-                <div className="w-10 text-sm font-medium text-white/90 truncate">
+              <div className="flex items-center space-x-1.5 flex-1 min-w-0">
+                <div className="w-8 text-xs font-medium text-white/90 truncate">
                   {day.day.slice(0, 3)}
                 </div>
-                <span className="text-sm flex-shrink-0">{getWeatherIcon(day.condition)}</span>
+                <span className="text-xs flex-shrink-0">{getWeatherIcon(day.condition)}</span>
               </div>
               
-              <div className="flex items-center space-x-2 flex-shrink-0 text-sm">
+              <div className="flex items-center space-x-1.5 flex-shrink-0 text-xs">
                 <span className="text-white/70">{day.precipitation}%</span>
                 <span className="text-white font-medium">
                   {day.temp_low}°/{day.temp_high}°
