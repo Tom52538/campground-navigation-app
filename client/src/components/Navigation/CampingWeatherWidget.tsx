@@ -123,7 +123,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
 
   return (
     <div 
-      className={`absolute bottom-16 right-4 z-30 rounded-xl shadow-lg backdrop-blur-md border border-white/20 cursor-pointer transition-all duration-300 hover:scale-105 ${
+      className={`absolute bottom-24 right-4 z-30 rounded-xl shadow-lg backdrop-blur-md border border-white/20 cursor-pointer transition-all duration-300 hover:scale-105 ${
         isExpanded ? 'p-2' : 'p-3'
       }`}
       style={{
