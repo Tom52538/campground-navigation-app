@@ -174,7 +174,7 @@ export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps)
                 className="flex flex-col items-center p-2 bg-white/10 rounded-md text-center"
               >
                 <div className="text-xs font-medium text-white/90 mb-1">
-                  {day.day.slice(0, 3)}
+                  {day.day}
                 </div>
                 <div className="text-lg mb-1">{getWeatherIcon(day.condition)}</div>
                 <div className="text-xs text-white/70 mb-1">{day.precipitation}%</div>
