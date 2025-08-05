@@ -15,7 +15,6 @@ const poiCategories = [
   { id: 'food-drink', icon: '🍕', label: 'Gastronomie' },         // Restaurants/Pizzeria
   { id: 'parking', icon: '🅿️', label: 'Parkplätze' },            // ECHTE parking Kategorie
   { id: 'leisure', icon: '🏊', label: 'Pool/Sport' },             // ECHTE leisure Kategorie
-  { id: 'recreation', icon: '🎮', label: 'Freizeit' },            // Recreation
   { id: 'buildings', icon: '🏡', label: 'Häuser' },               // ECHTE buildings Kategorie
   { id: 'unknown', icon: '❓', label: 'Sonstiges' }               // ECHTE unknown Kategorie
 ];
@@ -46,8 +45,8 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
   }, []);
 
   // Split into two columns for vertical layout
-  const leftColumn = poiCategories.slice(0, 6);  // First 6 buttons
-  const rightColumn = poiCategories.slice(6, 11); // Remaining 5 buttons
+  const leftColumn = poiCategories.slice(0, 5);  // First 5 buttons
+  const rightColumn = poiCategories.slice(5, 8); // Remaining 3 buttons
 
   const renderVerticalButton = (poi: any, index: number) => (
     <div key={poi.id} className="relative mb-1">
@@ -110,7 +109,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
       }}
     >
       <div className="flex flex-col">
-        {/* Single column - all 11 buttons */}
+        {/* Single column - all 8 buttons */}
         {poiCategories.map((poi, index) => renderVerticalButton(poi, index))}
       </div>
       <style>{`
