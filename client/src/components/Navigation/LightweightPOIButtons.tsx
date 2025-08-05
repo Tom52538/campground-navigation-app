@@ -8,24 +8,24 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // Zeile 1 - Unterkünfte (basierend auf Roompot-Plan)
-  { id: 'buildings', icon: '🏠', label: 'Bungalows' },
-  { id: 'buildings', icon: '🏘️', label: 'Chalets' },
-  { id: 'buildings', icon: '🏖️', label: 'Strandhäuser' },
+  // Zeile 1 - Unterkünfte (eindeutige IDs)
+  { id: 'bungalows', icon: '🏠', label: 'Bungalows' },
+  { id: 'chalets', icon: '🏘️', label: 'Chalets' },
+  { id: 'beachhouses', icon: '🏖️', label: 'Strandhäuser' },
 
-  // Zeile 2 - Services (wie im Roompot-Plan)
-  { id: 'facilities', icon: '🅿️', label: 'Parkplatz' },
-  { id: 'facilities', icon: '🚻', label: 'Toiletten' },
-  { id: 'services', icon: '🏪', label: 'Geschäfte' },
+  // Zeile 2 - Services (eindeutige IDs)
+  { id: 'parking', icon: '🅿️', label: 'Parkplatz' },
+  { id: 'toilets', icon: '🚻', label: 'Toiletten' },
+  { id: 'shops', icon: '🏪', label: 'Geschäfte' },
 
-  // Zeile 3 - Freizeit & Gastronomie
-  { id: 'food-drink', icon: '🍽️', label: 'Restaurant' },
-  { id: 'recreation', icon: '🏊', label: 'Schwimmbad' },
-  { id: 'recreation', icon: '⚽', label: 'Sport' },
+  // Zeile 3 - Freizeit & Gastronomie (eindeutige IDs)
+  { id: 'restaurants', icon: '🍽️', label: 'Restaurant' },
+  { id: 'swimming', icon: '🏊', label: 'Schwimmbad' },
+  { id: 'sports', icon: '⚽', label: 'Sport' },
 
-  // Zeile 4 - Weitere Einrichtungen
-  { id: 'services', icon: '🏥', label: 'Erste Hilfe' },
-  { id: 'recreation', icon: '🎮', label: 'Spielplatz' }
+  // Zeile 4 - Weitere Einrichtungen (eindeutige IDs)
+  { id: 'medical', icon: '🏥', label: 'Erste Hilfe' },
+  { id: 'playground', icon: '🎮', label: 'Spielplatz' }
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
