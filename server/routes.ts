@@ -287,9 +287,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (query) {
         const searchTerm = (query as string).toLowerCase();
         filteredPOIs = filteredPOIs.filter((poi: any) => 
-          poi.name.toLowerCase().includes(searchTerm) ||
-          poi.description?.toLowerCase().includes(searchTerm) ||
-          poi.category.toLowerCase().includes(searchTerm)
+          (poi.name && poi.name.toLowerCase().includes(searchTerm)) ||
+          (poi.description && poi.description.toLowerCase().includes(searchTerm)) ||
+          (poi.category && poi.category.toLowerCase().includes(searchTerm))
         );
       }
 
