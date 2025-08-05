@@ -8,15 +8,18 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // Unterkünfte - Match exact categories from roompot_pois.geojson
-  { id: 'facilities', icon: '🏠', label: 'Bungalows' },
-  { id: 'buildings', icon: '🏘️', label: 'Strandhäuser' },
-  
-  // Service categories - to be added when available in data
-  { id: 'services', icon: '🅿️', label: 'Services' },
-  { id: 'food-drink', icon: '🍽️', label: 'Restaurant' },
-  { id: 'recreation', icon: '🏊', label: 'Freizeit' },
-  { id: 'amenities', icon: '🚻', label: 'Annehmlichkeiten' }
+  // Spezifische Einrichtungen wie in der Legende - das ist was User suchen!
+  { id: 'toilets', icon: '🚻', label: 'Toiletten' },              // 39 Toiletten POIs
+  { id: 'facilities', icon: '🏠', label: 'Unterkünfte' },         // 1633 Bungalows/Caravans
+  { id: 'services', icon: '🚿', label: 'Waschstationen' },        // Waschstationen
+  { id: 'services', icon: '🏪', label: 'Shops' },                 // 4 Retail POIs
+  { id: 'food-drink', icon: '🍕', label: 'Gastronomie' },         // Restaurants/Pizzeria
+  { id: 'facilities', icon: '🅿️', label: 'Parkplätze' },          // 12 Parking POIs
+  { id: 'services', icon: 'ℹ️', label: 'Information' },           // Info-Punkte
+  { id: 'recreation', icon: '🎮', label: 'Freizeit' },            // Kids Club, Sports
+  { id: 'services', icon: '🔌', label: 'Ladestationen' },         // Charging stations
+  { id: 'buildings', icon: '🏡', label: 'Beach Houses' },         // 194 verschiedene Häuser
+  { id: 'services', icon: '🏢', label: 'Büros' }                  // 3 Office POIs
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {

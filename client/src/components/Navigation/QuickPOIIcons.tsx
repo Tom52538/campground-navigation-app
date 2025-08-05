@@ -8,20 +8,20 @@ interface QuickPOIIconsProps {
 }
 
 const CAMPING_POI_ICONS = [
-  // Row 1 - 4 icons
-  { category: 'facilities' as POICategory, icon: '🚿', label: 'Restrooms' },
-  { category: 'food-drink' as POICategory, icon: '🍽️', label: 'Food' },
-  { category: 'recreation' as POICategory, icon: '🔥', label: 'Fire Pits' },
-  { category: 'services' as POICategory, icon: '🥾', label: 'Trails' },
-  // Row 2 - 4 icons
-  { category: 'services' as POICategory, icon: '⛽', label: 'Services' },
-  { category: 'facilities' as POICategory, icon: '🏕️', label: 'Camping' },
-  { category: 'recreation' as POICategory, icon: '🏊', label: 'Swimming' },
-  { category: 'facilities' as POICategory, icon: '🅿️', label: 'Parking' },
-  // Row 3 - 3 icons
+  // Row 1 - 4 icons (Services - Wichtigste Einrichtungen)
+  { category: 'services' as POICategory, icon: '🚻', label: 'Toiletten' },
+  { category: 'services' as POICategory, icon: '🚿', label: 'Waschstation' },
   { category: 'services' as POICategory, icon: '🏪', label: 'Shop' },
-  { category: 'recreation' as POICategory, icon: '🎯', label: 'Activities' },
-  { category: 'facilities' as POICategory, icon: '🔧', label: 'Maintenance' }
+  { category: 'services' as POICategory, icon: '🔌', label: 'Ladestation' },
+  // Row 2 - 4 icons (Food & Entertainment)
+  { category: 'food-drink' as POICategory, icon: '🍕', label: 'Pizzeria' },
+  { category: 'food-drink' as POICategory, icon: '🍽️', label: 'Restaurant' },
+  { category: 'recreation' as POICategory, icon: '🎮', label: 'Kids Club' },
+  { category: 'recreation' as POICategory, icon: '🏐', label: 'Volleyball' },
+  // Row 3 - 3 icons (Unterkünfte & Sonstiges)
+  { category: 'facilities' as POICategory, icon: '🏠', label: 'Bungalows' },
+  { category: 'facilities' as POICategory, icon: '🅿️', label: 'Parkplatz' },
+  { category: 'services' as POICategory, icon: 'ℹ️', label: 'Info' }
 ];
 
 export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOIIconsProps) => {
