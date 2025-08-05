@@ -8,12 +8,12 @@ export const usePOI = (site: TestSite = 'kamperland') => {
       console.log('🔍 usePOI: Fetching POIs for site:', site);
       const response = await fetch(`/api/pois?site=${site}`);
       console.log('🔍 usePOI: Response status:', response.status);
-      
+
       if (!response.ok) {
         console.error('🔍 usePOI: Failed to fetch POI data', response.status, response.statusText);
         throw new Error('Failed to fetch POI data');
       }
-      
+
       const data = await response.json();
       console.log('🔍 usePOI: Received data:', {
         isArray: Array.isArray(data),
@@ -21,7 +21,7 @@ export const usePOI = (site: TestSite = 'kamperland') => {
         firstPOI: data?.[0] || 'none',
         sample: data?.slice(0, 3) || []
       });
-      
+
       return data as POI[];
     },
     staleTime: Infinity, // POI data doesn't change frequently
