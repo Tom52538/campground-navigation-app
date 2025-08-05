@@ -57,7 +57,7 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'parking' | 'buildings' | 'unknown';
+export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'parking' | 'buildings' | 'unknown' | 'leisure';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Gastronomie' },
@@ -66,7 +66,8 @@ export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; 
   'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Unterkünfte' },
   'parking': { icon: 'Parking', color: 'bg-gray-600', label: 'Parkplätze' },
   'buildings': { icon: 'Building', color: 'bg-amber-600', label: 'Beach Houses' },
-  'unknown': { icon: 'QuestionMark', color: 'bg-gray-500', label: 'Sonstiges' }
+  'unknown': { icon: 'QuestionMark', color: 'bg-gray-500', label: 'Sonstiges' },
+  'leisure': { icon: 'SwimmingPool', color: 'bg-blue-400', label: 'Pool/Sport' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {

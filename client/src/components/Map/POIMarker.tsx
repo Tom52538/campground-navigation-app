@@ -20,6 +20,7 @@ const getEmojiIcon = (iconName: string) => {
     case 'Building': return '🏗️';
     case 'Toilet': return '🚻';     // NEUES Icon für Services/Toiletten
     case 'Parking': return '🅿️';    // NEUES Icon für Parkplätze
+    case 'SwimmingPool': return '🏊'; // NEUES Icon für Leisure/Pool/Sport
     default: return '📍';
   }
 };
