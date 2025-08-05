@@ -8,22 +8,20 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // Zeile 1 - Unterkünfte (eindeutige IDs)
-  { id: 'bungalows', icon: '🏠', label: 'Bungalows' },
-  { id: 'chalets', icon: '🏘️', label: 'Chalets' },
-  { id: 'beachhouses', icon: '🏖️', label: 'Strandhäuser' },
+  // Unterkünfte - Based on actual GeoJSON data
+  { id: 'facilities', icon: '🏠', label: 'Bungalows' },
+  { id: 'buildings', icon: '🏘️', label: 'Gebäude' },
+  { id: 'accommodation', icon: '🏖️', label: 'Unterkünfte' },
 
-  // Zeile 2 - Services (eindeutige IDs)
-  { id: 'parking', icon: '🅿️', label: 'Parkplatz' },
-  { id: 'toilets', icon: '🚻', label: 'Toiletten' },
+  // Services
+  { id: 'services', icon: '🅿️', label: 'Services' },
+  { id: 'food-drink', icon: '🍽️', label: 'Restaurant' },
+  { id: 'recreation', icon: '🏊', label: 'Freizeit' },
+
+  // Additional categories that might exist
+  { id: 'amenities', icon: '🚻', label: 'Annehmlichkeiten' },
   { id: 'shops', icon: '🏪', label: 'Geschäfte' },
-
-  // Zeile 3 - Freizeit & Gastronomie (eindeutige IDs)
-  { id: 'restaurants', icon: '🍽️', label: 'Restaurant' },
-  { id: 'swimming', icon: '🏊', label: 'Schwimmbad' },
   { id: 'sports', icon: '⚽', label: 'Sport' },
-
-  // Zeile 4 - Weitere Einrichtungen (eindeutige IDs)
   { id: 'medical', icon: '🏥', label: 'Erste Hilfe' },
   { id: 'playground', icon: '🎮', label: 'Spielplatz' }
 ];
