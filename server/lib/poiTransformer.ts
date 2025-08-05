@@ -71,8 +71,7 @@ const categoryMapping: Record<string, POICategory> = {
   'bbq': 'recreation',
 
   // Practical Facilities
-  'parking': 'facilities',
-  'toilets': 'facilities',
+  'parking': 'parking',             // KORRIGIERT: parking eigene Kategorie
   'shower': 'facilities',
   'waste_disposal': 'facilities',
   'recycling': 'facilities',
@@ -96,8 +95,7 @@ const buildingCategoryMapping: Record<string, POICategory> = {
   'semidetached_house': 'buildings', 
   'detached': 'buildings',
 
-  // Services (wie in Legende: Toiletten, Shops, Waschstationen, etc.)
-  'toilets': 'toilets',              // EIGENE KATEGORIE für Toiletten!
+  // Services (wie in Legende: Shops, Waschstationen, etc.)
   'retail': 'services',              // Shops/Supermarkt
   'office': 'services',              // Harbour office, Information
   'commercial': 'services',
@@ -163,8 +161,8 @@ function categorizeFeature(properties: GeoJSONFeature['properties']): POICategor
     return 'toilets';
   }
 
-  // Check amenity first (most common)
-  if (properties.amenity && categoryMapping[properties.amenity]) {
+  // Check amenity first (most common) - EXCLUDE toilets since handled above
+  if (properties.amenity && properties.amenity !== 'toilets' && categoryMapping[properties.amenity]) {
     return categoryMapping[properties.amenity];
   }
 
