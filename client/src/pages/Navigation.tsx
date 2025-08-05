@@ -75,6 +75,7 @@ export default function Navigation() {
   const [currentInstruction, setCurrentInstruction] = useState<string>('');
   const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for the search drawer
 
   // Initialize navigation tracking - but only when using real GPS
   const { currentPosition: livePosition } = useNavigationTracking(isNavigating && useRealGPS, {
@@ -210,10 +211,16 @@ export default function Navigation() {
   }, []);
 
   const handlePOISelect = useCallback((poi: POI) => {
+    console.log('🎯 POI selected from search:', poi.name, poi.id);
+    console.log('🎯 POI coordinates:', poi.coordinates);
     setSelectedPOI(poi);
-    setMapCenter(poi.coordinates);
-    setUIMode('poi-info');
-    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
+    setIsDrawerOpen(false);
+
+    // Show POI immediately on map
+    if (poi.coordinates) {
+      console.log('🗺️ Centering map on selected POI');
+      // Map will center on POI automatically via MapContainer useEffect
+    }
   }, []);
 
   const handleMapClick = useCallback(() => {

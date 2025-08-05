@@ -12,6 +12,8 @@ interface SmartBottomDrawerProps {
   onPOISelect?: (poi: POI) => void;
   onNavigateToPOI?: (poi: POI) => void;
   onClose?: () => void;
+  searchQuery?: string; // Added to match changes
+  setSearchQuery?: (query: string) => void; // Added to match changes
 }
 
 type DrawerHeight = 'peek' | 'half' | 'full';
@@ -23,7 +25,9 @@ export const SmartBottomDrawer = ({
   currentRoute,
   onPOISelect,
   onNavigateToPOI,
-  onClose
+  onClose,
+  searchQuery, // Added to match changes
+  setSearchQuery // Added to match changes
 }: SmartBottomDrawerProps) => {
   const { t } = useLanguage();
   const [height, setHeight] = useState<DrawerHeight>('peek');
@@ -69,7 +73,7 @@ export const SmartBottomDrawer = ({
   if (!isVisible) return null;
 
   return (
-    <div 
+    <div
       className="fixed left-0 right-0 z-40 transition-all duration-300 ease-in-out"
       style={{
         bottom: '0px',
@@ -84,7 +88,7 @@ export const SmartBottomDrawer = ({
       }}
     >
       {/* Drawer Handle */}
-      <div 
+      <div
         className="flex items-center justify-center py-3 cursor-pointer"
         onClick={toggleHeight}
       >
@@ -113,7 +117,7 @@ export const SmartBottomDrawer = ({
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900">{currentRoute.totalDistance}</div>
@@ -159,7 +163,7 @@ export const SmartBottomDrawer = ({
                 <span className="text-sm text-gray-600">{t('poi.category')}:</span>
                 <span className="text-sm font-medium text-gray-900 capitalize">{selectedPOI.category}</span>
               </div>
-              
+
               {selectedPOI.distance && (
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600">{t('poi.distance')}:</span>
@@ -222,7 +226,12 @@ export const SmartBottomDrawer = ({
                 <div
                   key={poi.id}
                   className="p-3 bg-white bg-opacity-50 rounded-lg border border-gray-200 cursor-pointer hover:bg-opacity-70 transition-all"
-                  onClick={() => onPOISelect?.(poi)}
+                  onClick={() => {
+                    console.log('🔍 POI SELECTED from search:', poi.name, poi.id);
+                    onPOISelect?.(poi);
+                    setSearchQuery?.(''); // Clear search after selection
+                    onClose?.(); // Close drawer after selection
+                  }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -254,7 +263,7 @@ export const SmartBottomDrawer = ({
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            
+
             <div className="text-center py-8">
               <p className="text-gray-600">{t('settings.comingSoon')}</p>
             </div>
