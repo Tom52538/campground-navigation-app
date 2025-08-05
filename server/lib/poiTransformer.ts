@@ -166,8 +166,8 @@ function categorizeFeature(properties: GeoJSONFeature['properties']): POICategor
     return categoryMapping[properties.amenity];
   }
 
-  // Check leisure
-  if (properties.leisure && categoryMapping[properties.leisure]) {
+  // Check leisure - EXCLUDE toilets since handled above
+  if (properties.leisure && properties.leisure !== 'toilets' && categoryMapping[properties.leisure]) {
     return categoryMapping[properties.leisure];
   }
 
