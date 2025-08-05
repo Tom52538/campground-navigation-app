@@ -399,7 +399,7 @@ export default function Navigation() {
       setMapStyle(style);
       console.log('🗺️ DEBUG - setMapStyle completed successfully');
 
-      // Auto-switch to navigation mode when using navigation style during active navigation
+      // Auto-switch to driving orientation when using navigation style during active navigation
       if (style === 'navigation' && isNavigating) {
         console.log('🗺️ DEBUG - Auto-switching to driving orientation for navigation style');
         setMapOrientation('driving');
@@ -563,7 +563,7 @@ export default function Navigation() {
               selectedPOI={!!selectedPOI}
             />
 
-            
+
 
             {/* Camping Weather Widget */}
             <CampingWeatherWidget coordinates={currentPosition} />
@@ -591,7 +591,7 @@ export default function Navigation() {
           />
         )}
 
-        {/* NAVIGATION MODE - Only visible when actively navigating */}
+        {/*NAVIGATION MODE - Only visible when actively navigating */}
         {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
           <>
             {/* Top: Current Maneuver */}
