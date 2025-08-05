@@ -8,22 +8,15 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // Unterkünfte - Based on actual GeoJSON data
+  // Unterkünfte - Match exact categories from roompot_pois.geojson
   { id: 'facilities', icon: '🏠', label: 'Bungalows' },
-  { id: 'buildings', icon: '🏘️', label: 'Gebäude' },
-  { id: 'accommodation', icon: '🏖️', label: 'Unterkünfte' },
-
-  // Services
+  { id: 'buildings', icon: '🏘️', label: 'Strandhäuser' },
+  
+  // Service categories - to be added when available in data
   { id: 'services', icon: '🅿️', label: 'Services' },
   { id: 'food-drink', icon: '🍽️', label: 'Restaurant' },
   { id: 'recreation', icon: '🏊', label: 'Freizeit' },
-
-  // Additional categories that might exist
-  { id: 'amenities', icon: '🚻', label: 'Annehmlichkeiten' },
-  { id: 'shops', icon: '🏪', label: 'Geschäfte' },
-  { id: 'sports', icon: '⚽', label: 'Sport' },
-  { id: 'medical', icon: '🏥', label: 'Erste Hilfe' },
-  { id: 'playground', icon: '🎮', label: 'Spielplatz' }
+  { id: 'amenities', icon: '🚻', label: 'Annehmlichkeiten' }
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {

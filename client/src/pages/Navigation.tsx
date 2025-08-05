@@ -157,9 +157,13 @@ export default function Navigation() {
   console.log('🔍 DISPLAY POIs DEBUG:', {
     searchQuery: searchQuery.length,
     filteredCategoriesCount: filteredCategories.length,
+    filteredCategories: filteredCategories,
     displayPOIsCount: displayPOIs.length,
     shouldShowPOIs,
-    firstPOI: displayPOIs[0]?.name || 'none'
+    firstPOI: displayPOIs[0]?.name || 'none',
+    allPOIsCount: allPOIs.length,
+    categoriesInData: [...new Set(allPOIs.map(poi => poi.category))],
+    samplePOIs: displayPOIs.slice(0, 3).map(poi => ({ name: poi.name, category: poi.category }))
   });
 
   // Add distance to POIs
@@ -359,16 +363,25 @@ export default function Navigation() {
 
   // POI Category Filter Handler for Quick Access
   const handleCategoryFilter = useCallback((category: string) => {
+    console.log('🎯 CATEGORY FILTER CLICKED:', category);
     setFilteredCategories(prev => {
+      let newCategories;
       if (prev.includes(category)) {
         // Remove category if already selected
-        return prev.filter(c => c !== category);
+        newCategories = prev.filter(c => c !== category);
       } else {
         // Replace with single category selection for "one touch" behavior
-        return [category];
+        newCategories = [category];
       }
+      console.log('🎯 CATEGORY FILTER RESULT:', {
+        clicked: category,
+        previous: prev,
+        new: newCategories,
+        matchingPOIs: allPOIs.filter(poi => poi.category && newCategories.includes(poi.category)).length
+      });
+      return newCategories;
     });
-  }, []);
+  }, [allPOIs]);
 
   // Voice toggle handler
   const handleToggleVoice = useCallback(() => {
