@@ -158,7 +158,7 @@ function categorizeFeature(properties: GeoJSONFeature['properties']): POICategor
   // Check for TOILETS FIRST - höchste Priorität!
   if (properties.amenity === 'toilets' || properties.leisure === 'toilets' || 
       properties.building === 'toilets' || properties.name?.toLowerCase().includes('toilet')) {
-    return 'toilets';
+    return 'facilities';  // Map toilets to 'facilities' category
   }
 
   // Check amenity first (most common) - EXCLUDE toilets since handled above
