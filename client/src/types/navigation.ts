@@ -61,7 +61,7 @@ export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Gastronomie' },
-  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Services' },
+  'services': { icon: 'Toilet', color: 'bg-blue-500', label: 'Services' },
   'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Freizeit' },
   'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Unterkünfte' },
   'parking': { icon: 'Parking', color: 'bg-gray-600', label: 'Parkplätze' },

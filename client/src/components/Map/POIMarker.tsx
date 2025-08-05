@@ -18,6 +18,7 @@ const getEmojiIcon = (iconName: string) => {
     case 'Waves': return '🌊';
     case 'Car': return '🏠';        // KORRIGIERT: Häuser statt Auto für facilities
     case 'Building': return '🏗️';
+    case 'Toilet': return '🚻';     // NEUES Icon für Services/Toiletten
     default: return '📍';
   }
 };
