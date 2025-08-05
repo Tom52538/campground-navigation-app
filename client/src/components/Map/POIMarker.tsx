@@ -19,6 +19,7 @@ const getEmojiIcon = (iconName: string) => {
     case 'Car': return '🏠';        // KORRIGIERT: Häuser statt Auto für facilities
     case 'Building': return '🏗️';
     case 'Toilet': return '🚻';     // NEUES Icon für Services/Toiletten
+    case 'Parking': return '🅿️';    // NEUES Icon für Parkplätze
     default: return '📍';
   }
 };
