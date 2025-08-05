@@ -157,6 +157,12 @@ function calculateCentroid(coordinates: number[][]): number[] {
 }
 
 function categorizeFeature(properties: GeoJSONFeature['properties']): POICategory {
+  // Check for TOILETS FIRST - höchste Priorität!
+  if (properties.amenity === 'toilets' || properties.leisure === 'toilets' || 
+      properties.building === 'toilets' || properties.name?.toLowerCase().includes('toilet')) {
+    return 'toilets';
+  }
+
   // Check amenity first (most common)
   if (properties.amenity && categoryMapping[properties.amenity]) {
     return categoryMapping[properties.amenity];
@@ -185,14 +191,6 @@ function categorizeFeature(properties: GeoJSONFeature['properties']): POICategor
   // Check building types from Roompot data using the specific mapping
   if (properties.building && buildingCategoryMapping[properties.building]) {
     return buildingCategoryMapping[properties.building];
-  }
-  
-  // Check for 'toilets' directly in properties for the specific 'toilets' category
-  if (properties.amenity === 'toilets' && buildingCategoryMapping['toilets']) {
-    return buildingCategoryMapping['toilets'];
-  }
-  if (properties.leisure === 'toilets' && buildingCategoryMapping['toilets']) {
-    return buildingCategoryMapping['toilets'];
   }
 
   // Default fallback

@@ -8,18 +8,16 @@ interface LightweightPOIButtonsProps {
 }
 
 const poiCategories = [
-  // Spezifische Einrichtungen wie in der Legende - das ist was User suchen!
-  { id: 'toilets', icon: '🚻', label: 'Toiletten' },              // 39 Toiletten POIs
-  { id: 'facilities', icon: '🏠', label: 'Unterkünfte' },         // 1633 Bungalows/Caravans
-  { id: 'services', icon: '🚿', label: 'Waschstationen' },        // Waschstationen
-  { id: 'services', icon: '🏪', label: 'Shops' },                 // 4 Retail POIs
+  // Basierend auf tatsächlichen Kategorien in den POI Daten!
+  { id: 'toilets', icon: '🚻', label: 'Toiletten' },              // ECHTE toilets Kategorie
+  { id: 'facilities', icon: '🏠', label: 'Unterkünfte' },         // Bungalows/Caravans
+  { id: 'services', icon: '🏪', label: 'Services' },              // Services allgemein
   { id: 'food-drink', icon: '🍕', label: 'Gastronomie' },         // Restaurants/Pizzeria
-  { id: 'facilities', icon: '🅿️', label: 'Parkplätze' },          // 12 Parking POIs
-  { id: 'services', icon: 'ℹ️', label: 'Information' },           // Info-Punkte
-  { id: 'recreation', icon: '🎮', label: 'Freizeit' },            // Kids Club, Sports
-  { id: 'services', icon: '🔌', label: 'Ladestationen' },         // Charging stations
-  { id: 'buildings', icon: '🏡', label: 'Beach Houses' },         // 194 verschiedene Häuser
-  { id: 'services', icon: '🏢', label: 'Büros' }                  // 3 Office POIs
+  { id: 'parking', icon: '🅿️', label: 'Parkplätze' },            // ECHTE parking Kategorie
+  { id: 'leisure', icon: '🏊', label: 'Pool/Sport' },             // ECHTE leisure Kategorie
+  { id: 'recreation', icon: '🎮', label: 'Freizeit' },            // Recreation
+  { id: 'buildings', icon: '🏡', label: 'Häuser' },               // ECHTE buildings Kategorie
+  { id: 'unknown', icon: '❓', label: 'Sonstiges' }               // ECHTE unknown Kategorie
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
