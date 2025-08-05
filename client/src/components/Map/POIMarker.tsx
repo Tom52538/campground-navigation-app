@@ -16,7 +16,7 @@ const getEmojiIcon = (iconName: string) => {
     case 'Utensils': return '🍽️';
     case 'Building2': return '🏢';
     case 'Waves': return '🌊';
-    case 'Car': return '🚗';
+    case 'Car': return '🏠';        // KORRIGIERT: Häuser statt Auto für facilities
     case 'Building': return '🏗️';
     default: return '📍';
   }
