@@ -23,7 +23,7 @@ const getEmojiForCategory = (category: string): string => {
       case 'camping': return '🏕️';
       case 'beach_houses': return '🏖️';
       case 'facilities': return '🚿';
-      case 'leisure': return '🎯';
+      case 'leisure': return '🛝';
       default: return '📍';
     }
   };
