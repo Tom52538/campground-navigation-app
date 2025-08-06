@@ -62,6 +62,7 @@ interface POI {
   id: string;
   name: string;
   category: string;
+  subCategory?: string; // Added subCategory
   coordinates: { lat: number; lng: number };
   description?: string;
   amenities?: string[];
@@ -173,27 +174,92 @@ async function getPOIData(site: string): Promise<POI[]> {
             const poiName = props.name;
             let name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
             let category = 'unknown';
+            let subCategory = '';
 
-            if (poiName && poiName.toLowerCase().includes('bungalow')) {
-              category = 'bungalow';
-            } else if (poiName && poiName.toLowerCase().includes('beach house')) {
-              category = 'beach_house';
-            } else if (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet'))) {
-              category = 'chalet';
-            } else if (poiName && poiName.toLowerCase().includes('lodge')) {
-              category = 'lodge';
-            } else if (buildingType === 'static_caravan') {
-              category = 'static_caravan';
+            // Enhanced categorization based on Roompot legend
+            if (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan')) {
+              category = 'camping';
+              subCategory = 'static_caravan';
+              name = name.replace('static_caravan', 'Caravan Site');
+            } else if (buildingType === 'bungalow' || poiName?.toLowerCase().includes('bungalow')) {
+              category = 'bungalows';
+              // Determine bungalow type from name patterns
+              if (poiName?.includes('B1')) subCategory = 'b1';
+              else if (poiName?.includes('B5')) subCategory = 'b5';
+              else if (poiName?.includes('BA')) subCategory = 'ba_comfort';
+              else if (poiName?.includes('BC')) subCategory = 'bc_comfort';
+              else if (poiName?.includes('BD')) subCategory = 'bd_comfort';
+              else if (poiName?.includes('BE')) subCategory = 'be_comfort';
+              else if (poiName?.includes('BF')) subCategory = 'bf_comfort';
+              else if (poiName?.includes('BG')) subCategory = 'bg';
+              else if (poiName?.includes('BH')) subCategory = 'bh';
+              else if (poiName?.includes('BI')) subCategory = 'bi';
+              else if (poiName?.includes('NB')) subCategory = 'nb_comfort';
+              else if (poiName?.includes('NC')) subCategory = 'nc';
+              else if (poiName?.includes('ND')) subCategory = 'nd_comfort';
+              else if (poiName?.includes('NE')) subCategory = 'ne_comfort';
+              else if (poiName?.includes('NG')) subCategory = 'ng_comfort';
+              else if (poiName?.includes('RJV')) subCategory = 'rjv';
+              else if (poiName?.includes('RJ')) subCategory = 'rj_comfort';
+              else if (poiName?.includes('FV')) subCategory = 'fv14';
+              else subCategory = 'standard';
+            } else if (buildingType === 'house' || poiName?.toLowerCase().includes('beach house')) {
+              category = 'beach_houses';
+              if (poiName?.includes('4')) subCategory = 'beach_house_4';
+              else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
+              else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
+              else subCategory = 'standard';
+            } else if (buildingType === 'semidetached_house' || buildingType === 'detached' || 
+                      (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet')))) {
+              category = 'chalets';
+              if (poiName?.includes('RP64A')) subCategory = 'rp64a';
+              else if (poiName?.includes('RP4A')) subCategory = 'rp4a';
+              else if (poiName?.includes('RP6A')) subCategory = 'rp6a';
+              else if (poiName?.includes('RP6B')) subCategory = 'rp6b';
+              else if (poiName?.includes('RP6C')) subCategory = 'rp6c';
+              else if (poiName?.includes('RP6GC')) subCategory = 'rp6gc';
+              else subCategory = 'standard';
+            } else if (poiName?.toLowerCase().includes('lodge') || poiName?.toLowerCase().includes('water village')) {
+              category = 'lodges';
+              if (poiName?.toLowerCase().includes('water village')) subCategory = 'water_village_lodge';
+              else subCategory = 'lodge_4';
             } else if (buildingType === 'toilets') {
               category = 'facilities';
-            } else if (buildingType === 'retail' || buildingType === 'office') {
-              category = 'services';
+              subCategory = 'toilets';
+              name = 'Toilet';
             } else if (buildingType === 'parking') {
-              category = 'parking';
+              category = 'facilities';
+              subCategory = 'parking';
+              name = 'Parking Area';
+            } else if (buildingType === 'retail') {
+              category = 'services';
+              subCategory = 'shop';
+              name = 'Shop';
+            } else if (buildingType === 'office') {
+              category = 'services';
+              subCategory = 'reception';
+              name = 'Reception/Office';
+            } else if (buildingType === 'commercial' || buildingType === 'industrial') {
+              category = 'services';
+              subCategory = 'service_station';
+              name = 'Service Station';
+            } else if (buildingType === 'garage' || buildingType === 'shed') {
+              category = 'facilities';
+              subCategory = 'storage';
+              name = 'Storage/Garage';
+            } else if (buildingType === 'landuse_grass') {
+              category = 'leisure';
+              subCategory = 'playground';
+              name = 'Recreational Area';
+            } else if (buildingType === 'service') {
+              category = 'services';
+              subCategory = 'maintenance';
+              name = 'Service Point';
             } else {
-              category = 'static_caravan'; // Default for accommodation
+              category = 'camping';
+              subCategory = 'static_caravan';
             }
-            console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
+            console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}`);
 
             let coordinates;
             if (feature.geometry.type === 'Point') {
@@ -208,6 +274,7 @@ async function getPOIData(site: string): Promise<POI[]> {
               id: feature.id?.toString() || `roompot_${index}`,
               name: name,
               category,
+              subCategory: subCategory || undefined,
               coordinates,
               amenities: amenities.length > 0 ? amenities : undefined,
               hours: props.opening_hours || undefined
@@ -267,7 +334,7 @@ async function getPOIData(site: string): Promise<POI[]> {
               id: feature.id?.toString() || `beachresort_${index}`,
               name: name,
               category,
-              coordinates,
+              coordinates: coordinates,
               amenities: amenities.length > 0 ? amenities : undefined,
               hours: props.opening_hours || undefined
             };
@@ -451,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pois = await getPOIData(site as string);
       // console.log(`POI API: Loaded ${pois.length} POIs for site ${site}`);
       // Removed redundant logging here as getPOIData already logs
-      
+
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Cache-Control', 'no-cache');
       res.status(200).json(pois);

@@ -9,16 +9,19 @@ interface LightweightPOIButtonsProps {
 
 // POI categories matching actual data structure
 const poiCategories = [
-  // Real data categories - First Row
-  { icon: '🏡', label: 'Bungalows', id: 'bungalow' },
-  { icon: '🚐', label: 'Static Caravans', id: 'static_caravan' },
-  
-  // Real data categories - Second Row  
-  { icon: '🚿', label: 'Facilities', id: 'facilities' },
+  // Main accommodation types
+  { icon: '🏡', label: 'Bungalows', id: 'bungalows' },
+  { icon: '🏖️', label: 'Beach Houses', id: 'beach_houses' },
+  { icon: '🏕️', label: 'Chalets', id: 'chalets' },
+  { icon: '⭐', label: 'Lodges', id: 'lodges' },
+  { icon: '🚐', label: 'Camping', id: 'camping' },
+
+  // Services & amenities
   { icon: '🛠️', label: 'Services', id: 'services' },
-  
-  // Real data categories - Third Row
-  { icon: '🅿️', label: 'Parking', id: 'parking' },
+  { icon: '🏥', label: 'Necessities', id: 'necessities' },
+  { icon: '🍽️', label: 'Food & Drinks', id: 'food_drinks' },
+  { icon: '🎯', label: 'Leisure', id: 'leisure' },
+  { icon: '🚿', label: 'Facilities', id: 'facilities' },
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {

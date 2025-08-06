@@ -8,6 +8,7 @@ export interface POI {
   id: string;
   name: string;
   category: string;
+  subCategory?: string;
   coordinates: Coordinates;
   description?: string;
   amenities?: string[];
@@ -58,18 +59,20 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-// Accommodation-specific categories based on Roompot legend
-export type POICategory = 'bungalows' | 'beach_houses' | 'chalets' | 'lodges' | 'camper_sites' | 'services' | 'facilities' | 'parking';
+// Categories based on Roompot Beach Resort & Water Village legend
+export type POICategory = 'services' | 'necessities' | 'food_drinks' | 'leisure' | 'bungalows' | 'beach_houses' | 'chalets' | 'camping' | 'lodges' | 'facilities';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'bungalows': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' },
+  'services': { icon: 'Building', color: 'bg-gray-600', label: 'Services' },
+  'necessities': { icon: 'Plus', color: 'bg-green-600', label: 'Necessities' },
+  'food_drinks': { icon: 'Utensils', color: 'bg-orange-600', label: 'Food & Drinks' },
+  'leisure': { icon: 'PlayCircle', color: 'bg-purple-600', label: 'Leisure & Entertainment' },
+  'bungalows': { icon: 'Building', color: 'bg-red-500', label: 'Bungalows' },
   'beach_houses': { icon: 'Building2', color: 'bg-blue-500', label: 'Beach Houses' },
   'chalets': { icon: 'Building', color: 'bg-orange-500', label: 'Chalets' },
-  'lodges': { icon: 'Building2', color: 'bg-purple-500', label: 'Lodges' },
-  'camper_sites': { icon: 'Car', color: 'bg-gray-500', label: 'Camper Sites' },
-  'services': { icon: 'Utensils', color: 'bg-yellow-500', label: 'Services' },
-  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' },
-  'parking': { icon: 'Car', color: 'bg-blue-600', label: 'Parking' }
+  'camping': { icon: 'Car', color: 'bg-yellow-500', label: 'Camping' },
+  'lodges': { icon: 'Building2', color: 'bg-indigo-600', label: 'Lodges' },
+  'facilities': { icon: 'MapPin', color: 'bg-slate-600', label: 'Facilities' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
