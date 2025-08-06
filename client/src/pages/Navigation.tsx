@@ -6,7 +6,7 @@ import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
-import { TopManeuverPanel } from '@/components/Navigation/BottomSummaryPanel';
+import { TopManeuverPanel } from '@/components/Navigation/TopManeuverPanel';
 import { BottomSummaryPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { TravelModeSelector } from '@/components/Navigation/TravelModeSelector';
