@@ -153,14 +153,11 @@ async function getPOIData(site: string) {
           name: name,
           category,
           coordinates,
-          description: props.description || [props.amenity, props.leisure, props.tourism, props.shop]
+          description: [props.amenity, props.leisure, props.tourism, props.shop]
             .filter(Boolean)
             .join(', ') || 'Point of interest',
           amenities: amenities.length > 0 ? amenities : undefined,
-          hours: props.opening_hours || props['opening_hours:restaurant'] || undefined,
-          house_number: props.house_number || undefined,
-          building_type: props.building_type || undefined,
-          status: props.status || undefined
+          hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
         };
       }).filter(Boolean);
       allPois = allPois.concat(pois);
@@ -292,10 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filteredPOIs = filteredPOIs.filter((poi: any) => 
           (poi.name && poi.name.toLowerCase().includes(searchTerm)) ||
           (poi.description && poi.description.toLowerCase().includes(searchTerm)) ||
-          (poi.category && poi.category.toLowerCase().includes(searchTerm)) ||
-          (poi.house_number && poi.house_number.toString().includes(searchTerm)) ||
-          (poi.building_type && poi.building_type.toLowerCase().includes(searchTerm)) ||
-          (poi.id && poi.id.toLowerCase().includes(searchTerm))
+          (poi.category && poi.category.toLowerCase().includes(searchTerm))
         );
       }
 
