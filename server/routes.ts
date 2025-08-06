@@ -349,6 +349,10 @@ async function getPOIData(site: string): Promise<POI[]> {
                   case 'chalets/lodges':
                     category = 'chalets';
                     subCategory = 'standard';
+                    // Ensure name is properly set for chalets
+                    if (!name || name === 'Roompot POI') {
+                      name = props.name || `Chalet ${props.ref || index}`;
+                    }
                     break;
                   case 'bungalows - standard':
                     category = 'bungalows';
@@ -657,7 +661,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filteredPOIs = filteredPOIs.filter((poi: any) =>
           poi.name.toLowerCase().includes(searchTerm) ||
           poi.description?.toLowerCase().includes(searchTerm) ||
-          poi.category.toLowerCase().includes(searchTerm)
+          poi.category.toLowerCase().includes(searchTerm) ||
+          poi.subCategory?.toLowerCase().includes(searchTerm) ||
+          poi.id.toLowerCase().includes(searchTerm) ||
+          poi.buildingType?.toLowerCase().includes(searchTerm)
         );
       }
 
