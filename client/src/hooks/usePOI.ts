@@ -5,11 +5,21 @@ export const usePOI = (site: TestSite = 'kamperland') => {
   return useQuery({
     queryKey: ['/api/pois', site],
     queryFn: async () => {
+      console.log(`🔍 POI FETCH DEBUG: Fetching POIs for site: ${site}`);
       const response = await fetch(`/api/pois?site=${site}`);
       if (!response.ok) {
+        console.error(`🔍 POI FETCH ERROR: Response not ok:`, response.status, response.statusText);
         throw new Error('Failed to fetch POI data');
       }
       const data = await response.json();
+      console.log(`🔍 POI FETCH DEBUG: Received ${data.length} POIs`);
+      
+      if (data.length > 0) {
+        const categories = [...new Set(data.map((poi: POI) => poi.category))];
+        console.log(`🔍 POI FETCH DEBUG: Available categories:`, categories);
+        console.log(`🔍 POI FETCH DEBUG: Sample POIs:`, data.slice(0, 3));
+      }
+      
       return data as POI[];
     },
     staleTime: Infinity, // POI data doesn't change frequently

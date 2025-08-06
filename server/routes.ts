@@ -35,12 +35,12 @@ const osmCategoryMapping: Record<string, string> = {
 };
 
 const buildingCategoryMapping: Record<string, string> = {
-  'static_caravan': 'facilities',
+  'static_caravan': 'accommodations',
   'retail': 'services',
   'yes': 'buildings',
-  'bungalow': 'facilities',
+  'bungalow': 'accommodations', 
   'house': 'buildings',
-  'semidetached_house': 'buildings',
+  'semidetached_house': 'accommodations',
   'office': 'services',
   'commercial': 'services',
   'industrial': 'services',
@@ -48,28 +48,39 @@ const buildingCategoryMapping: Record<string, string> = {
   'garage': 'services',
   'service': 'services',
   'detached': 'buildings',
-  'toilets': 'services',
+  'toilets': 'facilities',
   'swimming_pool': 'recreation',
   'restaurant': 'food-drink',
-  'hotel': 'facilities'
+  'hotel': 'accommodations',
+  'parking': 'parking',
+  'landuse_grass': 'amenities'
 };
 
 // Load authentic OpenStreetMap POI data
 async function getPOIData(site: string) {
   try {
-    // For Kamperland: load both GeoJSON files, for Zuhause: only its own file
-    const poiFilenames = site === 'zuhause' 
-      ? ['zuhause_pois.geojson'] 
-      : ['kamperland_pois.geojson', 'Beach Resort Zentroide Layer.geojson'];
+    console.log(`🔍 POI DEBUG: Loading data for site: ${site}`);
+    
+    // Map site names to actual available files
+    const siteFileMapping: Record<string, string[]> = {
+      'kamperland': ['roompot_pois.geojson'], // Use roompot data for kamperland
+      'roompot': ['roompot_pois.geojson'],
+      'zuhause': ['zuhause_pois.geojson']
+    };
+
+    const poiFilenames = siteFileMapping[site] || ['roompot_pois.geojson']; // Default fallback
+    console.log(`🔍 POI DEBUG: Will attempt to load files:`, poiFilenames);
 
     let allPois: any[] = [];
 
     for (const filename of poiFilenames) {
       const filePath = join(process.cwd(), 'server', 'data', filename);
+      console.log(`🔍 POI DEBUG: Attempting to read file: ${filePath}`);
+      
       const data = readFileSync(filePath, 'utf-8');
       const geojson = JSON.parse(data);
 
-      console.log(`POI DATA DEBUG: File ${filename} contains ${geojson.features.length} features`);
+      console.log(`🔍 POI DEBUG: File ${filename} contains ${geojson.features.length} features`);
 
     if (filename === 'Beach Resort Zentroide Layer.geojson') {
       console.log('Beach Resort features breakdown:');
@@ -86,7 +97,22 @@ async function getPOIData(site: string) {
         let name = props.name;
         let category = 'unknown';
 
-        if (filename === 'Beach Resort Zentroide Layer.geojson') {
+        // Handle roompot_pois.geojson format
+        if (filename === 'roompot_pois.geojson') {
+          const buildingType = props.building_type;
+          const poiName = props.name;
+
+          if (buildingType || poiName) {
+            name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
+            category = buildingCategoryMapping[buildingType] || 'buildings';
+            
+            if (index < 10) { // Debug first 10 POIs
+              console.log(`🔍 POI DEBUG: Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
+            }
+          }
+        } 
+        // Handle Beach Resort format (if it exists)
+        else if (filename === 'Beach Resort Zentroide Layer.geojson') {
           const buildingType = props.BUILDING;
           const houseNumber = props.A_HSNMBR;
           const poiName = props.NAME;
@@ -148,7 +174,7 @@ async function getPOIData(site: string) {
           amenities.push(`Address: ${props['addr:housenumber']} ${props['addr:street']}`);
         }
 
-        return {
+        const poiObject = {
           id: feature.id?.toString() || `${site}_${index}`,
           name: name,
           category,
@@ -159,9 +185,22 @@ async function getPOIData(site: string) {
           amenities: amenities.length > 0 ? amenities : undefined,
           hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
         };
+
+        if (index < 5) { // Log first 5 POIs for debugging
+          console.log(`🔍 POI DEBUG: Created POI ${index}:`, {
+            name: poiObject.name,
+            category: poiObject.category,
+            coordinates: poiObject.coordinates,
+            buildingType: props.building_type || props.BUILDING
+          });
+        }
+
+        return poiObject;
       }).filter(Boolean);
       allPois = allPois.concat(pois);
     }
+
+    console.log(`🔍 POI DEBUG: Total POIs before filtering: ${allPois.length}`);
 
     // Filter POIs to only include useful ones
     const filteredPOIs = allPois.filter((poi: any) => {
@@ -176,6 +215,16 @@ async function getPOIData(site: string) {
 
       return false;
     });
+
+    // Log category breakdown
+    const categoryBreakdown = filteredPOIs.reduce((acc: Record<string, number>, poi: any) => {
+      acc[poi.category] = (acc[poi.category] || 0) + 1;
+      return acc;
+    }, {});
+    
+    console.log(`🔍 POI DEBUG: Final POI count: ${filteredPOIs.length}`);
+    console.log(`🔍 POI DEBUG: Category breakdown:`, categoryBreakdown);
+
     return filteredPOIs;
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);

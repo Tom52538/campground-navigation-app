@@ -31,6 +31,9 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
   const tooltipTimeoutRef = useRef<number | null>(null);
 
   const handleCategoryClick = useCallback((category: string) => {
+    console.log(`🔍 POI BUTTON DEBUG: Category clicked: ${category}`);
+    console.log(`🔍 POI BUTTON DEBUG: Previous active category: ${activeCategory}`);
+    
     onCategorySelect(category);
     setVisibleTooltip(category);
 
@@ -41,7 +44,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
     tooltipTimeoutRef.current = window.setTimeout(() => {
       setVisibleTooltip(null);
     }, 2000);
-  }, [onCategorySelect]);
+  }, [onCategorySelect, activeCategory]);
 
   useEffect(() => {
     return () => {

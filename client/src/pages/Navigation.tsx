@@ -3,7 +3,7 @@ import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
-import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
+import { EnhancedMap Controls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
@@ -399,7 +399,7 @@ export default function Navigation() {
       setMapStyle(style);
       console.log('🗺️ DEBUG - setMapStyle completed successfully');
 
-      // Auto-switch to navigation mode when using navigation style during active navigation
+      // Auto-switch to driving orientation when using navigation style during active navigation
       if (style === 'navigation' && isNavigating) {
         console.log('🗺️ DEBUG - Auto-switching to driving orientation for navigation style');
         setMapOrientation('driving');
@@ -526,6 +526,73 @@ export default function Navigation() {
   }
 
   try {
+    // Display POIs logic
+    const displayPOIs = useMemo(() => {
+      console.log(`🔍 DISPLAY POIs DEBUG:`, {
+        'searchQuery': searchQuery.length,
+        'filteredCategoriesCount': filteredCategories.length,
+        'displayPOIsCount': allPOIs?.length || 0,
+        'shouldShowPOIs': (filteredCategories.length > 0 || searchQuery.trim().length > 0),
+        'firstPOI': allPOIs?.[0]?.name || 'none'
+      });
+
+      if (!allPOIs) {
+        console.log(`🔍 DISPLAY POIs DEBUG: No POI data available`);
+        return [];
+      }
+
+      let filtered = allPOIs;
+      console.log(`🔍 DISPLAY POIs DEBUG: Starting with ${filtered.length} total POIs`);
+
+      // Apply category filters
+      if (filteredCategories.length > 0) {
+        console.log(`🔍 DISPLAY POIs DEBUG: Applying category filters:`, filteredCategories);
+        const beforeFilter = filtered.length;
+        filtered = filtered.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
+        console.log(`🔍 DISPLAY POIs DEBUG: Category filter reduced POIs from ${beforeFilter} to ${filtered.length}`);
+
+        if (filtered.length === 0) {
+          console.log(`🔍 DISPLAY POIs DEBUG: No POIs match selected categories. Available categories:`, 
+            [...new Set(allPOIs.map(poi => poi.category))]);
+        }
+      }
+
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        console.log(`🔍 DISPLAY POIs DEBUG: Applying search filter: "${query}"`);
+        const beforeSearch = filtered.length;
+        filtered = filtered.filter(poi => 
+          poi.name.toLowerCase().includes(query) ||
+          poi.category.toLowerCase().includes(query) ||
+          poi.description?.toLowerCase().includes(query)
+        );
+        console.log(`🔍 DISPLAY POIs DEBUG: Search filter reduced POIs from ${beforeSearch} to ${filtered.length}`);
+      }
+
+      console.log(`🔍 DISPLAY POIs DEBUG: Final filtered POIs count: ${filtered.length}`);
+      if (filtered.length > 0) {
+        console.log(`🔍 DISPLAY POIs DEBUG: Sample filtered POIs:`, filtered.slice(0, 3).map(poi => ({
+          name: poi.name,
+          category: poi.category
+        })));
+      }
+
+      return filtered;
+    }, [allPOIs, filteredCategories, searchQuery]);
+
+    const shouldShowPOIs = displayPOIs.length > 0;
+
+    console.log('🔍 POI RENDERING DEBUG:', {
+      totalPOIs: displayPOIs.length,
+      filteredCategories,
+      firstFewPOIs: displayPOIs.slice(0, 3).map(poi => poi.name),
+      poiDataLoading: poisLoading,
+      poiDataError: undefined, // Assuming usePOI hook handles error display if any
+      shouldShowPOIs
+    });
+
+
     return (
       <div className="relative h-screen w-full overflow-hidden">
         {/* Map Container - 100% Visible, Always Interactive */}
@@ -563,7 +630,7 @@ export default function Navigation() {
               selectedPOI={!!selectedPOI}
             />
 
-            
+
 
             {/* Camping Weather Widget */}
             <CampingWeatherWidget coordinates={currentPosition} />
@@ -591,7 +658,7 @@ export default function Navigation() {
           />
         )}
 
-        {/* NAVIGATION MODE - Only visible when actively navigating */}
+        {/*NAVIGATION MODE - Only visible when actively navigating */}
         {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
           <>
             {/* Top: Current Maneuver */}
