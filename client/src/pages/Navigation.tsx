@@ -513,18 +513,6 @@ export default function Navigation() {
     selectedPOI: !!selectedPOI
   });
 
-  // Check loading state AFTER all hooks are called
-  if (poisLoading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('status.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
   try {
     // Display POIs logic
     const displayPOIs = useMemo(() => {
@@ -592,6 +580,17 @@ export default function Navigation() {
       shouldShowPOIs
     });
 
+    // Handle loading state within main render flow
+    if (poisLoading) {
+      return (
+        <div className="h-screen w-full flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">{t('status.loading')}</p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="relative h-screen w-full overflow-hidden">
