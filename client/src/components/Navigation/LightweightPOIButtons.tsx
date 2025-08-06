@@ -18,7 +18,6 @@ const poiCategories = [
 
   // Services & amenities
   { icon: '🛠️', label: 'Services', id: 'services' },
-  { icon: '🏥', label: 'Necessities', id: 'necessities' },
   { icon: '🍽️', label: 'Food & Drinks', id: 'food-drink' },
   { icon: '🎯', label: 'Leisure', id: 'leisure' },
   { icon: '🚻', label: 'Toilets', id: 'toilets' },
