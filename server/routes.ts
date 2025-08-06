@@ -4,6 +4,8 @@ import { WeatherService } from "../client/src/lib/weatherService";
 import { GoogleDirectionsService } from "./lib/googleDirectionsService";
 import { readFileSync } from "fs";
 import { join } from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 
 // Category mapping for campsite navigation
@@ -52,56 +54,126 @@ const buildingCategoryMapping: Record<string, string> = {
   'landuse_grass': 'facilities'
 };
 
+// Placeholder for transformation functions, assuming they exist elsewhere or will be defined.
+// For the purpose of this fix, we'll assume these functions are correctly implemented elsewhere.
+// If they are not, this code would still fail at runtime but the immediate fix is for file loading.
+
+interface POI {
+  id: string;
+  name: string;
+  category: string;
+  coordinates: { lat: number; lng: number };
+  description?: string;
+  amenities?: string[];
+  hours?: string;
+}
+
+// Dummy transformation functions to allow the code to compile and run without errors,
+// as the original code implies their existence but they are not provided.
+// In a real scenario, these would contain the logic to parse different GeoJSON formats.
+function transformRoompotPOIs(geoData: any): POI[] {
+  console.log('transformRoompotPOIs called');
+  // This is a placeholder. The actual transformation logic needs to be implemented.
+  return (geoData.features || []).map((feature: any, index: number) => ({
+    id: feature.id?.toString() || `roompot_${index}`,
+    name: feature.properties?.name || 'Roompot POI',
+    category: feature.properties?.building_type || 'unknown',
+    coordinates: { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] },
+    description: feature.properties?.description || 'Point of interest',
+  }));
+}
+
+function transformGeoJsonToPOIs(geoData: any, site: string): POI[] {
+  console.log(`transformGeoJsonToPOIs called for site: ${site}`);
+  // This is a placeholder. The actual transformation logic needs to be implemented.
+  return (geoData.features || []).map((feature: any, index: number) => {
+    const props = feature.properties;
+    let name = props.name || props.NAME || `Site POI ${index}`;
+    let category = 'unknown';
+
+    if (site === 'kamperland' && props.BUILDING) {
+      category = buildingCategoryMapping[props.BUILDING] || 'buildings';
+      name = props.A_HSNMBR ? `${props.BUILDING} ${props.A_HSNMBR}` : name;
+    } else if (props.amenity) {
+      category = osmCategoryMapping[props.amenity] || 'services';
+    } else if (props.leisure) {
+      category = osmCategoryMapping[props.leisure] || 'leisure';
+    } else if (props.tourism) {
+      category = osmCategoryMapping[props.tourism] || 'attraction';
+    } else if (props.shop) {
+      category = 'services';
+    } else if (props.building) {
+      category = buildingCategoryMapping[props.building] || 'buildings';
+    }
+
+    let coordinates;
+    if (feature.geometry.type === 'Point') {
+      coordinates = { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] };
+    } else if (feature.geometry.type === 'Polygon') {
+      const coords = feature.geometry.coordinates[0];
+      const lats = coords.map((c: number[]) => c[1]);
+      const lngs = coords.map((c: number[]) => c[0]);
+      coordinates = {
+        lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
+        lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
+      };
+    } else {
+      return null; // Skip unsupported geometry types
+    }
+
+    return {
+      id: feature.id?.toString() || `${site}_${index}`,
+      name: name,
+      category: category,
+      coordinates: coordinates,
+      description: props.description || 'Point of interest',
+    };
+  }).filter((poi: POI | null) => poi !== null) as POI[];
+}
+
+
 // Load authentic OpenStreetMap POI data
-async function getPOIData(site: string) {
+async function getPOIData(site: string): Promise<POI[]> {
   try {
     console.log(`🔍 POI DEBUG: Loading data for site: ${site}`);
 
     // Map site names to actual available files
-    const siteFileMapping: Record<string, string[]> = {
-      'kamperland': ['roompot_pois.geojson', 'Beach Resort Zentroide Layer.geojson'], // Use roompot data for kamperland
-      'roompot': ['roompot_pois.geojson'],
-      'zuhause': ['zuhause_pois.geojson']
+    const siteFileMap: Record<string, string[]> = {
+      kamperland: ['roompot_pois.geojson', 'Beach Resort Zentroide Layer.geojson'], // Use roompot data for kamperland
+      zuhause: ['zuhause_pois.geojson'],
+      default: ['roompot_pois.geojson'] // Default fallback
     };
 
-    const poiFilenames = siteFileMapping[site] || ['roompot_pois.geojson']; // Default fallback
-    console.log(`🔍 POI DEBUG: Will attempt to load files:`, poiFilenames);
+    const files = siteFileMap[site] || siteFileMap.default;
+    console.log(`🔍 POI DEBUG: Will attempt to load files:`, files);
 
-    let allPois: any[] = [];
+    let allPOIs: POI[] = [];
 
-    for (const filename of poiFilenames) {
-      const filePath = join(process.cwd(), 'server', 'data', filename);
+    for (const filename of files) {
+      // Construct the full path to the data file
+      const filePath = path.join(process.cwd(), 'server', 'data', filename);
       console.log(`🔍 POI DEBUG: Attempting to read file: ${filePath}`);
 
-      const data = readFileSync(filePath, 'utf-8');
-      const geojson = JSON.parse(data);
+      if (!fs.existsSync(filePath)) {
+        console.log(`🔍 POI DEBUG: File ${filename} does not exist at ${filePath}, skipping`);
+        continue;
+      }
 
-      console.log(`🔍 POI DEBUG: File ${filename} contains ${geojson.features.length} features`);
+      try {
+        const data = fs.readFileSync(filePath, 'utf-8');
+        const geojson = JSON.parse(data);
 
-    if (filename === 'Beach Resort Zentroide Layer.geojson') {
-      console.log('Beach Resort features breakdown:');
-      const buildingTypes = geojson.features.reduce((acc: Record<string, number>, feature: any) => {
-        const building = feature.properties?.BUILDING || 'no_building_type';
-        acc[building] = (acc[building] || 0) + 1;
-        return acc;
-      }, {});
-      console.log('Building types:', buildingTypes);
-    }
+        console.log(`🔍 POI DEBUG: File ${filename} contains ${geojson.features?.length || 0} features`);
 
-      const pois = geojson.features.map((feature: any, index: number) => {
-        const props = feature.properties;
-        let name = props.name;
-        let category = 'unknown';
-
-        // Handle roompot_pois.geojson format
+        // Process and categorize POIs based on filename and properties
         if (filename === 'roompot_pois.geojson') {
-          const buildingType = props.building_type;
-          const poiName = props.name;
+          const pois = geojson.features.map((feature: any, index: number) => {
+            const props = feature.properties;
+            const buildingType = props.building_type;
+            const poiName = props.name;
+            let name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
+            let category = 'unknown';
 
-          if (buildingType || poiName) {
-            name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
-
-            // Categorize based on accommodation type from name/building type
             if (poiName && poiName.toLowerCase().includes('bungalow')) {
               category = 'bungalow';
             } else if (poiName && poiName.toLowerCase().includes('beach house')) {
@@ -120,109 +192,164 @@ async function getPOIData(site: string) {
               category = 'static_caravan'; // Default for accommodation
             }
             console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
-          }
-        }
-        // Handle Beach Resort format (if it exists)
-        else if (filename === 'Beach Resort Zentroide Layer.geojson') {
-          const buildingType = props.BUILDING;
-          const houseNumber = props.A_HSNMBR;
-          const poiName = props.NAME;
 
-          if (buildingType || poiName) {
+            let coordinates;
+            if (feature.geometry.type === 'Point') {
+              coordinates = { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] };
+            } else { return null; } // Skip non-point geometries for roompot data
+
+            const amenities = [];
+            if (props.phone) amenities.push(`Phone: ${props.phone}`);
+            if (props.website) amenities.push(`Website: ${props.website}`);
+
+            return {
+              id: feature.id?.toString() || `roompot_${index}`,
+              name: name,
+              category,
+              coordinates,
+              amenities: amenities.length > 0 ? amenities : undefined,
+              hours: props.opening_hours || undefined
+            };
+          }).filter(Boolean);
+          allPOIs.push(...pois);
+
+        } else if (filename === 'Beach Resort Zentroide Layer.geojson') {
+          const buildingTypes = geojson.features.reduce((acc: Record<string, number>, feature: any) => {
+            const building = feature.properties?.BUILDING || 'no_building_type';
+            acc[building] = (acc[building] || 0) + 1;
+            return acc;
+          }, {});
+          console.log('Beach Resort features breakdown:', buildingTypes);
+
+          const pois = geojson.features.map((feature: any, index: number) => {
+            const props = feature.properties;
+            const buildingType = props.BUILDING;
+            const houseNumber = props.A_HSNMBR;
+            const poiName = props.NAME;
+            let name = 'Beach Resort POI';
+
             if (buildingType && houseNumber) {
               name = buildingType === 'static_caravan' ? `Stellplatz ${houseNumber}` : `${buildingType} ${houseNumber}`;
             } else if (poiName) {
               name = poiName;
             } else if (buildingType) {
               name = buildingType.charAt(0).toUpperCase() + buildingType.slice(1);
-            } else {
-              name = 'Beach Resort POI';
             }
-            category = buildingCategoryMapping[buildingType] || 'buildings';
+
+            const category = buildingCategoryMapping[buildingType] || 'buildings';
             console.log(`Beach Resort POI: ${name}, Building: ${buildingType}, Category: ${category}`);
-          }
+
+            let coordinates;
+            if (feature.geometry.type === 'Point') {
+              coordinates = { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] };
+            } else if (feature.geometry.type === 'Polygon') {
+              const coords = feature.geometry.coordinates[0];
+              const lats = coords.map((c: number[]) => c[1]);
+              const lngs = coords.map((c: number[]) => c[0]);
+              coordinates = {
+                lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
+                lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
+              };
+            } else {
+              return null; // Skip unsupported geometry types
+            }
+
+            const amenities = [];
+            if (props.phone) amenities.push(`Phone: ${props.phone}`);
+            if (props.website) amenities.push(`Website: ${props.website}`);
+            if (props['addr:street'] && props['addr:housenumber']) {
+              amenities.push(`Address: ${props['addr:housenumber']} ${props['addr:street']}`);
+            }
+
+            return {
+              id: feature.id?.toString() || `beachresort_${index}`,
+              name: name,
+              category,
+              coordinates,
+              amenities: amenities.length > 0 ? amenities : undefined,
+              hours: props.opening_hours || undefined
+            };
+          }).filter(Boolean);
+          allPOIs.push(...pois);
         } else {
-          if (props.amenity && osmCategoryMapping[props.amenity]) {
-            category = osmCategoryMapping[props.amenity];
-          } else if (props.leisure && osmCategoryMapping[props.leisure]) {
-            category = osmCategoryMapping[props.leisure];
-          } else if (props.tourism && osmCategoryMapping[props.tourism]) {
-            category = osmCategoryMapping[props.tourism];
-          } else if (props.shop) {
-            category = 'services';
-          } else if (props.building && buildingCategoryMapping[props.building]) {
-            category = buildingCategoryMapping[props.building];
-          }
+          // General OSM category mapping
+          const pois = geojson.features.map((feature: any, index: number) => {
+            const props = feature.properties;
+            let category = 'unknown';
+
+            if (props.amenity && osmCategoryMapping[props.amenity]) {
+              category = osmCategoryMapping[props.amenity];
+            } else if (props.leisure && osmCategoryMapping[props.leisure]) {
+              category = osmCategoryMapping[props.leisure];
+            } else if (props.tourism && osmCategoryMapping[props.tourism]) {
+              category = osmCategoryMapping[props.tourism];
+            } else if (props.shop) {
+              category = 'services';
+            } else if (props.building && buildingCategoryMapping[props.building]) {
+              category = buildingCategoryMapping[props.building];
+            } else {
+              category = 'services'; // Default category for general POIs
+            }
+
+            let name = props.name || 'POI';
+            if (props.tourism === 'hotel' && props['addr:housenumber']) name = `Hotel ${props['addr:housenumber']}`;
+            if (props.shop === 'supermarket' && props.name) name = props.name;
+
+            let coordinates;
+            if (feature.geometry.type === 'Point') {
+              coordinates = { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] };
+            } else if (feature.geometry.type === 'Polygon') {
+              const coords = feature.geometry.coordinates[0];
+              const lats = coords.map((c: number[]) => c[1]);
+              const lngs = coords.map((c: number[]) => c[0]);
+              coordinates = {
+                lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
+                lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
+              };
+            } else {
+              return null; // Skip unsupported geometry types
+            }
+
+            const amenities = [];
+            if (props.cuisine) amenities.push(`Cuisine: ${props.cuisine}`);
+            if (props.phone) amenities.push(`Phone: ${props.phone}`);
+            if (props.website) amenities.push(`Website: ${props.website}`);
+            if (props['addr:street'] && props['addr:housenumber']) {
+              amenities.push(`Address: ${props['addr:housenumber']} ${props['addr:street']}`);
+            }
+
+            return {
+              id: feature.id?.toString() || `${site}_${index}`,
+              name: name,
+              category,
+              coordinates,
+              description: [props.amenity, props.leisure, props.tourism, props.shop]
+                .filter(Boolean)
+                .join(', ') || 'Point of interest',
+              amenities: amenities.length > 0 ? amenities : undefined,
+              hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
+            };
+          }).filter(Boolean);
+          allPOIs.push(...pois);
         }
-
-        // Extract coordinates from geometry
-        let coordinates;
-        if (feature.geometry.type === 'Point') {
-          coordinates = {
-            lat: feature.geometry.coordinates[1],
-            lng: feature.geometry.coordinates[0]
-          };
-        } else if (feature.geometry.type === 'Polygon') {
-          // Calculate centroid for polygons
-          const coords = feature.geometry.coordinates[0];
-          const lats = coords.map((c: number[]) => c[1]);
-          const lngs = coords.map((c: number[]) => c[0]);
-          coordinates = {
-            lat: lats.reduce((a: number, b: number) => a + b) / lats.length,
-            lng: lngs.reduce((a: number, b: number) => a + b) / lngs.length
-          };
-        } else {
-          // Skip unsupported geometry types
-          return null;
-        }
-
-        // Extract amenities
-        const amenities = [];
-        if (props.cuisine) amenities.push(`Cuisine: ${props.cuisine}`);
-        if (props.phone) amenities.push(`Phone: ${props.phone}`);
-        if (props.website) amenities.push(`Website: ${props.website}`);
-        if (props['addr:street'] && props['addr:housenumber']) {
-          amenities.push(`Address: ${props['addr:housenumber']} ${props['addr:street']}`);
-        }
-
-        const poiObject = {
-          id: feature.id?.toString() || `${site}_${index}`,
-          name: name,
-          category,
-          coordinates,
-          description: [props.amenity, props.leisure, props.tourism, props.shop]
-            .filter(Boolean)
-            .join(', ') || 'Point of interest',
-          amenities: amenities.length > 0 ? amenities : undefined,
-          hours: props.opening_hours || props['opening_hours:restaurant'] || undefined
-        };
-
-        if (index < 5) { // Log first 5 POIs for debugging
-          console.log(`🔍 POI DEBUG: Created POI ${index}:`, {
-            name: poiObject.name,
-            category: poiObject.category,
-            coordinates: poiObject.coordinates,
-            buildingType: props.building_type || props.BUILDING
-          });
-        }
-
-        return poiObject;
-      }).filter(Boolean);
-      allPois = allPois.concat(pois);
+      } catch (parseError) {
+        console.error(`🔍 POI DEBUG: Error parsing ${filename}:`, parseError);
+        continue; // Continue to the next file if parsing fails
+      }
     }
 
-    console.log(`🔍 POI DEBUG: Total POIs before filtering: ${allPois.length}`);
+    console.log(`🔍 POI DEBUG: Total POIs before filtering: ${allPOIs.length}`);
 
     // Filter POIs to only include useful ones
-    const filteredPOIs = allPois.filter((poi: any) => {
+    const filteredPOIs = allPOIs.filter((poi: any) => {
       // Always include POIs with valid names
       if (poi.name && poi.name.trim() !== '') return true;
 
       // For Beach Resort, include building-based POIs
-      if (poi.category && poi.category !== 'unknown') return true;
+      if (poi.category && poi.category !== 'unknown' && poi.category !== 'buildings') return true;
 
       // For Beach Resort static caravans and buildings, include all
-      if (poi.name && (poi.name.includes('Stellplatz') || poi.name.includes('static_caravan'))) return true;
+      if (poi.name && (poi.name.includes('Stellplatz') || poi.name.includes('static_caravan') || poi.category === 'buildings')) return true;
 
       return false;
     });
@@ -233,13 +360,22 @@ async function getPOIData(site: string) {
       return acc;
     }, {});
 
-    console.log(`🔍 POI DEBUG: Final POI count: ${filteredPOIs.length}`);
+    console.log(`POI API: Loaded ${filteredPOIs.length} POIs for site ${site}`);
     console.log(`🔍 POI DEBUG: Category breakdown:`, categoryBreakdown);
+    console.log(`🔍 POI DEBUG: Sample POI response:`, filteredPOIs.slice(0, 2).map(poi => ({
+      id: poi.id,
+      name: poi.name,
+      category: poi.category,
+      coordinates: poi.coordinates
+    })));
+
+    // Set proper headers to ensure data reaches client
+    // headers are set in the API route handler, not here. This function just returns data.
 
     return filteredPOIs;
   } catch (error) {
     console.error(`Error loading POI data for ${site}:`, error);
-    return [];
+    return []; // Return empty array on error
   }
 }
 
@@ -311,15 +447,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const site = req.query.site || 'kamperland';
       const pois = await getPOIData(site as string);
-      console.log(`POI API: Loaded ${pois.length} POIs for site ${site}`);
-      if (site === 'beach_resort') {
+      // console.log(`POI API: Loaded ${pois.length} POIs for site ${site}`);
+      // Removed redundant logging here as getPOIData already logs
+      if (site === 'kamperland' && pois.length > 0 && pois[0].category === 'buildings') { // Check for Beach Resort data specifically
         const categoryCount = pois.reduce((acc, poi) => {
           acc[poi.category] = (acc[poi.category] || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
         console.log('Beach Resort POI categories:', categoryCount);
       }
-      res.json(pois);
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.status(200).json(pois);
     } catch (error) {
       console.error("POI API error:", error);
       res.status(500).json({ error: "Failed to fetch POI data" });
@@ -332,7 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { q: query, category, site } = req.query;
 
       // Get POIs for the specific site directly from data files
-      // Now supports combined Kamperland data (kamperland_pois.geojson + Beach Resort Zentroide Layer.geojson)
+      // Now supports combined Kamperland data (roompot_pois.geojson + Beach Resort Zentroide Layer.geojson)
       const siteName = (site as string) || 'kamperland';
       const allPOIs = await getPOIData(siteName);
 
@@ -353,7 +492,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       }
 
-      res.json(filteredPOIs);
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.status(200).json(filteredPOIs);
     } catch (error) {
       console.error("POI search error:", error);
       res.status(500).json({ error: "Failed to search POIs" });

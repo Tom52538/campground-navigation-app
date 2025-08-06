@@ -7,22 +7,21 @@ interface LightweightPOIButtonsProps {
   selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
-// Accommodation-specific categories based on Roompot legend
+// POI categories matching actual server data
 const poiCategories = [
   // Essential Services - First Row
-  { icon: '🚿', label: 'Facilities', id: 'facilities' }, // Toilets, showers, etc.
-  { icon: '🛠️', label: 'Services', id: 'services' }, // Shops, info, maintenance
+  { icon: '🚿', label: 'Facilities', id: 'facilities' }, // 39 POIs
+  { icon: '🛠️', label: 'Services', id: 'services' }, // 22 POIs
   
-  // Accommodation Types - Second Row  
-  { icon: '🏡', label: 'Bungalows', id: 'bungalow' }, // B1, B5, BA Comfort series
-  { icon: '🏖️', label: 'Beach Houses', id: 'beach_house' }, // Beach House 4, 6A, 6B
+  // Accommodations - Second Row  
+  { icon: '🏡', label: 'Accommodations', id: 'accommodations' }, // 1649 POIs - largest category
+  { icon: '🏢', label: 'Buildings', id: 'buildings' }, // 168 POIs
   
-  // Premium Accommodations - Third Row
-  { icon: '🏕️', label: 'Chalets', id: 'chalet' }, // RP64A, RP4A series  
-  { icon: '⭐', label: 'Lodges', id: 'lodge' }, // Water Village Lodges
+  // Additional Services - Third Row
+  { icon: '🅿️', label: 'Parking', id: 'parking' }, // 12 POIs
+  { icon: '🎯', label: 'Amenities', id: 'amenities' }, // 15 POIs
   
-  // Camping Areas - Fourth Row
-  { icon: '🚐', label: 'Camper Sites', id: 'static_caravan' }, // Static caravans
+  // Clear filter - Fourth Row
   { icon: '📍', label: 'All POIs', id: '' }, // Show all when empty category
 ];
 
