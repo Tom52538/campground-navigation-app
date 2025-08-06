@@ -13,13 +13,13 @@ export const usePOI = (site: TestSite = 'kamperland') => {
       }
       const data = await response.json();
       console.log(`🔍 POI FETCH DEBUG: Received ${data.length} POIs`);
-      
+
       if (data.length > 0) {
         const categories = [...new Set(data.map((poi: POI) => poi.category))];
         console.log(`🔍 POI FETCH DEBUG: Available categories:`, categories);
         console.log(`🔍 POI FETCH DEBUG: Sample POIs:`, data.slice(0, 3));
       }
-      
+
       return data as POI[];
     },
     staleTime: Infinity, // POI data doesn't change frequently

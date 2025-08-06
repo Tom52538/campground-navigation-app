@@ -38,7 +38,7 @@ const buildingCategoryMapping: Record<string, string> = {
   'static_caravan': 'accommodations',
   'retail': 'services',
   'yes': 'buildings',
-  'bungalow': 'accommodations', 
+  'bungalow': 'accommodations',
   'house': 'buildings',
   'semidetached_house': 'accommodations',
   'office': 'services',
@@ -60,7 +60,7 @@ const buildingCategoryMapping: Record<string, string> = {
 async function getPOIData(site: string) {
   try {
     console.log(`🔍 POI DEBUG: Loading data for site: ${site}`);
-    
+
     // Map site names to actual available files
     const siteFileMapping: Record<string, string[]> = {
       'kamperland': ['roompot_pois.geojson'], // Use roompot data for kamperland
@@ -76,7 +76,7 @@ async function getPOIData(site: string) {
     for (const filename of poiFilenames) {
       const filePath = join(process.cwd(), 'server', 'data', filename);
       console.log(`🔍 POI DEBUG: Attempting to read file: ${filePath}`);
-      
+
       const data = readFileSync(filePath, 'utf-8');
       const geojson = JSON.parse(data);
 
@@ -105,12 +105,12 @@ async function getPOIData(site: string) {
           if (buildingType || poiName) {
             name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
             category = buildingCategoryMapping[buildingType] || 'buildings';
-            
+
             if (index < 10) { // Debug first 10 POIs
               console.log(`🔍 POI DEBUG: Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
             }
           }
-        } 
+        }
         // Handle Beach Resort format (if it exists)
         else if (filename === 'Beach Resort Zentroide Layer.geojson') {
           const buildingType = props.BUILDING;
@@ -221,7 +221,7 @@ async function getPOIData(site: string) {
       acc[poi.category] = (acc[poi.category] || 0) + 1;
       return acc;
     }, {});
-    
+
     console.log(`🔍 POI DEBUG: Final POI count: ${filteredPOIs.length}`);
     console.log(`🔍 POI DEBUG: Category breakdown:`, categoryBreakdown);
 
@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter by search query if specified
       if (query) {
         const searchTerm = (query as string).toLowerCase();
-        filteredPOIs = filteredPOIs.filter((poi: any) => 
+        filteredPOIs = filteredPOIs.filter((poi: any) =>
           poi.name.toLowerCase().includes(searchTerm) ||
           poi.description?.toLowerCase().includes(searchTerm) ||
           poi.category.toLowerCase().includes(searchTerm)
@@ -430,7 +430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(response);
     } catch (error) {
       console.error("Google Directions API error:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Failed to calculate route",
         details: error.message
       });
@@ -441,8 +441,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: "ok", 
+    res.json({
+      status: "ok",
       timestamp: new Date().toISOString(),
       services: {
         weather: !!process.env.OPENWEATHER_API_KEY || !!process.env.WEATHER_API_KEY,

@@ -3,7 +3,7 @@ import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
 import { FilterModal } from '@/components/Navigation/FilterModal';
 import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
-import { EnhancedMap Controls } from '@/components/Navigation/EnhancedMapControls';
+import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
