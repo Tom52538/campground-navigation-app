@@ -209,12 +209,24 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('RJ')) subCategory = 'rj_comfort';
               else if (poiName?.includes('FV')) subCategory = 'fv14';
               else subCategory = 'standard';
-            } else if (buildingType === 'house' || poiName?.toLowerCase().includes('beach house')) {
-              category = 'beach_houses';
-              if (poiName?.includes('4')) subCategory = 'beach_house_4';
-              else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
-              else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
-              else subCategory = 'standard';
+            } else if (buildingType === 'house') {
+              // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
+              if (poiName?.toLowerCase().includes('beach house') || 
+                  (coordinates.lat > 51.587 && coordinates.lat < 51.590 && coordinates.lng > 3.730 && coordinates.lng < 3.735)) {
+                category = 'beach_houses';
+                if (poiName?.includes('4')) subCategory = 'beach_house_4';
+                else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
+                else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
+                else subCategory = 'standard';
+              } else if (poiName?.toLowerCase().includes('water village') || 
+                        (coordinates.lat > 51.593 && coordinates.lat < 51.595 && coordinates.lng > 3.710 && coordinates.lng < 3.713)) {
+                category = 'lodges';
+                subCategory = 'water_village_lodge';
+              } else {
+                // Regular houses - keep as chalets or create a separate category
+                category = 'chalets';
+                subCategory = 'standard';
+              }
             } else if (buildingType === 'semidetached_house' || buildingType === 'detached' ||
                       (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet')))) {
               category = 'chalets';
