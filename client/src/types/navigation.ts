@@ -59,7 +59,7 @@ export interface MapState {
 }
 
 // Accommodation-specific categories based on Roompot legend
-export type POICategory = 'bungalows' | 'beach_houses' | 'chalets' | 'lodges' | 'camper_sites' | 'services' | 'facilities';
+export type POICategory = 'bungalows' | 'beach_houses' | 'chalets' | 'lodges' | 'camper_sites' | 'services' | 'facilities' | 'parking';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'bungalows': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' },
@@ -68,7 +68,8 @@ export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; 
   'lodges': { icon: 'Building2', color: 'bg-purple-500', label: 'Lodges' },
   'camper_sites': { icon: 'Car', color: 'bg-gray-500', label: 'Camper Sites' },
   'services': { icon: 'Utensils', color: 'bg-yellow-500', label: 'Services' },
-  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' }
+  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' },
+  'parking': { icon: 'Car', color: 'bg-blue-600', label: 'Parking' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {

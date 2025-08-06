@@ -16,6 +16,9 @@ const poiCategories = [
   // Real data categories - Second Row  
   { icon: '🚿', label: 'Facilities', id: 'facilities' },
   { icon: '🛠️', label: 'Services', id: 'services' },
+  
+  // Real data categories - Third Row
+  { icon: '🅿️', label: 'Parking', id: 'parking' },
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {

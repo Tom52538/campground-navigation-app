@@ -188,6 +188,8 @@ async function getPOIData(site: string): Promise<POI[]> {
               category = 'facilities';
             } else if (buildingType === 'retail' || buildingType === 'office') {
               category = 'services';
+            } else if (buildingType === 'parking') {
+              category = 'parking';
             } else {
               category = 'static_caravan'; // Default for accommodation
             }
