@@ -73,6 +73,12 @@ interface POI {
   description?: string;
   amenities?: string[];
   hours?: string;
+  buildingType?: string; // Added buildingType for clarity in roompot data
+}
+
+interface Coordinates {
+  lat: number;
+  lng: number;
 }
 
 // Dummy transformation functions to allow the code to compile and run without errors,
@@ -211,15 +217,15 @@ async function getPOIData(site: string): Promise<POI[]> {
               else subCategory = 'standard';
             } else if (buildingType === 'house') {
               // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
-              if (poiName?.toLowerCase().includes('beach house') || 
-                  (coordinates.lat > 51.587 && coordinates.lat < 51.590 && coordinates.lng > 3.730 && coordinates.lng < 3.735)) {
+              if (poiName?.toLowerCase().includes('beach house') ||
+                  (feature.geometry.coordinates[1] > 51.587 && feature.geometry.coordinates[1] < 51.590 && feature.geometry.coordinates[0] > 3.730 && feature.geometry.coordinates[0] < 3.735)) {
                 category = 'beach_houses';
                 if (poiName?.includes('4')) subCategory = 'beach_house_4';
                 else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
                 else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
                 else subCategory = 'standard';
-              } else if (poiName?.toLowerCase().includes('water village') || 
-                        (coordinates.lat > 51.593 && coordinates.lat < 51.595 && coordinates.lng > 3.710 && coordinates.lng < 3.713)) {
+              } else if (poiName?.toLowerCase().includes('lodge') ||
+                        (feature.geometry.coordinates[1] > 51.593 && feature.geometry.coordinates[1] < 51.595 && feature.geometry.coordinates[0] > 3.710 && feature.geometry.coordinates[0] < 3.713)) {
                 category = 'lodges';
                 subCategory = 'water_village_lodge';
               } else {
@@ -302,7 +308,8 @@ async function getPOIData(site: string): Promise<POI[]> {
               subCategory: subCategory || undefined,
               coordinates,
               amenities: amenities.length > 0 ? amenities : undefined,
-              hours: props.opening_hours || undefined
+              hours: props.opening_hours || undefined,
+              buildingType: buildingType // Add buildingType to the POI object
             };
           }).filter(Boolean);
           allPOIs.push(...pois);
