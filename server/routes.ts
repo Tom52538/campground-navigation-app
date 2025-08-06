@@ -152,9 +152,9 @@ async function getPOIData(site: string): Promise<POI[]> {
 
     // Map site names to actual available files
     const siteFileMap: Record<string, string[]> = {
-      kamperland: ['roompot_pois.geojson'], // Use roompot data for kamperland
+      kamperland: ['combined_pois_roompot.geojson'], // Use combined roompot data for kamperland
       zuhause: ['zuhause_pois.geojson'],
-      default: ['roompot_pois.geojson'] // Default fallback
+      default: ['combined_pois_roompot.geojson'] // Default fallback
     };
 
     const files = siteFileMap[site] || siteFileMap.default;
