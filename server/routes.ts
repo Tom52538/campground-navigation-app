@@ -387,7 +387,8 @@ async function getPOIData(site: string): Promise<POI[]> {
               coordinates,
               amenities: amenities.length > 0 ? amenities : undefined,
               hours: props.opening_hours || undefined,
-              buildingType: buildingType // Add buildingType to the POI object
+              buildingType: buildingType, // Add buildingType to the POI object
+              ref: props.ref || undefined // Add ref field for searching
             };
           }).filter(Boolean);
           allPOIs.push(...pois);
@@ -664,7 +665,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poi.category.toLowerCase().includes(searchTerm) ||
           poi.subCategory?.toLowerCase().includes(searchTerm) ||
           poi.id.toLowerCase().includes(searchTerm) ||
-          poi.buildingType?.toLowerCase().includes(searchTerm)
+          poi.buildingType?.toLowerCase().includes(searchTerm) ||
+          poi.ref?.toLowerCase().includes(searchTerm)
         );
       }
 
