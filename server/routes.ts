@@ -27,7 +27,7 @@ const osmCategoryMapping: Record<string, string> = {
   'sports_centre': 'leisure',
   'attraction': 'leisure',
   'parking': 'parking',
-  'toilets': 'services',
+  'toilets': 'toilets',
   'waste_disposal': 'services',
   'bicycle_parking': 'services',
   'marina': 'services',
@@ -47,8 +47,8 @@ const buildingCategoryMapping: Record<string, string> = {
   'commercial': 'services',
   'industrial': 'services',
   'service': 'services',
-  'toilets': 'facilities',
-  'parking': 'facilities',
+  'toilets': 'toilets',
+  'parking': 'parking',
   'garage': 'facilities',
   'shed': 'facilities',
   'landuse_grass': 'facilities'
@@ -224,11 +224,11 @@ async function getPOIData(site: string): Promise<POI[]> {
               if (poiName?.toLowerCase().includes('water village')) subCategory = 'water_village_lodge';
               else subCategory = 'lodge_4';
             } else if (buildingType === 'toilets') {
-              category = 'facilities';
+              category = 'toilets';
               subCategory = 'toilets';
               name = 'Toilet';
             } else if (buildingType === 'parking') {
-              category = 'facilities';
+              category = 'parking';
               subCategory = 'parking';
               name = 'Parking Area';
             } else if (buildingType === 'retail') {
