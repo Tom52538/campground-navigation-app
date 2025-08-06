@@ -75,7 +75,6 @@ export default function Navigation() {
   const [currentInstruction, setCurrentInstruction] = useState<string>('');
   const [nextDistance, setNextDistance] = useState<string>('');
   const [routeProgress, setRouteProgress] = useState<any>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for the search drawer
 
   // Initialize navigation tracking - but only when using real GPS
   const { currentPosition: livePosition } = useNavigationTracking(isNavigating && useRealGPS, {
@@ -158,13 +157,9 @@ export default function Navigation() {
   console.log('🔍 DISPLAY POIs DEBUG:', {
     searchQuery: searchQuery.length,
     filteredCategoriesCount: filteredCategories.length,
-    filteredCategories: filteredCategories,
     displayPOIsCount: displayPOIs.length,
     shouldShowPOIs,
-    firstPOI: displayPOIs[0]?.name || 'none',
-    allPOIsCount: allPOIs.length,
-    categoriesInData: [...new Set(allPOIs.map(poi => poi.category))],
-    samplePOIs: displayPOIs.slice(0, 3).map(poi => ({ name: poi.name, category: poi.category }))
+    firstPOI: displayPOIs[0]?.name || 'none'
   });
 
   // Add distance to POIs
@@ -211,16 +206,10 @@ export default function Navigation() {
   }, []);
 
   const handlePOISelect = useCallback((poi: POI) => {
-    console.log('🎯 POI selected from search:', poi.name, poi.id);
-    console.log('🎯 POI coordinates:', poi.coordinates);
     setSelectedPOI(poi);
-    setIsDrawerOpen(false);
-
-    // Show POI immediately on map
-    if (poi.coordinates) {
-      console.log('🗺️ Centering map on selected POI');
-      // Map will center on POI automatically via MapContainer useEffect
-    }
+    setMapCenter(poi.coordinates);
+    setUIMode('poi-info');
+    setOverlayStates(prev => ({ ...prev, poiInfo: true, search: false }));
   }, []);
 
   const handleMapClick = useCallback(() => {
@@ -370,25 +359,16 @@ export default function Navigation() {
 
   // POI Category Filter Handler for Quick Access
   const handleCategoryFilter = useCallback((category: string) => {
-    console.log('🎯 CATEGORY FILTER CLICKED:', category);
     setFilteredCategories(prev => {
-      let newCategories;
       if (prev.includes(category)) {
         // Remove category if already selected
-        newCategories = prev.filter(c => c !== category);
+        return prev.filter(c => c !== category);
       } else {
         // Replace with single category selection for "one touch" behavior
-        newCategories = [category];
+        return [category];
       }
-      console.log('🎯 CATEGORY FILTER RESULT:', {
-        clicked: category,
-        previous: prev,
-        new: newCategories,
-        matchingPOIs: allPOIs.filter(poi => poi.category && newCategories.includes(poi.category)).length
-      });
-      return newCategories;
     });
-  }, [allPOIs]);
+  }, []);
 
   // Voice toggle handler
   const handleToggleVoice = useCallback(() => {
@@ -419,7 +399,7 @@ export default function Navigation() {
       setMapStyle(style);
       console.log('🗺️ DEBUG - setMapStyle completed successfully');
 
-      // Auto-switch to driving orientation when using navigation style during active navigation
+      // Auto-switch to navigation mode when using navigation style during active navigation
       if (style === 'navigation' && isNavigating) {
         console.log('🗺️ DEBUG - Auto-switching to driving orientation for navigation style');
         setMapOrientation('driving');
@@ -583,7 +563,7 @@ export default function Navigation() {
               selectedPOI={!!selectedPOI}
             />
 
-
+            
 
             {/* Camping Weather Widget */}
             <CampingWeatherWidget coordinates={currentPosition} />
@@ -611,7 +591,7 @@ export default function Navigation() {
           />
         )}
 
-        {/*NAVIGATION MODE - Only visible when actively navigating */}
+        {/* NAVIGATION MODE - Only visible when actively navigating */}
         {isNavigating && currentRoute && currentRoute.instructions.length > 0 && (
           <>
             {/* Top: Current Maneuver */}

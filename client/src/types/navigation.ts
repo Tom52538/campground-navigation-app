@@ -57,17 +57,14 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'parking' | 'buildings' | 'unknown' | 'leisure';
+export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'buildings';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Gastronomie' },
-  'services': { icon: 'Toilet', color: 'bg-blue-500', label: 'Services' },
-  'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Freizeit' },
-  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Unterkünfte' },
-  'parking': { icon: 'Parking', color: 'bg-gray-600', label: 'Parkplätze' },
-  'buildings': { icon: 'Building', color: 'bg-amber-600', label: 'Beach Houses' },
-  'unknown': { icon: 'QuestionMark', color: 'bg-gray-500', label: 'Sonstiges' },
-  'leisure': { icon: 'SwimmingPool', color: 'bg-blue-400', label: 'Pool/Sport' }
+  'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Food & Drink' },
+  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Essential Services' },
+  'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Recreation' },
+  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Facilities' },
+  'buildings': { icon: 'Building', color: 'bg-gray-600', label: 'Accommodations' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {

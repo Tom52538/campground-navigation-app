@@ -16,11 +16,8 @@ const getEmojiIcon = (iconName: string) => {
     case 'Utensils': return '🍽️';
     case 'Building2': return '🏢';
     case 'Waves': return '🌊';
-    case 'Car': return '🏠';        // KORRIGIERT: Häuser statt Auto für facilities
+    case 'Car': return '🚗';
     case 'Building': return '🏗️';
-    case 'Toilet': return '🚻';     // NEUES Icon für Services/Toiletten
-    case 'Parking': return '🅿️';    // NEUES Icon für Parkplätze
-    case 'SwimmingPool': return '🏊'; // NEUES Icon für Leisure/Pool/Sport
     default: return '📍';
   }
 };

@@ -48,7 +48,7 @@ export const PermanentHeader = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
             <Input
               type="text"
-              placeholder="Suche nach Unterkünften, Einrichtungen..."
+              placeholder={t('search.placeholder')}
               value={searchQuery}
               onChange={handleInputChange}
               className="pl-10 pr-4 py-2 w-full border border-white/20 rounded-full 
@@ -77,7 +77,7 @@ export const PermanentHeader = ({
                 border: '1px solid rgba(255, 255, 255, 0.3)'
               }}
             >
-              Auswahl löschen
+              Clear
             </Button>
           )}
 
