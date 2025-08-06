@@ -188,12 +188,51 @@ async function getPOIData(site: string): Promise<POI[]> {
             let category = 'unknown';
             let subCategory = '';
 
-            // Enhanced categorization based on Roompot legend
-            if (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan')) {
+            // Enhanced categorization based on Roompot legend and type
+            // First check if there's a type property for direct categorization
+            const featureType = props.type;
+            if (featureType) {
+              switch (featureType.toLowerCase()) {
+                case 'accommodation':
+                case 'chalet':
+                  category = 'chalets';
+                  subCategory = 'standard';
+                  break;
+                case 'bungalow':
+                  category = 'bungalows';
+                  subCategory = 'standard';
+                  break;
+                case 'restaurant':
+                case 'food':
+                  category = 'food-drink';
+                  subCategory = 'restaurant';
+                  break;
+                case 'service':
+                case 'facility':
+                  category = 'services';
+                  subCategory = 'general';
+                  break;
+                case 'parking':
+                  category = 'parking';
+                  subCategory = 'parking';
+                  break;
+                case 'toilet':
+                case 'toilets':
+                  category = 'toilets';
+                  subCategory = 'toilets';
+                  break;
+                default:
+                  // Fall back to building_type based categorization
+                  break;
+              }
+            }
+            
+            // If not categorized by type, use building_type
+            if (category === 'unknown' && (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan'))) {
               category = 'camping';
               subCategory = 'static_caravan';
               name = name.replace('static_caravan', 'Caravan Site');
-            } else if (buildingType === 'bungalow' || poiName?.toLowerCase().includes('bungalow')) {
+            } else if (category === 'unknown' && (buildingType === 'bungalow' || poiName?.toLowerCase().includes('bungalow'))) {
               category = 'bungalows';
               // Determine bungalow type from name patterns
               if (poiName?.includes('B1')) subCategory = 'b1';
@@ -215,7 +254,7 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('RJ')) subCategory = 'rj_comfort';
               else if (poiName?.includes('FV')) subCategory = 'fv14';
               else subCategory = 'standard';
-            } else if (buildingType === 'house') {
+            } else if (category === 'unknown' && buildingType === 'house') {
               // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
               if (poiName?.toLowerCase().includes('beach house') ||
                   (feature.geometry.coordinates[1] > 51.587 && feature.geometry.coordinates[1] < 51.590 && feature.geometry.coordinates[0] > 3.730 && feature.geometry.coordinates[0] < 3.735)) {
@@ -233,8 +272,8 @@ async function getPOIData(site: string): Promise<POI[]> {
                 category = 'chalets';
                 subCategory = 'standard';
               }
-            } else if (buildingType === 'semidetached_house' || buildingType === 'detached' ||
-                      (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet')))) {
+            } else if (category === 'unknown' && (buildingType === 'semidetached_house' || buildingType === 'detached' ||
+                      (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet'))))) {
               category = 'chalets';
               if (poiName?.includes('RP64A')) subCategory = 'rp64a';
               else if (poiName?.includes('RP4A')) subCategory = 'rp4a';
@@ -243,11 +282,11 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('RP6C')) subCategory = 'rp6c';
               else if (poiName?.includes('RP6GC')) subCategory = 'rp6gc';
               else subCategory = 'standard';
-            } else if (poiName?.toLowerCase().includes('lodge') || poiName?.toLowerCase().includes('water village')) {
+            } else if (category === 'unknown' && (poiName?.toLowerCase().includes('lodge') || poiName?.toLowerCase().includes('water village'))) {
               category = 'lodges';
               if (poiName?.toLowerCase().includes('water village')) subCategory = 'water_village_lodge';
               else subCategory = 'lodge_4';
-            } else if (buildingType === 'toilets') {
+            } else if (category === 'unknown' && buildingType === 'toilets') {
               category = 'toilets';
               subCategory = 'toilets';
               name = 'Toilet';
@@ -286,9 +325,44 @@ async function getPOIData(site: string): Promise<POI[]> {
               category = 'services';
               subCategory = 'maintenance';
               name = 'Service Point';
-            } else {
-              category = 'camping';
-              subCategory = 'static_caravan';
+            } else if (category === 'unknown') {
+              // Use roompot_category as fallback if available
+              const roompotCategory = props.roompot_category;
+              if (roompotCategory) {
+                switch (roompotCategory.toLowerCase()) {
+                  case 'food & drinks':
+                    category = 'food-drink';
+                    subCategory = 'restaurant';
+                    break;
+                  case 'leisure & entertainment':
+                    category = 'leisure';
+                    subCategory = 'entertainment';
+                    break;
+                  case 'necessities':
+                    category = 'services';
+                    subCategory = 'essential';
+                    break;
+                  case 'shopping':
+                    category = 'services';
+                    subCategory = 'shopping';
+                    break;
+                  case 'chalets/lodges':
+                    category = 'chalets';
+                    subCategory = 'standard';
+                    break;
+                  case 'bungalows - standard':
+                    category = 'bungalows';
+                    subCategory = 'standard';
+                    break;
+                  default:
+                    category = 'services';
+                    subCategory = 'general';
+                    break;
+                }
+              } else {
+                category = 'services';
+                subCategory = 'general';
+              }
             }
             console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}`);
 
