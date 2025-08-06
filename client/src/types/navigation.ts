@@ -1,3 +1,4 @@
+
 export interface Coordinates {
   lat: number;
   lng: number;
@@ -57,14 +58,16 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'buildings';
+// Updated to match actual GeoJSON categories from server data
+export type POICategory = 'accommodations' | 'services' | 'buildings' | 'parking' | 'amenities' | 'facilities';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Food & Drink' },
-  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Essential Services' },
-  'recreation': { icon: 'Waves', color: 'bg-green-500', label: 'Recreation' },
-  'facilities': { icon: 'Car', color: 'bg-purple-500', label: 'Facilities' },
-  'buildings': { icon: 'Building', color: 'bg-gray-600', label: 'Accommodations' }
+  'accommodations': { icon: 'Building', color: 'bg-green-500', label: 'Accommodations' }, // 1649 POIs
+  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Services' }, // 22 POIs
+  'buildings': { icon: 'Building', color: 'bg-gray-600', label: 'Buildings' }, // 168 POIs
+  'parking': { icon: 'Car', color: 'bg-purple-500', label: 'Parking' }, // 12 POIs
+  'amenities': { icon: 'Waves', color: 'bg-cyan-500', label: 'Amenities' }, // 15 POIs
+  'facilities': { icon: 'Utensils', color: 'bg-orange-500', label: 'Facilities' } // 39 POIs
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
