@@ -11,16 +11,22 @@ interface POIMarkerProps {
   showHoverTooltip?: boolean;
 }
 
-const getEmojiIcon = (iconName: string) => {
-  switch (iconName) {
-    case 'Utensils': return '🍽️';
-    case 'Building2': return '🏢';
-    case 'Waves': return '🌊';
-    case 'Car': return '🚗';
-    case 'Building': return '🏗️';
-    default: return '📍';
-  }
-};
+const getEmojiForCategory = (category: string): string => {
+    switch (category) {
+      case 'food-drink': return '🍽️';
+      case 'services': return '🛠️';
+      case 'toilets': return '🚻';
+      case 'parking': return '🅿️';
+      case 'bungalows': return '🏡';
+      case 'chalets': return '🏔️';
+      case 'lodges': return '⭐';
+      case 'camping': return '🏕️';
+      case 'beach_houses': return '🏖️';
+      case 'facilities': return '🚿';
+      case 'leisure': return '🎯';
+      default: return '📍';
+    }
+  };
 
 export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverTooltip = true }: POIMarkerProps) => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -37,7 +43,7 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverToolt
   const category = POI_CATEGORIES[poi.category as keyof typeof POI_CATEGORIES];
   const iconName = category?.icon || 'MapPin';
   const colorClass = category?.color || 'bg-gray-500';
-  const emoji = getEmojiIcon(iconName);
+  const emoji = getEmojiForCategory(poi.category); // Changed this to use the new function directly
 
   console.log(`🔍 POIMarker ICON DATA:`, {
     category: poi.category,
@@ -60,7 +66,7 @@ export const POIMarker = ({ poi, isSelected, onClick, onNavigate, showHoverToolt
       iconSize: [32, 32],
       iconAnchor: [16, 16],
     });
-    
+
     console.log(`🔍 POIMarker ICON CREATED for ${poi.name}`);
     return icon;
   }, [poi.category, colorClass, emoji, isSelected, poi.name]);
