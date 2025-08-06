@@ -139,7 +139,7 @@ async function getPOIData(site: string): Promise<POI[]> {
 
     // Map site names to actual available files
     const siteFileMap: Record<string, string[]> = {
-      kamperland: ['roompot_pois.geojson', 'Beach Resort Zentroide Layer.geojson'], // Use roompot data for kamperland
+      kamperland: ['roompot_pois.geojson'], // Use roompot data for kamperland
       zuhause: ['zuhause_pois.geojson'],
       default: ['roompot_pois.geojson'] // Default fallback
     };
@@ -449,13 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pois = await getPOIData(site as string);
       // console.log(`POI API: Loaded ${pois.length} POIs for site ${site}`);
       // Removed redundant logging here as getPOIData already logs
-      if (site === 'kamperland' && pois.length > 0 && pois[0].category === 'buildings') { // Check for Beach Resort data specifically
-        const categoryCount = pois.reduce((acc, poi) => {
-          acc[poi.category] = (acc[poi.category] || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        console.log('Beach Resort POI categories:', categoryCount);
-      }
+      
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Cache-Control', 'no-cache');
       res.status(200).json(pois);

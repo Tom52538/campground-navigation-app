@@ -59,7 +59,17 @@ export interface MapState {
 }
 
 // Accommodation-specific categories based on Roompot legend
-export type POICategory = 'bungalow' | 'beach_house' | 'chalet' | 'lodge' | 'static_caravan' | 'services' | 'facilities';
+export type POICategory = 'bungalows' | 'beach_houses' | 'chalets' | 'lodges' | 'camper_sites' | 'services' | 'facilities';
+
+export const POI_CATEGORIES = {
+  bungalows: { label: 'Bungalows', icon: 'Building', color: 'bg-green-500' },
+  beach_houses: { label: 'Beach Houses', icon: 'Building2', color: 'bg-blue-500' },
+  chalets: { label: 'Chalets', icon: 'Building', color: 'bg-orange-500' },
+  lodges: { label: 'Lodges', icon: 'Building2', color: 'bg-purple-500' },
+  camper_sites: { label: 'Camper Sites', icon: 'Car', color: 'bg-gray-500' },
+  services: { label: 'Services', icon: 'Utensils', color: 'bg-yellow-500' },
+  facilities: { label: 'Facilities', icon: 'Utensils', color: 'bg-red-500' }
+} as const;
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'bungalow': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' }, // B1, B5, BA Comfort series

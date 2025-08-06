@@ -7,21 +7,22 @@ interface LightweightPOIButtonsProps {
   selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
-// POI categories matching actual server data
+// POI categories matching Roompot accommodation types and facilities
 const poiCategories = [
-  // Essential Services - First Row
-  { icon: '🚿', label: 'Facilities', id: 'facilities' }, // 39 POIs
-  { icon: '🛠️', label: 'Services', id: 'services' }, // 22 POIs
+  // Accommodation Types - First Row
+  { icon: '🏡', label: 'Bungalows', id: 'bungalows' },
+  { icon: '🏖️', label: 'Beach Houses', id: 'beach_houses' },
   
-  // Accommodations - Second Row  
-  { icon: '🏡', label: 'Accommodations', id: 'accommodations' }, // 1649 POIs - largest category
-  { icon: '🏢', label: 'Buildings', id: 'buildings' }, // 168 POIs
+  // Accommodation Types - Second Row  
+  { icon: '🏕️', label: 'Chalets', id: 'chalets' },
+  { icon: '⭐', label: 'Lodges', id: 'lodges' },
   
-  // Additional Services - Third Row
-  { icon: '🅿️', label: 'Parking', id: 'parking' }, // 12 POIs
-  { icon: '🎯', label: 'Amenities', id: 'amenities' }, // 15 POIs
+  // Site Features - Third Row
+  { icon: '🚐', label: 'Camper Sites', id: 'camper_sites' },
+  { icon: '🚿', label: 'Facilities', id: 'facilities' },
   
-  // Clear filter - Fourth Row
+  // Services & Clear - Fourth Row
+  { icon: '🛠️', label: 'Services', id: 'services' },
   { icon: '📍', label: 'All POIs', id: '' }, // Show all when empty category
 ];
 
