@@ -16,9 +16,6 @@ const poiCategories = [
   // Real data categories - Second Row  
   { icon: '🚿', label: 'Facilities', id: 'facilities' },
   { icon: '🛠️', label: 'Services', id: 'services' },
-  
-  // Clear filter - Third Row
-  { icon: '📍', label: 'All POIs', id: '' }, // Show all when empty category
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
