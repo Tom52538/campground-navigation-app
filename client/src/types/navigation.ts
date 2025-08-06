@@ -12,6 +12,9 @@ export interface POI {
   amenities?: string[];
   hours?: string;
   distance?: string;
+  house_number?: number;
+  building_type?: string;
+  status?: string;
 }
 
 export interface WeatherData {
@@ -57,7 +60,7 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'parking' | 'buildings' | 'unknown' | 'leisure';
+export type POICategory = 'food-drink' | 'services' | 'recreation' | 'facilities' | 'parking' | 'buildings' | 'unknown' | 'leisure' | 'accommodation';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'food-drink': { icon: 'Utensils', color: 'bg-orange-500', label: 'Gastronomie' },

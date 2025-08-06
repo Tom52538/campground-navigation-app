@@ -88,7 +88,12 @@ export const SearchResultsContent = ({ results, query, onPOISelect }: SearchResu
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-800 truncate">{poi.name}</h4>
+                      <h4 className="font-medium text-gray-800 truncate">
+                        {poi.name}
+                        {poi.house_number && (
+                          <span className="text-xs text-gray-500 ml-2">#{poi.house_number}</span>
+                        )}
+                      </h4>
                       {poi.distance && (
                         <div className="flex items-center text-xs text-gray-500 mt-1">
                           <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
@@ -97,6 +102,9 @@ export const SearchResultsContent = ({ results, query, onPOISelect }: SearchResu
                       )}
                       {poi.description && (
                         <p className="text-xs text-gray-600 mt-1 line-clamp-1">{poi.description}</p>
+                      )}
+                      {poi.building_type && (
+                        <p className="text-xs text-green-600 mt-1 capitalize">{poi.building_type.replace('_', ' ')}</p>
                       )}
                     </div>
                   </div>
