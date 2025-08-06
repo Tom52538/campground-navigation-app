@@ -901,7 +901,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return true;
           }
           
-          // Then check other fields, but exclude generated IDs from search
+          // Search in meaningful fields only (exclude ID completely)
           return poi.name.toLowerCase().includes(searchTerm) ||
                  poi.description?.toLowerCase().includes(searchTerm) ||
                  poi.category.toLowerCase().includes(searchTerm) ||
