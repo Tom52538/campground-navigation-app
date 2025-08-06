@@ -60,7 +60,7 @@ export interface MapState {
 }
 
 // Categories based on Roompot Beach Resort & Water Village legend
-export type POICategory = 'services' | 'necessities' | 'food_drinks' | 'leisure' | 'bungalows' | 'beach_houses' | 'chalets' | 'camping' | 'lodges' | 'facilities';
+export type POICategory = 'services' | 'necessities' | 'food_drinks' | 'leisure' | 'bungalows' | 'beach_houses' | 'chalets' | 'camping' | 'lodges' | 'toilets' | 'parking';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'services': { icon: 'Building', color: 'bg-gray-600', label: 'Services' },
@@ -72,7 +72,8 @@ export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; 
   'chalets': { icon: 'Building', color: 'bg-orange-500', label: 'Chalets' },
   'camping': { icon: 'Car', color: 'bg-yellow-500', label: 'Camping' },
   'lodges': { icon: 'Building2', color: 'bg-indigo-600', label: 'Lodges' },
-  'facilities': { icon: 'MapPin', color: 'bg-slate-600', label: 'Facilities' }
+  'toilets': { icon: 'MapPin', color: 'bg-blue-600', label: 'Toilets' },
+  'parking': { icon: 'Car', color: 'bg-gray-700', label: 'Parking' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {

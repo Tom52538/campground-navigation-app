@@ -209,7 +209,7 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
               else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
               else subCategory = 'standard';
-            } else if (buildingType === 'semidetached_house' || buildingType === 'detached' || 
+            } else if (buildingType === 'semidetached_house' || buildingType === 'detached' ||
                       (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet')))) {
               category = 'chalets';
               if (poiName?.includes('RP64A')) subCategory = 'rp64a';

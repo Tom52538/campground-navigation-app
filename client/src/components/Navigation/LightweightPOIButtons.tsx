@@ -21,7 +21,8 @@ const poiCategories = [
   { icon: '🏥', label: 'Necessities', id: 'necessities' },
   { icon: '🍽️', label: 'Food & Drinks', id: 'food_drinks' },
   { icon: '🎯', label: 'Leisure', id: 'leisure' },
-  { icon: '🚿', label: 'Facilities', id: 'facilities' },
+  { icon: '🚻', label: 'Toilets', id: 'toilets' },
+  { icon: '🅿️', label: 'Parking', id: 'parking' },
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
