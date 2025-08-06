@@ -31,6 +31,11 @@ const osmCategoryMapping: Record<string, string> = {
   'waste_disposal': 'services',
   'bicycle_parking': 'services',
   'marina': 'services',
+  'restaurant': 'food-drink',
+  'cafe': 'food-drink',
+  'bar': 'food-drink',
+  'pub': 'food-drink',
+  'fast_food': 'food-drink',
   'first_aid': 'necessities',
   'clinic': 'necessities',
   'hospital': 'necessities',
@@ -51,7 +56,8 @@ const buildingCategoryMapping: Record<string, string> = {
   'parking': 'parking',
   'garage': 'facilities',
   'shed': 'facilities',
-  'landuse_grass': 'facilities'
+  'landuse_grass': 'facilities',
+  'retail': 'food-drink'
 };
 
 // Placeholder for transformation functions, assuming they exist elsewhere or will be defined.
@@ -232,13 +238,21 @@ async function getPOIData(site: string): Promise<POI[]> {
               subCategory = 'parking';
               name = 'Parking Area';
             } else if (buildingType === 'retail') {
-              category = 'services';
-              subCategory = 'shop';
-              name = 'Shop';
+              category = 'food-drink';
+              subCategory = 'restaurant';
+              name = 'Restaurant';
             } else if (buildingType === 'office') {
-              category = 'services';
-              subCategory = 'reception';
-              name = 'Reception/Office';
+              // Check if it's a restaurant office or general office
+              if (poiName?.toLowerCase().includes('restaurant') || poiName?.toLowerCase().includes('bar')) {
+                category = 'food-drink';
+                subCategory = 'restaurant';
+                name = poiName || 'Restaurant';
+              } else {
+                category = 'services';
+                subCategory = 'reception';
+                name = 'Reception/Office';
+              }
+            }
             } else if (buildingType === 'commercial' || buildingType === 'industrial') {
               category = 'services';
               subCategory = 'service_station';
