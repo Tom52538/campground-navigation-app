@@ -56,23 +56,25 @@ const categoryMapping: Record<string, POICategory> = {
   'supermarket': 'services',
   'convenience': 'services',
   
-  // Recreation & Activities
-  'swimming_pool': 'recreation',
-  'playground': 'recreation',
-  'sports_centre': 'recreation',
-  'fitness_centre': 'recreation',
-  'tennis': 'recreation',
-  'mini_golf': 'recreation',
-  'golf_course': 'recreation',
-  'beach_volleyball': 'recreation',
-  'attraction': 'recreation',
-  'viewpoint': 'recreation',
-  'picnic_table': 'recreation',
-  'bbq': 'recreation',
+  // Leisure & Recreation Activities
+  'swimming_pool': 'leisure',
+  'playground': 'leisure',
+  'sports_centre': 'leisure',
+  'fitness_centre': 'leisure',
+  'tennis': 'leisure',
+  'mini_golf': 'leisure',
+  'golf_course': 'leisure',
+  'beach_volleyball': 'leisure',
+  'attraction': 'leisure',
+  'viewpoint': 'leisure',
+  'picnic_table': 'leisure',
+  'bbq': 'leisure',
+  'bird_hide': 'leisure',
+  'marina': 'leisure',
   
   // Practical Facilities
-  'parking': 'facilities',
-  'toilets': 'facilities',
+  'parking': 'parking',
+  'toilets': 'toilets',
   'shower': 'facilities',
   'waste_disposal': 'facilities',
   'recycling': 'facilities',
@@ -121,14 +123,14 @@ function calculateCentroid(coordinates: number[][]): number[] {
 }
 
 function categorizeFeature(properties: GeoJSONFeature['properties']): POICategory {
-  // Check amenity first (most common)
-  if (properties.amenity && categoryMapping[properties.amenity]) {
-    return categoryMapping[properties.amenity];
-  }
-  
-  // Check leisure
+  // Check leisure first (for playgrounds, swimming pools, etc.)
   if (properties.leisure && categoryMapping[properties.leisure]) {
     return categoryMapping[properties.leisure];
+  }
+  
+  // Check amenity (most common)
+  if (properties.amenity && categoryMapping[properties.amenity]) {
+    return categoryMapping[properties.amenity];
   }
   
   // Check tourism
@@ -136,14 +138,22 @@ function categorizeFeature(properties: GeoJSONFeature['properties']): POICategor
     return categoryMapping[properties.tourism];
   }
   
-  // Check shop types
+  // Check shop types - supermarkets and shops are services
   if (properties.shop) {
-    return 'services'; // All shops go to services
+    if (properties.shop === 'supermarket' || properties.shop === 'convenience') {
+      return 'services';
+    }
+    return 'services'; // All other shops go to services
   }
   
-  // Check sport
+  // Check sport - sports activities are leisure
   if (properties.sport && categoryMapping[properties.sport]) {
     return categoryMapping[properties.sport];
+  }
+  
+  // Special handling for specific building types
+  if (properties.building_type === 'playground' || properties.name?.toLowerCase().includes('playground')) {
+    return 'leisure';
   }
   
   // Default fallback
