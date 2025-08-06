@@ -659,15 +659,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter by search query if specified
       if (query) {
         const searchTerm = (query as string).toLowerCase();
-        filteredPOIs = filteredPOIs.filter((poi: any) =>
-          poi.name.toLowerCase().includes(searchTerm) ||
-          poi.description?.toLowerCase().includes(searchTerm) ||
-          poi.category.toLowerCase().includes(searchTerm) ||
-          poi.subCategory?.toLowerCase().includes(searchTerm) ||
-          poi.id.toLowerCase().includes(searchTerm) ||
-          poi.buildingType?.toLowerCase().includes(searchTerm) ||
-          poi.ref?.toLowerCase().includes(searchTerm)
-        );
+        filteredPOIs = filteredPOIs.filter((poi: any) => {
+          // Prioritize exact ref matches first
+          if (poi.ref && poi.ref.toLowerCase() === searchTerm) {
+            return true;
+          }
+          
+          // Then check other fields, but exclude generated IDs from search
+          return poi.name.toLowerCase().includes(searchTerm) ||
+                 poi.description?.toLowerCase().includes(searchTerm) ||
+                 poi.category.toLowerCase().includes(searchTerm) ||
+                 poi.subCategory?.toLowerCase().includes(searchTerm) ||
+                 poi.buildingType?.toLowerCase().includes(searchTerm) ||
+                 poi.ref?.toLowerCase().includes(searchTerm);
+        });
       }
 
       res.setHeader('Content-Type', 'application/json');
