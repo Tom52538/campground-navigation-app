@@ -58,16 +58,17 @@ export interface MapState {
   filteredCategories: string[];
 }
 
-// Updated to match actual GeoJSON categories from server data
-export type POICategory = 'accommodations' | 'services' | 'buildings' | 'parking' | 'amenities' | 'facilities';
+// Accommodation-specific categories based on Roompot legend
+export type POICategory = 'bungalow' | 'beach_house' | 'chalet' | 'lodge' | 'static_caravan' | 'services' | 'facilities';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'accommodations': { icon: 'Building', color: 'bg-green-500', label: 'Accommodations' }, // 1649 POIs
-  'services': { icon: 'Building2', color: 'bg-blue-500', label: 'Services' }, // 22 POIs
-  'buildings': { icon: 'Building', color: 'bg-gray-600', label: 'Buildings' }, // 168 POIs
-  'parking': { icon: 'Car', color: 'bg-purple-500', label: 'Parking' }, // 12 POIs
-  'amenities': { icon: 'Waves', color: 'bg-cyan-500', label: 'Amenities' }, // 15 POIs
-  'facilities': { icon: 'Utensils', color: 'bg-orange-500', label: 'Facilities' } // 39 POIs
+  'bungalow': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' }, // B1, B5, BA Comfort series
+  'beach_house': { icon: 'Building2', color: 'bg-blue-500', label: 'Beach Houses' }, // Beach House 4, 6A, 6B
+  'chalet': { icon: 'Building', color: 'bg-purple-500', label: 'Chalets' }, // RP64A, RP4A series
+  'lodge': { icon: 'Building', color: 'bg-yellow-500', label: 'Lodges' }, // Water Village Lodges
+  'static_caravan': { icon: 'Car', color: 'bg-orange-500', label: 'Camper Sites' }, // Static caravans
+  'services': { icon: 'Building2', color: 'bg-cyan-500', label: 'Services' }, // Shops, info
+  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' } // Toilets, showers
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {

@@ -35,25 +35,21 @@ const osmCategoryMapping: Record<string, string> = {
 };
 
 const buildingCategoryMapping: Record<string, string> = {
-  'static_caravan': 'accommodations',
+  'static_caravan': 'static_caravan',
+  'bungalow': 'bungalow',
+  'house': 'bungalow', // Assume houses are bungalow-type
+  'semidetached_house': 'bungalow',
+  'detached': 'bungalow',
   'retail': 'services',
-  'yes': 'buildings',
-  'bungalow': 'accommodations',
-  'house': 'buildings',
-  'semidetached_house': 'accommodations',
   'office': 'services',
   'commercial': 'services',
   'industrial': 'services',
-  'shed': 'services',
-  'garage': 'services',
   'service': 'services',
-  'detached': 'buildings',
   'toilets': 'facilities',
-  'swimming_pool': 'recreation',
-  'restaurant': 'food-drink',
-  'hotel': 'accommodations',
-  'parking': 'parking',
-  'landuse_grass': 'amenities'
+  'parking': 'facilities',
+  'garage': 'facilities',
+  'shed': 'facilities',
+  'landuse_grass': 'facilities'
 };
 
 // Load authentic OpenStreetMap POI data
@@ -63,7 +59,7 @@ async function getPOIData(site: string) {
 
     // Map site names to actual available files
     const siteFileMapping: Record<string, string[]> = {
-      'kamperland': ['roompot_pois.geojson'], // Use roompot data for kamperland
+      'kamperland': ['roompot_pois.geojson', 'Beach Resort Zentroide Layer.geojson'], // Use roompot data for kamperland
       'roompot': ['roompot_pois.geojson'],
       'zuhause': ['zuhause_pois.geojson']
     };
@@ -104,11 +100,26 @@ async function getPOIData(site: string) {
 
           if (buildingType || poiName) {
             name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
-            category = buildingCategoryMapping[buildingType] || 'buildings';
 
-            if (index < 10) { // Debug first 10 POIs
-              console.log(`🔍 POI DEBUG: Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
+            // Categorize based on accommodation type from name/building type
+            if (poiName && poiName.toLowerCase().includes('bungalow')) {
+              category = 'bungalow';
+            } else if (poiName && poiName.toLowerCase().includes('beach house')) {
+              category = 'beach_house';
+            } else if (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet'))) {
+              category = 'chalet';
+            } else if (poiName && poiName.toLowerCase().includes('lodge')) {
+              category = 'lodge';
+            } else if (buildingType === 'static_caravan') {
+              category = 'static_caravan';
+            } else if (buildingType === 'toilets') {
+              category = 'facilities';
+            } else if (buildingType === 'retail' || buildingType === 'office') {
+              category = 'services';
+            } else {
+              category = 'static_caravan'; // Default for accommodation
             }
+            console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}`);
           }
         }
         // Handle Beach Resort format (if it exists)

@@ -1,13 +1,12 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MapContainer } from '@/components/Map/MapContainer';
 import { MapControls } from '@/components/Navigation/MapControls';
-import { FilterModal } from '@/components/Navigation/FilterModal';
 import { LightweightPOIButtons } from '@/components/Navigation/LightweightPOIButtons';
 import { EnhancedMapControls } from '@/components/Navigation/EnhancedMapControls';
 import { CampingWeatherWidget } from '@/components/Navigation/CampingWeatherWidget';
 import { TransparentOverlay } from '@/components/UI/TransparentOverlay';
 import { TransparentPOIOverlay } from '@/components/Navigation/TransparentPOIOverlay';
-import { TopManeuverPanel } from '@/components/Navigation/TopManeuverPanel';
+import { TopManeuverPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { BottomSummaryPanel } from '@/components/Navigation/BottomSummaryPanel';
 import { PermanentHeader } from '@/components/UI/PermanentHeader';
 import { TravelModeSelector } from '@/components/Navigation/TravelModeSelector';
@@ -179,9 +178,10 @@ export default function Navigation() {
     }
   }, []);
 
-  const handleFilter = useCallback(() => {
-    setShowFilterModal(true);
-  }, []);
+  // Removed filter modal trigger from here, replaced by LightweightPOIButtons for quick filter
+  // const handleFilter = useCallback(() => {
+  //   setShowFilterModal(true);
+  // }, []);
 
   // Removed hamburger menu - using permanent header approach
 
@@ -714,12 +714,12 @@ export default function Navigation() {
         )}
 
         {/* Filter Modal - Preserved */}
-        <FilterModal
-          isOpen={showFilterModal}
-          onClose={() => setShowFilterModal(false)}
-          filteredCategories={filteredCategories}
-          onToggleCategory={handleToggleCategory}
-        />
+        {/* The FilterModal is no longer directly controlled by a button click, 
+            but the state and component remain in case it's needed for future refinements 
+            or if the LightweightPOIButtons are expanded to trigger it. */}
+        <div style={{ display: showFilterModal ? 'block' : 'none' }}>
+          {/* Placeholder for FilterModal if needed in future, managed via state */}
+        </div>
       </div>
     );
   } catch (error) {

@@ -8,10 +8,10 @@ interface CategoryFilterProps {
 
 const getEmojiForCategory = (iconName: string) => {
   switch (iconName) {
-    case 'Utensils': return '🍽️';
+    case 'Building': return '🏡';
     case 'Building2': return '🏢';
-    case 'Waves': return '🌊';
-    case 'Car': return '🚗';
+    case 'Utensils': return '🚿';
+    case 'Car': return '🚐';
     default: return '📍';
   }
 };
