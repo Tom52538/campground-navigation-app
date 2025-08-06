@@ -1,4 +1,3 @@
-
 export interface Coordinates {
   lat: number;
   lng: number;
@@ -60,11 +59,10 @@ export interface MapState {
 }
 
 // Categories based on Roompot Beach Resort & Water Village legend
-export type POICategory = 'services' | 'necessities' | 'food-drink' | 'leisure' | 'bungalows' | 'beach_houses' | 'chalets' | 'camping' | 'lodges' | 'toilets' | 'parking';
+export type POICategory = 'services' | 'food-drink' | 'leisure' | 'bungalows' | 'beach_houses' | 'chalets' | 'camping' | 'lodges' | 'toilets' | 'parking';
 
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
   'services': { icon: 'Building', color: 'bg-gray-600', label: 'Services' },
-  'necessities': { icon: 'Plus', color: 'bg-green-600', label: 'Necessities' },
   'food-drink': { icon: 'Utensils', color: 'bg-orange-600', label: 'Food & Drinks' },
   'leisure': { icon: 'PlayCircle', color: 'bg-purple-600', label: 'Leisure & Entertainment' },
   'bungalows': { icon: 'Building', color: 'bg-red-500', label: 'Bungalows' },
