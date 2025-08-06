@@ -11,17 +11,16 @@ const CAMPING_POI_ICONS = [
   // Row 1 - 4 icons
   { category: 'facilities' as POICategory, icon: '🚿', label: 'Restrooms' },
   { category: 'food-drink' as POICategory, icon: '🍽️', label: 'Food' },
-  { category: 'recreation' as POICategory, icon: '🔥', label: 'Fire Pits' },
+  { category: 'leisure' as POICategory, icon: '🔥', label: 'Fire Pits' },
   { category: 'services' as POICategory, icon: '🥾', label: 'Trails' },
   // Row 2 - 4 icons
   { category: 'services' as POICategory, icon: '⛽', label: 'Services' },
   { category: 'facilities' as POICategory, icon: '🏕️', label: 'Camping' },
-  { category: 'recreation' as POICategory, icon: '🏊', label: 'Swimming' },
+  { category: 'leisure' as POICategory, icon: '🏊', label: 'Swimming' },
   { category: 'facilities' as POICategory, icon: '🅿️', label: 'Parking' },
-  // Row 3 - 3 icons
+  // Row 3 - 2 icons
   { category: 'services' as POICategory, icon: '🏪', label: 'Shop' },
-  { category: 'recreation' as POICategory, icon: '🎯', label: 'Activities' },
-  { category: 'facilities' as POICategory, icon: '🔧', label: 'Maintenance' }
+  { category: 'leisure' as POICategory, icon: '🎯', label: 'Activities' }
 ];
 
 export const QuickPOIIcons = ({ filteredCategories, onToggleCategory }: QuickPOIIconsProps) => {
