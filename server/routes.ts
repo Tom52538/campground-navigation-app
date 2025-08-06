@@ -226,7 +226,7 @@ async function getPOIData(site: string): Promise<POI[]> {
                   break;
               }
             }
-            
+
             // If not categorized by type, use building_type
             if (category === 'unknown' && (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan'))) {
               category = 'camping';
@@ -255,16 +255,14 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('FV')) subCategory = 'fv14';
               else subCategory = 'standard';
             } else if (category === 'unknown' && buildingType === 'house') {
-              // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
-              if (poiName?.toLowerCase().includes('beach house') ||
-                  (feature.geometry.coordinates[1] > 51.587 && feature.geometry.coordinates[1] < 51.590 && feature.geometry.coordinates[0] > 3.730 && feature.geometry.coordinates[0] < 3.735)) {
+              // Only categorize as beach_houses if explicitly named as beach house
+              if (poiName?.toLowerCase().includes('beach house')) {
                 category = 'beach_houses';
                 if (poiName?.includes('4')) subCategory = 'beach_house_4';
                 else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
                 else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
                 else subCategory = 'standard';
-              } else if (poiName?.toLowerCase().includes('lodge') ||
-                        (feature.geometry.coordinates[1] > 51.593 && feature.geometry.coordinates[1] < 51.595 && feature.geometry.coordinates[0] > 3.710 && feature.geometry.coordinates[0] < 3.713)) {
+              } else if (poiName?.toLowerCase().includes('lodge')) {
                 category = 'lodges';
                 subCategory = 'water_village_lodge';
               } else {
@@ -396,7 +394,7 @@ async function getPOIData(site: string): Promise<POI[]> {
         } else if (filename === 'combined_pois_roompot.geojson') {
           const pois = geojson.features.map((feature: any, index: number) => {
             const props = feature.properties;
-            
+
             // Handle specific chalet/1022 case
             if (feature.id === 'chalet/1022' || props['@id'] === 'chalet/1022') {
               return {
@@ -455,14 +453,14 @@ async function getPOIData(site: string): Promise<POI[]> {
                   break;
               }
             }
-            
+
             // Check tourism property for chalets/accommodation
             if (props.tourism === 'chalet' || props.accommodation === 'chalet') {
               category = 'chalets';
               subCategory = 'standard';
               name = props.name || `Chalet ${props.ref || index}`;
             }
-            
+
             // If not categorized by type, use building_type
             if (category === 'unknown' && (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan'))) {
               category = 'camping';
@@ -491,16 +489,14 @@ async function getPOIData(site: string): Promise<POI[]> {
               else if (poiName?.includes('FV')) subCategory = 'fv14';
               else subCategory = 'standard';
             } else if (category === 'unknown' && buildingType === 'house') {
-              // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
-              if (poiName?.toLowerCase().includes('beach house') ||
-                  (feature.geometry.coordinates[1] > 51.587 && feature.geometry.coordinates[1] < 51.590 && feature.geometry.coordinates[0] > 3.730 && feature.geometry.coordinates[0] < 3.735)) {
+              // Only categorize as beach_houses if explicitly named as beach house
+              if (poiName?.toLowerCase().includes('beach house')) {
                 category = 'beach_houses';
                 if (poiName?.includes('4')) subCategory = 'beach_house_4';
                 else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
                 else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
                 else subCategory = 'standard';
-              } else if (poiName?.toLowerCase().includes('lodge') ||
-                        (feature.geometry.coordinates[1] > 51.593 && feature.geometry.coordinates[1] < 51.595 && feature.geometry.coordinates[0] > 3.710 && feature.geometry.coordinates[0] < 3.713)) {
+              } else if (poiName?.toLowerCase().includes('lodge')) {
                 category = 'lodges';
                 subCategory = 'water_village_lodge';
               } else {
@@ -900,7 +896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (poi.ref && poi.ref.toLowerCase() === searchTerm) {
             return true;
           }
-          
+
           // Search in meaningful fields only (exclude ID completely)
           return poi.name.toLowerCase().includes(searchTerm) ||
                  poi.description?.toLowerCase().includes(searchTerm) ||
