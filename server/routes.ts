@@ -252,7 +252,6 @@ async function getPOIData(site: string): Promise<POI[]> {
                 subCategory = 'reception';
                 name = 'Reception/Office';
               }
-            }
             } else if (buildingType === 'commercial' || buildingType === 'industrial') {
               category = 'services';
               subCategory = 'service_station';
