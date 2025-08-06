@@ -7,22 +7,17 @@ interface LightweightPOIButtonsProps {
   selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
-// POI categories matching Roompot accommodation types and facilities
+// POI categories matching actual data structure
 const poiCategories = [
-  // Accommodation Types - First Row
-  { icon: '🏡', label: 'Bungalows', id: 'bungalows' },
-  { icon: '🏖️', label: 'Beach Houses', id: 'beach_houses' },
+  // Real data categories - First Row
+  { icon: '🏡', label: 'Bungalows', id: 'bungalow' },
+  { icon: '🚐', label: 'Static Caravans', id: 'static_caravan' },
   
-  // Accommodation Types - Second Row  
-  { icon: '🏕️', label: 'Chalets', id: 'chalets' },
-  { icon: '⭐', label: 'Lodges', id: 'lodges' },
-  
-  // Site Features - Third Row
-  { icon: '🚐', label: 'Camper Sites', id: 'camper_sites' },
+  // Real data categories - Second Row  
   { icon: '🚿', label: 'Facilities', id: 'facilities' },
-  
-  // Services & Clear - Fourth Row
   { icon: '🛠️', label: 'Services', id: 'services' },
+  
+  // Clear filter - Third Row
   { icon: '📍', label: 'All POIs', id: '' }, // Show all when empty category
 ];
 

@@ -61,24 +61,14 @@ export interface MapState {
 // Accommodation-specific categories based on Roompot legend
 export type POICategory = 'bungalows' | 'beach_houses' | 'chalets' | 'lodges' | 'camper_sites' | 'services' | 'facilities';
 
-export const POI_CATEGORIES = {
-  bungalows: { label: 'Bungalows', icon: 'Building', color: 'bg-green-500' },
-  beach_houses: { label: 'Beach Houses', icon: 'Building2', color: 'bg-blue-500' },
-  chalets: { label: 'Chalets', icon: 'Building', color: 'bg-orange-500' },
-  lodges: { label: 'Lodges', icon: 'Building2', color: 'bg-purple-500' },
-  camper_sites: { label: 'Camper Sites', icon: 'Car', color: 'bg-gray-500' },
-  services: { label: 'Services', icon: 'Utensils', color: 'bg-yellow-500' },
-  facilities: { label: 'Facilities', icon: 'Utensils', color: 'bg-red-500' }
-} as const;
-
 export const POI_CATEGORIES: Record<POICategory, { icon: string; color: string; label: string }> = {
-  'bungalow': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' }, // B1, B5, BA Comfort series
-  'beach_house': { icon: 'Building2', color: 'bg-blue-500', label: 'Beach Houses' }, // Beach House 4, 6A, 6B
-  'chalet': { icon: 'Building', color: 'bg-purple-500', label: 'Chalets' }, // RP64A, RP4A series
-  'lodge': { icon: 'Building', color: 'bg-yellow-500', label: 'Lodges' }, // Water Village Lodges
-  'static_caravan': { icon: 'Car', color: 'bg-orange-500', label: 'Camper Sites' }, // Static caravans
-  'services': { icon: 'Building2', color: 'bg-cyan-500', label: 'Services' }, // Shops, info
-  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' } // Toilets, showers
+  'bungalows': { icon: 'Building', color: 'bg-green-500', label: 'Bungalows' },
+  'beach_houses': { icon: 'Building2', color: 'bg-blue-500', label: 'Beach Houses' },
+  'chalets': { icon: 'Building', color: 'bg-orange-500', label: 'Chalets' },
+  'lodges': { icon: 'Building2', color: 'bg-purple-500', label: 'Lodges' },
+  'camper_sites': { icon: 'Car', color: 'bg-gray-500', label: 'Camper Sites' },
+  'services': { icon: 'Utensils', color: 'bg-yellow-500', label: 'Services' },
+  'facilities': { icon: 'Utensils', color: 'bg-red-500', label: 'Facilities' }
 };
 
 export const KAMPERLAND_COORDINATES: Coordinates = {
