@@ -393,6 +393,242 @@ async function getPOIData(site: string): Promise<POI[]> {
           }).filter(Boolean);
           allPOIs.push(...pois);
 
+        } else if (filename === 'combined_pois_roompot.geojson') {
+          const pois = geojson.features.map((feature: any, index: number) => {
+            const props = feature.properties;
+            
+            // Handle specific chalet/1022 case
+            if (feature.id === 'chalet/1022' || props['@id'] === 'chalet/1022') {
+              return {
+                id: feature.id?.toString() || `chalet_1022`,
+                name: props.name || 'BüxDeLüx',
+                category: 'chalets',
+                subCategory: 'standard',
+                coordinates: { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] },
+                description: 'Chalet accommodation',
+                ref: props.ref || '1022',
+                buildingType: 'chalet'
+              };
+            }
+
+            const buildingType = props.building_type;
+            const poiName = props.name;
+            let name = poiName || buildingType?.charAt(0).toUpperCase() + buildingType?.slice(1) || 'Roompot POI';
+            let category = 'unknown';
+            let subCategory = '';
+
+            // Enhanced categorization based on Roompot legend and type
+            // First check if there's a type property for direct categorization
+            const featureType = props.type;
+            if (featureType) {
+              switch (featureType.toLowerCase()) {
+                case 'accommodation':
+                case 'chalet':
+                  category = 'chalets';
+                  subCategory = 'standard';
+                  break;
+                case 'bungalow':
+                  category = 'bungalows';
+                  subCategory = 'standard';
+                  break;
+                case 'restaurant':
+                case 'food':
+                  category = 'food-drink';
+                  subCategory = 'restaurant';
+                  break;
+                case 'service':
+                case 'facility':
+                  category = 'services';
+                  subCategory = 'general';
+                  break;
+                case 'parking':
+                  category = 'parking';
+                  subCategory = 'parking';
+                  break;
+                case 'toilet':
+                case 'toilets':
+                  category = 'toilets';
+                  subCategory = 'toilets';
+                  break;
+                default:
+                  // Fall back to building_type based categorization
+                  break;
+              }
+            }
+            
+            // Check tourism property for chalets/accommodation
+            if (props.tourism === 'chalet' || props.accommodation === 'chalet') {
+              category = 'chalets';
+              subCategory = 'standard';
+              name = props.name || `Chalet ${props.ref || index}`;
+            }
+            
+            // If not categorized by type, use building_type
+            if (category === 'unknown' && (buildingType === 'static_caravan' || poiName?.toLowerCase().includes('caravan'))) {
+              category = 'camping';
+              subCategory = 'static_caravan';
+              name = name.replace('static_caravan', 'Caravan Site');
+            } else if (category === 'unknown' && (buildingType === 'bungalow' || poiName?.toLowerCase().includes('bungalow'))) {
+              category = 'bungalows';
+              // Determine bungalow type from name patterns
+              if (poiName?.includes('B1')) subCategory = 'b1';
+              else if (poiName?.includes('B5')) subCategory = 'b5';
+              else if (poiName?.includes('BA')) subCategory = 'ba_comfort';
+              else if (poiName?.includes('BC')) subCategory = 'bc_comfort';
+              else if (poiName?.includes('BD')) subCategory = 'bd_comfort';
+              else if (poiName?.includes('BE')) subCategory = 'be_comfort';
+              else if (poiName?.includes('BF')) subCategory = 'bf_comfort';
+              else if (poiName?.includes('BG')) subCategory = 'bg';
+              else if (poiName?.includes('BH')) subCategory = 'bh';
+              else if (poiName?.includes('BI')) subCategory = 'bi';
+              else if (poiName?.includes('NB')) subCategory = 'nb_comfort';
+              else if (poiName?.includes('NC')) subCategory = 'nc';
+              else if (poiName?.includes('ND')) subCategory = 'nd_comfort';
+              else if (poiName?.includes('NE')) subCategory = 'ne_comfort';
+              else if (poiName?.includes('NG')) subCategory = 'ng_comfort';
+              else if (poiName?.includes('RJV')) subCategory = 'rjv';
+              else if (poiName?.includes('RJ')) subCategory = 'rj_comfort';
+              else if (poiName?.includes('FV')) subCategory = 'fv14';
+              else subCategory = 'standard';
+            } else if (category === 'unknown' && buildingType === 'house') {
+              // Only categorize as beach_houses if explicitly named as beach house or located near beach coordinates
+              if (poiName?.toLowerCase().includes('beach house') ||
+                  (feature.geometry.coordinates[1] > 51.587 && feature.geometry.coordinates[1] < 51.590 && feature.geometry.coordinates[0] > 3.730 && feature.geometry.coordinates[0] < 3.735)) {
+                category = 'beach_houses';
+                if (poiName?.includes('4')) subCategory = 'beach_house_4';
+                else if (poiName?.includes('6A')) subCategory = 'beach_house_6a';
+                else if (poiName?.includes('6B')) subCategory = 'beach_house_6b';
+                else subCategory = 'standard';
+              } else if (poiName?.toLowerCase().includes('lodge') ||
+                        (feature.geometry.coordinates[1] > 51.593 && feature.geometry.coordinates[1] < 51.595 && feature.geometry.coordinates[0] > 3.710 && feature.geometry.coordinates[0] < 3.713)) {
+                category = 'lodges';
+                subCategory = 'water_village_lodge';
+              } else {
+                // Regular houses - keep as chalets or create a separate category
+                category = 'chalets';
+                subCategory = 'standard';
+              }
+            } else if (category === 'unknown' && (buildingType === 'semidetached_house' || buildingType === 'detached' ||
+                      (poiName && (poiName.includes('RP') || poiName.toLowerCase().includes('chalet'))))) {
+              category = 'chalets';
+              if (poiName?.includes('RP64A')) subCategory = 'rp64a';
+              else if (poiName?.includes('RP4A')) subCategory = 'rp4a';
+              else if (poiName?.includes('RP6A')) subCategory = 'rp6a';
+              else if (poiName?.includes('RP6B')) subCategory = 'rp6b';
+              else if (poiName?.includes('RP6C')) subCategory = 'rp6c';
+              else if (poiName?.includes('RP6GC')) subCategory = 'rp6gc';
+              else subCategory = 'standard';
+            } else if (category === 'unknown' && (poiName?.toLowerCase().includes('lodge') || poiName?.toLowerCase().includes('water village'))) {
+              category = 'lodges';
+              if (poiName?.toLowerCase().includes('water village')) subCategory = 'water_village_lodge';
+              else subCategory = 'lodge_4';
+            } else if (category === 'unknown' && buildingType === 'toilets') {
+              category = 'toilets';
+              subCategory = 'toilets';
+              name = 'Toilet';
+            } else if (buildingType === 'parking') {
+              category = 'parking';
+              subCategory = 'parking';
+              name = 'Parking Area';
+            } else if (buildingType === 'retail') {
+              category = 'food-drink';
+              subCategory = 'restaurant';
+              name = 'Restaurant';
+            } else if (buildingType === 'office') {
+              // Check if it's a restaurant office or general office
+              if (poiName?.toLowerCase().includes('restaurant') || poiName?.toLowerCase().includes('bar')) {
+                category = 'food-drink';
+                subCategory = 'restaurant';
+                name = poiName || 'Restaurant';
+              } else {
+                category = 'services';
+                subCategory = 'reception';
+                name = 'Reception/Office';
+              }
+            } else if (buildingType === 'commercial' || buildingType === 'industrial') {
+              category = 'services';
+              subCategory = 'service_station';
+              name = 'Service Station';
+            } else if (buildingType === 'garage' || buildingType === 'shed') {
+              category = 'facilities';
+              subCategory = 'storage';
+              name = 'Storage/Garage';
+            } else if (buildingType === 'landuse_grass') {
+              category = 'leisure';
+              subCategory = 'playground';
+              name = 'Recreational Area';
+            } else if (buildingType === 'service') {
+              category = 'services';
+              subCategory = 'maintenance';
+              name = 'Service Point';
+            } else if (category === 'unknown') {
+              // Use roompot_category as fallback if available
+              const roompotCategory = props.roompot_category;
+              if (roompotCategory) {
+                switch (roompotCategory.toLowerCase()) {
+                  case 'food & drinks':
+                    category = 'food-drink';
+                    subCategory = 'restaurant';
+                    break;
+                  case 'leisure & entertainment':
+                    category = 'leisure';
+                    subCategory = 'entertainment';
+                    break;
+                  case 'necessities':
+                    category = 'services';
+                    subCategory = 'essential';
+                    break;
+                  case 'shopping':
+                    category = 'services';
+                    subCategory = 'shopping';
+                    break;
+                  case 'chalets/lodges':
+                    category = 'chalets';
+                    subCategory = 'standard';
+                    // Ensure name is properly set for chalets
+                    if (!name || name === 'Roompot POI') {
+                      name = props.name || `Chalet ${props.ref || index}`;
+                    }
+                    break;
+                  case 'bungalows - standard':
+                    category = 'bungalows';
+                    subCategory = 'standard';
+                    break;
+                  default:
+                    category = 'services';
+                    subCategory = 'general';
+                    break;
+                }
+              } else {
+                category = 'services';
+                subCategory = 'general';
+              }
+            }
+            console.log(`Combined POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}, Ref: ${props.ref}`);
+
+            let coordinates;
+            if (feature.geometry.type === 'Point') {
+              coordinates = { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] };
+            } else { return null; } // Skip non-point geometries for roompot data
+
+            const amenities = [];
+            if (props.phone) amenities.push(`Phone: ${props.phone}`);
+            if (props.website) amenities.push(`Website: ${props.website}`);
+
+            return {
+              id: feature.id?.toString() || `roompot_${index}`,
+              name: name,
+              category,
+              subCategory: subCategory || undefined,
+              coordinates,
+              amenities: amenities.length > 0 ? amenities : undefined,
+              hours: props.opening_hours || undefined,
+              buildingType: buildingType, // Add buildingType to the POI object
+              ref: props.ref || undefined // Add ref field for searching
+            };
+          }).filter(Boolean);
+          allPOIs.push(...pois);
+
         } else if (filename === 'Beach Resort Zentroide Layer.geojson') {
           const buildingTypes = geojson.features.reduce((acc: Record<string, number>, feature: any) => {
             const building = feature.properties?.BUILDING || 'no_building_type';
