@@ -6,9 +6,15 @@ CampGround Compass ist eine hochmoderne React-TypeScript-Anwendung, die speziell
 
 ## 🎯 Aktuelle Features
 
+### 🔧 Aktuelle Architektur-Updates
+- **Compass-Rotation Feature entfernt** - Nicht-funktionale Kompass-Rotation komplett entfernt
+- **UI-Positionierung optimiert** - Rechte Bedienelemente vertikal zentriert für bessere mobile Zugänglichkeit
+- **Vereinfachte Karten-Schnittstelle** ohne problematische Rotations-Funktionalität
+
 ### 🧭 Live-Navigation
 - **Echtes GPS-Tracking** mit kontinuierlichen Positionsupdates
 - **Google Directions API** für professionelle Routenberechnung
+- **Multi-Modal Routing** mit TravelModeSelector (Auto/Rad/Fuß) - kompaktes vertikales Layout
 - **Campingplatz-optimierte Routing-Parameter** (6 km/h Gehgeschwindigkeit, 8m Abweichungserkennung)
 - **Turn-by-Turn Navigation** mit deutschen Anweisungen
 - **Automatische Neuberechnung** bei Abweichung von der Route
@@ -47,6 +53,7 @@ CampGround Compass ist eine hochmoderne React-TypeScript-Anwendung, die speziell
 - **Shadcn/UI Komponenten** mit Tailwind CSS
 - **Floating Action Buttons** mit ultra-transparentem Glas-Design
 - **Elegante Animationen** und Gesture-Navigation
+- **Mobile-Debugging System** mit rotem LOG-Button für Smartphone-Tests
 
 ### 🌐 Mehrsprachige Unterstützung
 - **6 Sprachen**: Deutsch, Englisch, Französisch, Niederländisch, Italienisch, Spanisch
