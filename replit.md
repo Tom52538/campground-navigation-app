@@ -18,7 +18,7 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 - **Runtime**: Node.js with Express.js TypeScript server
 - **API Design**: RESTful endpoints with JSON responses
 - **Data Storage**: In-memory storage with MemStorage abstraction layer
-- **External Integrations**: OpenRouteService for routing, OpenWeatherMap for weather data
+- **External Integrations**: Google Directions API for routing, OpenWeatherMap for weather data
 - **Build System**: Vite for client bundling, esbuild for server compilation
 
 ## Key Components
@@ -48,15 +48,16 @@ The Campground Navigation App is a professional React-TypeScript mobile-first ap
 1. **Location Services**: GPS positioning (real or mocked) provides current coordinates
 2. **POI Loading**: GeoJSON data loaded from server and processed into POI objects
 3. **Search & Discovery**: User searches trigger filtered POI queries with distance calculations
-4. **Route Planning**: Selected destinations trigger OpenRouteService API calls
+4. **Route Planning**: Selected destinations trigger Google Directions API calls
 5. **Navigation**: Route geometry displayed on map with turn-by-turn instructions
 6. **Weather Updates**: Periodic OpenWeatherMap API calls for current conditions
 
 ## External Dependencies
 
 ### Required API Keys
-- **OpenRouteService**: `OPENROUTE_API_KEY` for routing and directions
+- **Google Directions API**: `GOOGLE_DIRECTIONS_API_KEY` for routing and directions
 - **OpenWeatherMap**: `OPENWEATHER_API_KEY` for weather data integration
+- **Mapbox**: `MAPBOX_ACCESS_TOKEN` for enhanced map tiles (optional)
 
 ### Core Libraries
 - **Mapping**: React Leaflet, Leaflet
