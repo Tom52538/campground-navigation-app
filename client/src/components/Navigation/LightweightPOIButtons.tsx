@@ -50,7 +50,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategories = [],
       setVisibleTooltip(null);
       console.log(`🔍 POI BUTTON DEBUG: Cleared visible tooltip`);
     }, 20000);
-  }, [onCategorySelect, activeCategories]);
+  }, [onCategorySelect]);
 
   useEffect(() => {
     return () => {
