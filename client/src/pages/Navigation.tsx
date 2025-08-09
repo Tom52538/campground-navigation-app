@@ -26,8 +26,6 @@ import { Volume2, VolumeX, Settings } from 'lucide-react';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RouteTracker } from '@/lib/routeTracker';
 import { GestureEnhancedMap } from '@/components/Map/GestureEnhancedMap';
-import { Marker, Polyline, Popup } from 'react-leaflet';
-import L from 'leaflet';
 
 
 export default function Navigation() {
@@ -592,32 +590,6 @@ export default function Navigation() {
     selectedPOI: !!selectedPOI
   });
 
-  // Define a more visible destination marker
-  const destinationIcon = L.divIcon({
-    className: 'custom-destination-marker',
-    html: `<div style="
-      background: #ff4444; 
-      width: 24px; 
-      height: 24px; 
-      border-radius: 50%; 
-      border: 4px solid white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-      position: relative;
-      z-index: 1000;
-    ">
-      <div style="
-        position: absolute;
-        top: -12px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 16px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-      ">📍</div>
-    </div>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
-  });
-
   try {
     // Display POIs logic
     const displayPOIs = useMemo(() => {
@@ -713,32 +685,8 @@ export default function Navigation() {
           onMapClick={handleMapSingleTap}
           onMapLongPress={handleDestinationLongPress}
           mapStyle={mapStyle}
-        >
-          {/* Current route line */}
-          {currentRoute && currentRoute.geometry && (
-            <Polyline 
-              positions={currentRoute.geometry.map(coord => [coord[1], coord[0]])}
-              color="blue" 
-              weight={6}
-              opacity={0.7}
-            />
-          )}
-
-          {/* Destination marker */}
-          {destinationMarker && (
-            <Marker 
-              position={[destinationMarker.lat, destinationMarker.lng]} 
-              icon={destinationIcon}
-            >
-              <Popup>
-                <div className="text-center">
-                  <strong>Destination</strong><br />
-                  {destinationMarker.lat.toFixed(4)}, {destinationMarker.lng.toFixed(4)}
-                </div>
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+          destinationMarker={destinationMarker}
+        />
 
         {/* EXPLORATION MODE - Only visible when NOT navigating */}
         {!isNavigating && (
