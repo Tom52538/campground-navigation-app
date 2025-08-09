@@ -8,26 +8,13 @@ interface GestureEnhancedMapProps {
   onSingleTap?: (latlng: any) => void;
 }
 
-// Enhanced debug logger for gesture debugging
-const debugLog = (category: string, message: string, data?: any) => {
-  const timestamp = new Date().toLocaleTimeString();
-  const logEntry = `🗺️ [${timestamp}] ${category}: ${message}`;
-  
-  console.log(logEntry, data || '');
-  
-  // Mobile logger integration
-  if (typeof window !== 'undefined' && window.mobileLogger) {
-    window.mobileLogger.log(category, `${message} ${data ? JSON.stringify(data) : ''}`);
-  }
-};
-
 const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
   const map = useMap();
   const touchStart = useRef<{ time: number; pos: { x: number; y: number } } | null>(null);
   const lastTapTime = useRef<number>(0);
   const tapTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
-  debugLog('GESTURE_INIT', 'GestureEnhancedMap component rendered', {
+  console.log('🗺️ GESTURE DEBUG: GestureEnhancedMap component rendered', {
     mapExists: !!map,
     callbacks: {
       onDoubleTap: !!onDoubleTap,
@@ -36,30 +23,24 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
     }
   });
 
+  // Add mobile logger entry
+  if (typeof window !== 'undefined' && window.mobileLogger) {
+    window.mobileLogger.log('GESTURE_COMPONENT', 'GestureEnhancedMap rendered - callbacks: ' + JSON.stringify({
+      onDoubleTap: !!onDoubleTap,
+      onLongPress: !!onLongPress,
+      onSingleTap: !!onSingleTap
+    }));
+  }
+
   useEffect(() => {
     if (!map) {
       console.warn('🗺️ GESTURE DEBUG: Map not available yet');
       return;
     }
 
-    // Disable ALL map zoom interactions to prevent interference
+    // Disable map's default double-click zoom behavior
     map.doubleClickZoom.disable();
-    map.scrollWheelZoom.disable();
-    map.boxZoom.disable();
-    map.keyboard.disable();
-    
-    // Disable touch zoom completely - this is critical!
-    if (map.touchZoom) {
-      map.touchZoom.disable();
-    }
-    
-    debugLog('GESTURE_SETUP', 'Disabled all Leaflet zoom interactions', {
-      doubleClick: !map.doubleClickZoom.enabled(),
-      scrollWheel: !map.scrollWheelZoom.enabled(),
-      boxZoom: !map.boxZoom.enabled(),
-      keyboard: !map.keyboard.enabled(),
-      touchZoom: map.touchZoom ? !map.touchZoom.enabled() : 'N/A'
-    });
+    console.log('🗺️ GESTURE DEBUG: Disabled map double-click zoom');
 
     console.log('🗺️ GESTURE DEBUG: Setting up gesture handlers for map - map exists:', !!map);
 
@@ -76,91 +57,55 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
     });
 
     const handleTouchStart = (e: TouchEvent) => {
-      const touchCount = e.touches.length;
-      
-      debugLog('TOUCH_START', `Touch start detected`, {
-        touchCount,
-        target: e.target?.constructor.name,
-        timeStamp: e.timeStamp
-      });
-      
-      if (touchCount === 1) {
+      if (e.touches.length === 1) {
+        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+          touchCount: e.touches.length,
+          target: e.target?.constructor.name
+        });
+        
         const touch = e.touches[0];
         touchStart.current = {
           time: Date.now(),
           pos: { x: touch.clientX, y: touch.clientY }
         };
         
-        debugLog('SINGLE_TOUCH', 'Single touch initialized', {
-          position: touchStart.current.pos,
-          timestamp: touchStart.current.time
+        console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
+      } else {
+        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+          touchCount: e.touches.length,
+          target: e.target?.constructor.name
         });
-      } else if (touchCount > 1) {
-        // Multi-touch detected - this should NOT trigger zoom
-        debugLog('MULTI_TOUCH', 'Multi-touch detected - preventing default zoom', {
-          touchCount,
-          preventDefault: true
-        });
-        
-        // Prevent default zoom behavior
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Clear single touch data
-        touchStart.current = null;
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      const remainingTouches = e.touches.length;
-      const hasStartData = !!touchStart.current;
-      
-      debugLog('TOUCH_END', 'Touch end triggered', {
-        hasStartData,
-        remainingTouches,
-        timeStamp: e.timeStamp
+      console.log('🗺️ GESTURE DEBUG: Touch end triggered', {
+        hasStartData: !!touchStart.current,
+        remainingTouches: e.touches.length
       });
 
-      // Only process single touch gestures
-      if (!hasStartData) {
-        debugLog('TOUCH_END_SKIP', 'Skipped - no touch start data');
-        return;
-      }
-      
-      if (remainingTouches > 0) {
-        debugLog('TOUCH_END_SKIP', 'Skipped - multi-touch still active', {
-          remainingTouches
-        });
+      if (!touchStart.current || e.touches.length > 0) {
+        console.log('🗺️ GESTURE DEBUG: Touch end cancelled - no start data or multi-touch');
         return;
       }
 
       const touchEnd = Date.now();
       const duration = touchEnd - touchStart.current.time;
       const timeSinceLastTap = touchEnd - lastTapTime.current;
-      const isQuickTap = duration < 500;
-      const isRecentTap = timeSinceLastTap < 400 && lastTapTime.current > 0;
 
-      debugLog('GESTURE_ANALYSIS', 'Touch gesture analysis', {
-        duration: `${duration}ms`,
-        timeSinceLastTap: `${timeSinceLastTap}ms`,
-        isQuickTap,
-        isRecentTap,
-        isLongPress: duration > 500,
-        startPos: touchStart.current.pos,
-        gestureType: duration > 500 ? 'LONG_PRESS' : 
-                    isRecentTap ? 'DOUBLE_TAP' : 'SINGLE_TAP'
+      console.log('🗺️ GESTURE DEBUG: Touch end analysis -', {
+        duration,
+        timeSinceLastTap,
+        isQuickTap: duration < 500,
+        isRecentTap: timeSinceLastTap < 300,
+        startPos: touchStart.current.pos
       });
 
       if (duration > 500) {
+        console.log('🗺️ GESTURE DEBUG: Long press detected - showing map info');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
-        
-        debugLog('LONG_PRESS', 'Long press gesture detected', {
-          duration: `${duration}ms`,
-          containerPoint,
-          coordinates: { lat: latlng.lat.toFixed(6), lng: latlng.lng.toFixed(6) }
-        });
-        
+        console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
         onLongPress?.(latlng);
         touchStart.current = null;
         return;
@@ -172,44 +117,30 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
         tapTimeoutId.current = null;
       }
 
-      if (isRecentTap) {
+      if (timeSinceLastTap < 400 && lastTapTime.current > 0) {
+        // Double tap detected - set destination
+        console.log('🗺️ GESTURE DEBUG: Double tap confirmed - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
-        
-        debugLog('DOUBLE_TAP', 'Double tap gesture confirmed', {
-          timeSinceLastTap: `${timeSinceLastTap}ms`,
-          containerPoint,
-          coordinates: { lat: latlng.lat.toFixed(6), lng: latlng.lng.toFixed(6) },
-          action: 'SET_DESTINATION'
-        });
-        
+        console.log('🗺️ GESTURE DEBUG: Double tap destination coordinates:', { containerPoint, latlng });
         onDoubleTap?.(latlng);
         lastTapTime.current = 0; // Reset to prevent triple tap
         e.preventDefault();
         e.stopPropagation();
-        touchStart.current = null;
-        return;
+        return; // Exit early to prevent single tap logic
       } else {
+        // Single tap - wait briefly to see if double tap follows
+        console.log('🗺️ GESTURE DEBUG: Potential single tap detected, waiting...');
         const currentTouchPos = { x: touchStart.current.pos.x, y: touchStart.current.pos.y };
         
-        debugLog('SINGLE_TAP', 'Potential single tap - waiting for confirmation', {
-          waitTime: '250ms',
-          position: currentTouchPos
-        });
-        
         tapTimeoutId.current = setTimeout(() => {
+          console.log('🗺️ GESTURE DEBUG: Single tap confirmed - map interaction only');
           const containerPoint = [currentTouchPos.x, currentTouchPos.y];
           const latlng = map.containerPointToLatLng(containerPoint);
-          
-          debugLog('SINGLE_TAP_CONFIRMED', 'Single tap gesture confirmed', {
-            containerPoint,
-            coordinates: { lat: latlng.lat.toFixed(6), lng: latlng.lng.toFixed(6) },
-            action: 'MAP_INTERACTION'
-          });
-          
+          console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
           onSingleTap?.(latlng);
           tapTimeoutId.current = null;
-        }, 250);
+        }, 250); // Shorter wait time for better responsiveness
         
         lastTapTime.current = touchEnd;
       }

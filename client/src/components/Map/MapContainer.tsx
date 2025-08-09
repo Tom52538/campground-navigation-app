@@ -283,7 +283,7 @@ export const MapContainer = ({
         zoomControl={false}
         attributionControl={false}
         doubleClickZoom={false}
-        touchZoom={false}
+        touchZoom={true}
       >
         <MapController 
           center={center} 
