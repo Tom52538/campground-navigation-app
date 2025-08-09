@@ -28,6 +28,7 @@ interface MapContainerProps {
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
   onMapLongPress: (latlng: L.LatLng) => void;
+  onMapDoubleTap: (latlng: L.LatLng) => void; // Added for double tap handler
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
   destinationMarker?: { lat: number; lng: number } | null;
   children?: React.ReactNode;
@@ -163,6 +164,7 @@ export const MapContainer = ({
   onPOINavigate,
   onMapClick,
   onMapLongPress,
+  onMapDoubleTap, // Added for double tap handler
   mapStyle = 'outdoors',
   destinationMarker,
   children,
@@ -192,6 +194,7 @@ export const MapContainer = ({
 
   const handleDoubleTap = (latlng: any) => {
     console.log('Double tap zoom at:', latlng);
+    // This local handler is now secondary to onMapDoubleTap prop
   };
 
   const handleLongPress = (latlng: any) => {
@@ -326,8 +329,8 @@ export const MapContainer = ({
 
 
         <GestureEnhancedMap
-          onDoubleTap={handleDoubleTap}
           onLongPress={onMapLongPress}
+          onDoubleTap={onMapDoubleTap || handleDoubleTap}
           onSingleTap={onMapClick}
         />
 

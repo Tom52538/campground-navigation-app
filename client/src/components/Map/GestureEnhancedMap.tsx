@@ -98,7 +98,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
       });
 
       if (duration > 500) {
-        console.log('🗺️ GESTURE DEBUG: Long press detected - setting destination');
+        console.log('🗺️ GESTURE DEBUG: Long press detected - showing map info');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
         console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
@@ -114,11 +114,11 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
       }
 
       if (timeSinceLastTap < 300 && lastTapTime.current > 0) {
-        // Double tap detected
-        console.log('🗺️ GESTURE DEBUG: Double tap confirmed');
+        // Double tap detected - set destination
+        console.log('🗺️ GESTURE DEBUG: Double tap confirmed - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
-        console.log('🗺️ GESTURE DEBUG: Double tap coordinates:', { containerPoint, latlng });
+        console.log('🗺️ GESTURE DEBUG: Double tap destination coordinates:', { containerPoint, latlng });
         onDoubleTab?.(latlng);
         lastTapTime.current = 0; // Reset to prevent triple tap
         e.preventDefault();
