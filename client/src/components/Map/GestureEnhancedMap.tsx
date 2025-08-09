@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 
 interface GestureEnhancedMapProps {
-  onDoubleTab?: (latlng: any) => void;
+  onDoubleTap?: (latlng: any) => void;
   onLongPress?: (latlng: any) => void;
   onSingleTap?: (latlng: any) => void;
 }
 
-const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
+const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
   const map = useMap();
   const touchStart = useRef<{ time: number; pos: { x: number; y: number } } | null>(null);
   const lastTapTime = useRef<number>(0);
@@ -17,7 +17,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
   console.log('🗺️ GESTURE DEBUG: GestureEnhancedMap component rendered', {
     mapExists: !!map,
     callbacks: {
-      onDoubleTab: !!onDoubleTab,
+      onDoubleTap: !!onDoubleTap,
       onLongPress: !!onLongPress,
       onSingleTap: !!onSingleTap
     }
@@ -26,7 +26,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
   // Add mobile logger entry
   if (typeof window !== 'undefined' && window.mobileLogger) {
     window.mobileLogger.log('GESTURE_COMPONENT', 'GestureEnhancedMap rendered - callbacks: ' + JSON.stringify({
-      onDoubleTab: !!onDoubleTab,
+      onDoubleTap: !!onDoubleTap,
       onLongPress: !!onLongPress,
       onSingleTap: !!onSingleTap
     }));
@@ -119,7 +119,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
         console.log('🗺️ GESTURE DEBUG: Double tap destination coordinates:', { containerPoint, latlng });
-        onDoubleTab?.(latlng);
+        onDoubleTap?.(latlng);
         lastTapTime.current = 0; // Reset to prevent triple tap
         e.preventDefault();
       } else {
@@ -187,7 +187,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
         clearTimeout(tapTimeoutId.current);
       }
     };
-  }, [map, onDoubleTab, onLongPress, onSingleTap]);
+  }, [map, onDoubleTap, onLongPress, onSingleTap]);
 
   // Return null as this is a utility component
   return null;
