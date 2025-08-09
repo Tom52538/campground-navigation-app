@@ -424,18 +424,7 @@ export default function Navigation() {
     }
   }, [currentPanel]);
 
-  // POI Category Filter Handler for Quick Access
-  const handleCategoryFilter = useCallback((category: string) => {
-    setFilteredCategories(prev => {
-      if (prev.includes(category)) {
-        // Remove category if already selected
-        return prev.filter(c => c !== category);
-      } else {
-        // Replace with single category selection for "one touch" behavior
-        return [category];
-      }
-    });
-  }, []);
+  // POI Category Filter Handler for Quick Access (duplicate removed)
 
   // Voice toggle handler
   const handleToggleVoice = useCallback(() => {
