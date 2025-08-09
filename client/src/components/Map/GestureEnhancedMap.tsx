@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMap } from 'react-leaflet';
 
 interface GestureEnhancedMapProps {
@@ -8,7 +8,7 @@ interface GestureEnhancedMapProps {
   onSingleTap?: (latlng: any) => void;
 }
 
-export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
+const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
   const map = useMap();
   const touchStart = useRef<{ time: number; pos: { x: number; y: number } } | null>(null);
   const lastTapTime = useRef<number>(0);
@@ -33,24 +33,44 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
   }
 
   useEffect(() => {
-    if (!map) return;
+    if (!map) {
+      console.warn('🗺️ GESTURE DEBUG: Map not available yet');
+      return;
+    }
+
+    console.log('🗺️ GESTURE DEBUG: Setting up gesture handlers for map:', map);
+
+    const mapContainer = map.getContainer();
+    if (!mapContainer) {
+      console.error('🗺️ GESTURE DEBUG: Map container not found');
+      return;
+    }
+
+    console.log('🗺️ GESTURE DEBUG: Setting up touch event listeners on map container', {
+      containerExists: !!mapContainer,
+      containerTagName: mapContainer.tagName,
+      containerClass: mapContainer.className
+    });
 
     const handleTouchStart = (e: TouchEvent) => {
-      console.log('🗺️ GESTURE DEBUG: Touch start detected', { 
-        touchCount: e.touches.length,
-        target: e.target?.constructor?.name || 'unknown'
-      });
-      
       if (e.touches.length === 1) {
+        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+          touchCount: e.touches.length,
+          target: e.target?.constructor.name
+        });
+        
         const touch = e.touches[0];
         touchStart.current = {
           time: Date.now(),
           pos: { x: touch.clientX, y: touch.clientY }
         };
-        console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
         
-        // Prevent event from being handled by other components
-        e.stopPropagation();
+        console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
+      } else {
+        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+          touchCount: e.touches.length,
+          target: e.target?.constructor.name
+        });
       }
     };
 
@@ -59,7 +79,7 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
         hasStartData: !!touchStart.current,
         remainingTouches: e.touches.length
       });
-      
+
       if (!touchStart.current || e.touches.length > 0) {
         console.log('🗺️ GESTURE DEBUG: Touch end cancelled - no start data or multi-touch');
         return;
@@ -69,113 +89,98 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       const duration = touchEnd - touchStart.current.time;
       const timeSinceLastTap = touchEnd - lastTapTime.current;
 
-      console.log('🗺️ GESTURE DEBUG: Touch end analysis -', { 
-        duration, 
+      console.log('🗺️ GESTURE DEBUG: Touch end analysis -', {
+        duration,
         timeSinceLastTap,
         isQuickTap: duration < 500,
         isRecentTap: timeSinceLastTap < 300,
         startPos: touchStart.current.pos
       });
-      
-      // Prevent event from being handled by other components
-      e.stopPropagation();
 
-      // Long press detection (for destination setting)
-      if (duration > 800) {
+      if (duration > 500) {
         console.log('🗺️ GESTURE DEBUG: Long press detected - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
         console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
         onLongPress?.(latlng);
-        
-        // Haptic feedback if available
-        if ('vibrate' in navigator) {
-          navigator.vibrate(50);
-        }
+        touchStart.current = null;
+        return;
       }
-      // Quick tap detection
-      else if (duration < 500) {
-        // Clear any pending single tap
-        if (tapTimeoutId.current) {
-          clearTimeout(tapTimeoutId.current);
-          tapTimeoutId.current = null;
-        }
 
-        if (timeSinceLastTap < 300 && lastTapTime.current > 0) {
-          // Double tap detected
-          console.log('🗺️ GESTURE DEBUG: Double tap confirmed');
-          const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+      // Clear any existing timeout
+      if (tapTimeoutId.current) {
+        clearTimeout(tapTimeoutId.current);
+        tapTimeoutId.current = null;
+      }
+
+      if (timeSinceLastTap < 300 && lastTapTime.current > 0) {
+        // Double tap detected
+        console.log('🗺️ GESTURE DEBUG: Double tap confirmed');
+        const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+        const latlng = map.containerPointToLatLng(containerPoint);
+        console.log('🗺️ GESTURE DEBUG: Double tap coordinates:', { containerPoint, latlng });
+        onDoubleTab?.(latlng);
+        lastTapTime.current = 0; // Reset to prevent triple tap
+        e.preventDefault();
+      } else {
+        // Single tap - wait briefly to see if double tap follows
+        console.log('🗺️ GESTURE DEBUG: Potential single tap detected, waiting...');
+        const currentTouchPos = { x: touchStart.current.pos.x, y: touchStart.current.pos.y };
+        
+        tapTimeoutId.current = setTimeout(() => {
+          console.log('🗺️ GESTURE DEBUG: Single tap confirmed - map interaction only');
+          const containerPoint = [currentTouchPos.x, currentTouchPos.y];
           const latlng = map.containerPointToLatLng(containerPoint);
-          console.log('🗺️ GESTURE DEBUG: Double tap coordinates:', { containerPoint, latlng });
-          onDoubleTab?.(latlng);
-          lastTapTime.current = 0; // Reset to prevent triple tap
-          e.preventDefault();
-        } else {
-          // Single tap - wait briefly to see if double tap follows
-          console.log('🗺️ GESTURE DEBUG: Potential single tap detected, waiting...');
-          const currentTouchPos = { x: touchStart.current.pos.x, y: touchStart.current.pos.y };
-          
-          tapTimeoutId.current = setTimeout(() => {
-            console.log('🗺️ GESTURE DEBUG: Single tap confirmed - map interaction only');
-            const containerPoint = [currentTouchPos.x, currentTouchPos.y];
-            const latlng = map.containerPointToLatLng(containerPoint);
-            console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
-            onSingleTap?.(latlng);
-            tapTimeoutId.current = null;
-          }, 250); // Shorter wait time for better responsiveness
-          
-          lastTapTime.current = touchEnd;
-        }
+          console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
+          onSingleTap?.(latlng);
+          tapTimeoutId.current = null;
+        }, 250); // Shorter wait time for better responsiveness
+        
+        lastTapTime.current = touchEnd;
       }
 
       touchStart.current = null;
     };
 
-    // Improved zoom gestures
     const handleWheel = (e: WheelEvent) => {
+      // Track zoom gestures if needed
       if (e.ctrlKey) {
-        e.preventDefault();
-        const delta = e.deltaY > 0 ? -1 : 1;
-        map.zoomIn(delta * 0.5);
+        console.log('🗺️ GESTURE DEBUG: Pinch zoom detected via wheel event');
       }
     };
 
-    const mapContainer = map.getContainer();
-    
-    console.log('🗺️ GESTURE DEBUG: Setting up touch event listeners on map container', {
-      containerExists: !!mapContainer,
-      containerTagName: mapContainer?.tagName,
-      containerClass: mapContainer?.className
-    });
-    
-    // Add multiple event listener strategies to ensure capture
-    const eventOptions = { passive: false, capture: true };
-    
-    console.log('🗺️ GESTURE DEBUG: Adding touchstart listener...');
-    mapContainer.addEventListener('touchstart', handleTouchStart, eventOptions);
-    console.log('🗺️ GESTURE DEBUG: Adding touchend listener...');
-    mapContainer.addEventListener('touchend', handleTouchEnd, eventOptions);
-    console.log('🗺️ GESTURE DEBUG: Adding wheel listener...');
-    mapContainer.addEventListener('wheel', handleWheel, { passive: false });
-    
-    // Also add to document to catch events that might be bubbling
-    document.addEventListener('touchstart', (e) => {
+    // Document-level listener for touch events that might start outside map
+    const handleDocumentTouchStart = (e: TouchEvent) => {
+      const target = e.target as Element;
       console.log('🗺️ GESTURE DEBUG: Document touchstart detected', {
-        target: e.target?.constructor?.name || 'unknown',
-        targetClass: e.target?.className || 'none'
+        target: target?.constructor?.name,
+        targetClass: target?.className
       });
-    }, eventOptions);
+    };
+
+    // Add event listeners with proper options
+    console.log('🗺️ GESTURE DEBUG: Adding touchstart listener...');
+    mapContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
     
+    console.log('🗺️ GESTURE DEBUG: Adding touchend listener...');
+    mapContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    console.log('🗺️ GESTURE DEBUG: Adding wheel listener...');
+    mapContainer.addEventListener('wheel', handleWheel);
+    
+    // Document listener for debugging
+    document.addEventListener('touchstart', handleDocumentTouchStart, { passive: true });
+
     console.log('🗺️ GESTURE DEBUG: All touch event listeners attached successfully');
 
     return () => {
       console.log('🗺️ GESTURE DEBUG: Cleaning up touch event listeners');
-      mapContainer.removeEventListener('touchstart', handleTouchStart, { capture: true });
-      mapContainer.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      mapContainer.removeEventListener('touchstart', handleTouchStart);
+      mapContainer.removeEventListener('touchend', handleTouchEnd);
       mapContainer.removeEventListener('wheel', handleWheel);
       
       // Clean up document listeners
-      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      document.removeEventListener('touchstart', handleDocumentTouchStart);
       
       // Clean up timeout
       if (tapTimeoutId.current) {
@@ -184,23 +189,10 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
     };
   }, [map, onDoubleTab, onLongPress, onSingleTap]);
 
-  // Render a visible debug indicator during development
-  return (
-    <div 
-      style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        background: 'red',
-        color: 'white',
-        padding: '4px 8px',
-        fontSize: '10px',
-        zIndex: 9999,
-        borderRadius: '4px',
-        pointerEvents: 'none'
-      }}
-    >
-      GESTURE DEBUG: {map ? 'MAP READY' : 'NO MAP'}
-    </div>
-  );
+  // Return null as this is a utility component
+  return null;
+};
+
+export const GestureEnhancedMap = (props: GestureEnhancedMapProps) => {
+  return <GestureEnhancedMapInner {...props} />;
 };
