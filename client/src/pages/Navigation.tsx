@@ -684,7 +684,7 @@ export default function Navigation() {
               onSearch={handleSearch}
               currentSite={currentSite}
               onSiteChange={handleSiteChange}
-              showClearButton={shouldShowPOIs}
+              showClearButton={displayPOIs.length > 0 || searchQuery.length > 0 || filteredCategories.length > 0}
               onClear={handleClearPOIs}
             />
 
