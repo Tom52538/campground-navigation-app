@@ -969,7 +969,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🗺️ Google Directions: Routing from ${from.lat},${from.lng} to ${to.lat},${to.lng}`);
 
       const apiKey = process.env.GOOGLE_DIRECTIONS_API_KEY;
+      console.log('🔍 API Key Debug:', { 
+        exists: !!apiKey, 
+        length: apiKey?.length || 0, 
+        prefix: apiKey?.substring(0, 10) || 'none' 
+      });
+      
       if (!apiKey) {
+        console.error('❌ Google Directions API key not found in environment');
         throw new Error('Google Directions API key not configured');
       }
 
