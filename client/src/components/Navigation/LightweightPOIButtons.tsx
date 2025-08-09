@@ -8,20 +8,20 @@ interface LightweightPOIButtonsProps {
 }
 
 // POI categories matching actual data structure
+// Updated categories to match actual POI data from server logs
 const poiCategories = [
-  // Main accommodation types
+  // Main accommodation types (matching server data)
   { icon: '🏡', label: 'Bungalows', id: 'bungalows' },
-  { icon: '🏖️', label: 'Beach Houses', id: 'beach_houses' },
   { icon: '🏕️', label: 'Chalets', id: 'chalets' },
-  { icon: '⭐', label: 'Lodges', id: 'lodges' },
   { icon: '🚐', label: 'Camping', id: 'camping' },
-
-  // Services & amenities
+  
+  // Services & amenities (matching server data)
   { icon: '🛠️', label: 'Services', id: 'services' },
   { icon: '🍽️', label: 'Food & Drinks', id: 'food-drink' },
   { icon: '🎯', label: 'Leisure', id: 'leisure' },
   { icon: '🚻', label: 'Toilets', id: 'toilets' },
   { icon: '🅿️', label: 'Parking', id: 'parking' },
+  { icon: '🏢', label: 'Facilities', id: 'facilities' },
 ];
 
 export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
@@ -29,11 +29,18 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
   const tooltipTimeoutRef = useRef<number | null>(null);
 
   const handleCategoryClick = useCallback((category: string) => {
-    console.log(`🔍 POI BUTTON DEBUG: Category clicked: ${category}`);
-    console.log(`🔍 POI BUTTON DEBUG: Previous active category: ${activeCategory}`);
-
+    console.log(`🔍 POI BUTTON DEBUG: ===========================================`);
+    console.log(`🔍 POI BUTTON DEBUG: Category button clicked: "${category}"`);
+    console.log(`🔍 POI BUTTON DEBUG: Previous active category: "${activeCategory}"`);
+    console.log(`🔍 POI BUTTON DEBUG: Button component activeCategory prop:`, activeCategory);
+    
+    // Call the parent handler
+    console.log(`🔍 POI BUTTON DEBUG: Calling onCategorySelect with: "${category}"`);
     onCategorySelect(category);
+    
+    // Show feedback tooltip
     setVisibleTooltip(category);
+    console.log(`🔍 POI BUTTON DEBUG: Set visible tooltip to: "${category}"`);
 
     if (tooltipTimeoutRef.current) {
       clearTimeout(tooltipTimeoutRef.current);
@@ -41,7 +48,8 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
 
     tooltipTimeoutRef.current = window.setTimeout(() => {
       setVisibleTooltip(null);
-    }, 2000);
+      console.log(`🔍 POI BUTTON DEBUG: Cleared visible tooltip`);
+    }, 20000);
   }, [onCategorySelect, activeCategory]);
 
   useEffect(() => {

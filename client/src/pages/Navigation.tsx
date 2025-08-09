@@ -350,24 +350,47 @@ export default function Navigation() {
   }, []);
 
   const handleCategoryFilter = useCallback((category: string) => {
-    console.log('🔍NAVIGATION DEBUG: handleCategoryFilter called with:', category);
-    console.log('🔍NAVIGATION DEBUG: Current filteredCategories before:', filteredCategories);
+    console.log('🔍 NAVIGATION DEBUG: ==========================================');
+    console.log('🔍 NAVIGATION DEBUG: handleCategoryFilter called with:', category);
+    console.log('🔍 NAVIGATION DEBUG: Current filteredCategories before:', filteredCategories);
+    console.log('🔍 NAVIGATION DEBUG: Type of category:', typeof category);
+    console.log('🔍 NAVIGATION DEBUG: Category length:', category.length);
+    
+    // Debug available POI categories from actual data
+    if (allPOIs && allPOIs.length > 0) {
+      const actualCategories = [...new Set(allPOIs.map(poi => poi.category))].sort();
+      console.log('🔍 NAVIGATION DEBUG: Available POI categories in data:', actualCategories);
+      console.log('🔍 NAVIGATION DEBUG: Does clicked category exist in data?', actualCategories.includes(category));
+      
+      // Show sample POIs for this category
+      const samplePOIs = allPOIs.filter(poi => poi.category === category).slice(0, 5);
+      console.log(`🔍 NAVIGATION DEBUG: Sample POIs for "${category}":`, samplePOIs.map(poi => poi.name));
+    }
 
     setFilteredCategories(prev => {
       const isCurrentlySelected = prev.includes(category);
       let newCategories;
       if (isCurrentlySelected) {
         newCategories = prev.filter(c => c !== category);
-        console.log('🔍NAVIGATION DEBUG: Removing category:', category);
+        console.log('🔍 NAVIGATION DEBUG: ❌ Removing category:', category);
       } else {
         newCategories = [...prev, category];
-        console.log('🔍NAVIGATION DEBUG: Adding category:', category);
+        console.log('🔍 NAVIGATION DEBUG: ✅ Adding category:', category);
       }
 
-      console.log('🔍NAVIGATION DEBUG: New filteredCategories:', newCategories);
+      console.log('🔍 NAVIGATION DEBUG: Previous filteredCategories:', prev);
+      console.log('🔍 NAVIGATION DEBUG: New filteredCategories:', newCategories);
+      console.log('🔍 NAVIGATION DEBUG: Change type:', isCurrentlySelected ? 'REMOVE' : 'ADD');
+      
+      // Trigger re-render debugging
+      setTimeout(() => {
+        console.log('🔍 NAVIGATION DEBUG: Category filter state should be updated now');
+        console.log('🔍 NAVIGATION DEBUG: Expected display POIs count for categories:', newCategories);
+      }, 100);
+      
       return newCategories;
     });
-  }, [filteredCategories]);
+  }, [filteredCategories, allPOIs]);
 
   const handleSiteChange = useCallback((site: TestSite) => {
     setCurrentSite(site);
@@ -570,62 +593,99 @@ export default function Navigation() {
   });
 
   try {
-    // Display POIs logic - Fixed to properly show filtered POIs
+    // Display POIs logic - Enhanced debugging for category filtering issues
     const displayPOIs = useMemo(() => {
+      console.log('🔍 DISPLAY POIs DEBUG: ========================================');
       console.log('🔍 DISPLAY POIs DEBUG - Starting calculation:', {
         allPOIs: allPOIs?.length || 0,
         filteredCategories,
         searchQuery: searchQuery.length,
-        selectedPOI: !!selectedPOI
+        selectedPOI: !!selectedPOI,
+        timestamp: new Date().toISOString()
       });
 
       if (!allPOIs || allPOIs.length === 0) {
-        console.log('🔍 DISPLAY POIs DEBUG: No POIs available');
+        console.log('🔍 DISPLAY POIs DEBUG: ❌ No POIs available - returning empty array');
         return [];
       }
 
+      // Debug all available categories
+      const allCategories = [...new Set(allPOIs.map(poi => poi.category))].sort();
+      console.log('🔍 DISPLAY POIs DEBUG: All available categories:', allCategories);
+      console.log('🔍 DISPLAY POIs DEBUG: Selected filter categories:', filteredCategories);
+
       // Start with all POIs
       let filtered = [...allPOIs];
-      console.log(`🔍 DISPLAY POIs DEBUG: Starting with ${filtered.length} total POIs`);
+      console.log(`🔍 DISPLAY POIs DEBUG: ✅ Starting with ${filtered.length} total POIs`);
 
       // Apply category filters FIRST
       if (filteredCategories.length > 0) {
-        console.log(`🔍 DISPLAY POIs DEBUG: Applying category filters:`, filteredCategories);
+        console.log(`🔍 DISPLAY POIs DEBUG: 🎯 Applying ${filteredCategories.length} category filters:`, filteredCategories);
         const beforeFilter = filtered.length;
+        
+        // Debug each filter category
+        filteredCategories.forEach(filterCat => {
+          const matchingPOIs = allPOIs.filter(poi => poi.category === filterCat);
+          console.log(`🔍 DISPLAY POIs DEBUG: Category "${filterCat}" has ${matchingPOIs.length} POIs`);
+          if (matchingPOIs.length > 0) {
+            console.log(`🔍 DISPLAY POIs DEBUG: Sample POIs for "${filterCat}":`, 
+              matchingPOIs.slice(0, 3).map(poi => poi.name));
+          }
+        });
+        
         filtered = filtered.filter(poi => {
           const hasCategory = poi && poi.category && filteredCategories.includes(poi.category);
-          if (!hasCategory && poi) {
-            console.log(`🔍 DISPLAY POIs DEBUG: POI "${poi.name}" with category "${poi.category}" filtered out`);
-          }
           return hasCategory;
         });
-        console.log(`🔍 DISPLAY POIs DEBUG: Category filter reduced POIs from ${beforeFilter} to ${filtered.length}`);
+        
+        console.log(`🔍 DISPLAY POIs DEBUG: ✅ Category filter: ${beforeFilter} → ${filtered.length} POIs`);
 
         if (filtered.length === 0) {
-          console.log(`🔍 DISPLAY POIs DEBUG: No POIs match selected categories. Available categories:`, 
-            [...new Set(allPOIs.map(poi => poi.category))]);
+          console.log(`🔍 DISPLAY POIs DEBUG: ❌ No POIs match selected categories!`);
+          console.log(`🔍 DISPLAY POIs DEBUG: Available categories:`, allCategories);
+          console.log(`🔍 DISPLAY POIs DEBUG: Selected categories:`, filteredCategories);
+          console.log(`🔍 DISPLAY POIs DEBUG: Exact match check:`, 
+            filteredCategories.map(cat => ({
+              category: cat,
+              exists: allCategories.includes(cat),
+              similarCategories: allCategories.filter(available => 
+                available.toLowerCase().includes(cat.toLowerCase()) || 
+                cat.toLowerCase().includes(available.toLowerCase())
+              )
+            }))
+          );
         }
+      } else {
+        console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No category filters applied - showing all POIs');
       }
 
       // Apply search filter SECOND
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        console.log(`🔍 DISPLAY POIs DEBUG: Applying search filter: "${query}"`);
+        console.log(`🔍 DISPLAY POIs DEBUG: 🔍 Applying search filter: "${query}"`);
         const beforeSearch = filtered.length;
         filtered = filtered.filter(poi => 
           poi.name.toLowerCase().includes(query) ||
           poi.category.toLowerCase().includes(query) ||
           poi.description?.toLowerCase().includes(query)
         );
-        console.log(`🔍 DISPLAY POIs DEBUG: Search filter reduced POIs from ${beforeSearch} to ${filtered.length}`);
+        console.log(`🔍 DISPLAY POIs DEBUG: ✅ Search filter: ${beforeSearch} → ${filtered.length} POIs`);
       }
 
-      console.log(`🔍 DISPLAY POIs DEBUG: Final filtered POIs count: ${filtered.length}`);
+      console.log(`🔍 DISPLAY POIs DEBUG: 🏁 FINAL RESULT: ${filtered.length} POIs to display`);
       if (filtered.length > 0) {
-        console.log(`🔍 DISPLAY POIs DEBUG: Sample filtered POIs:`, filtered.slice(0, 5).map(poi => ({
+        console.log(`🔍 DISPLAY POIs DEBUG: Sample final POIs:`, filtered.slice(0, 5).map(poi => ({
           name: poi.name,
           category: poi.category
         })));
+      } else {
+        console.log(`🔍 DISPLAY POIs DEBUG: ❌ NO POIS TO DISPLAY - Debug summary:`, {
+          totalPOIs: allPOIs.length,
+          hasFilters: filteredCategories.length > 0,
+          hasSearch: searchQuery.length > 0,
+          filterCategories: filteredCategories,
+          searchQuery
+        });
       }
 
       return filtered;
@@ -659,10 +719,17 @@ export default function Navigation() {
           center={mapCenter}
           zoom={mapZoom}
           currentPosition={trackingPosition}
-          pois={displayPOIs.map(poi => ({
-            ...poi,
-            distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
-          }))}
+          pois={(() => {
+            const poisWithDistance = displayPOIs.map(poi => ({
+              ...poi,
+              distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
+            }));
+            console.log(`🗺️ MAP CONTAINER DEBUG: Passing ${poisWithDistance.length} POIs to map`);
+            if (poisWithDistance.length > 0) {
+              console.log(`🗺️ MAP CONTAINER DEBUG: First POI:`, poisWithDistance[0]);
+            }
+            return poisWithDistance;
+          })()}
           selectedPOI={selectedPOI}
           route={currentRoute}
           filteredCategories={filteredCategories}
