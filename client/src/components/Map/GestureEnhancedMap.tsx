@@ -53,35 +53,60 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
     });
 
     const handleTouchStart = (e: TouchEvent) => {
+      console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+        touchCount: e.touches.length,
+        target: e.target?.constructor.name
+      });
+
       if (e.touches.length === 1) {
-        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
-          touchCount: e.touches.length,
-          target: e.target?.constructor.name
-        });
-        
+        // Single touch - track for tap gestures
         const touch = e.touches[0];
         touchStart.current = {
           time: Date.now(),
           pos: { x: touch.clientX, y: touch.clientY }
         };
-        
         console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
+      } else if (e.touches.length === 2) {
+        // Multi-touch detected - clear any single touch data and allow pinch zoom
+        console.log('🗺️ GESTURE DEBUG: Multi-touch detected - clearing single touch data for pinch zoom');
+        touchStart.current = null;
+        
+        // Clear any pending single tap timeout
+        if (tapTimeoutId.current) {
+          clearTimeout(tapTimeoutId.current);
+          tapTimeoutId.current = null;
+        }
+        
+        // Don't prevent default for multi-touch - let Leaflet handle pinch zoom
+        return;
       } else {
-        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
-          touchCount: e.touches.length,
-          target: e.target?.constructor.name
-        });
+        // More than 2 touches - clear everything
+        console.log('🗺️ GESTURE DEBUG: More than 2 touches - clearing all gesture data');
+        touchStart.current = null;
+        if (tapTimeoutId.current) {
+          clearTimeout(tapTimeoutId.current);
+          tapTimeoutId.current = null;
+        }
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       console.log('🗺️ GESTURE DEBUG: Touch end triggered', {
         hasStartData: !!touchStart.current,
-        remainingTouches: e.touches.length
+        remainingTouches: e.touches.length,
+        changedTouches: e.changedTouches.length
       });
 
-      if (!touchStart.current || e.touches.length > 0) {
-        console.log('🗺️ GESTURE DEBUG: Touch end cancelled - no start data or multi-touch');
+      // If there are still touches remaining, this might be end of multi-touch gesture
+      if (e.touches.length > 0) {
+        console.log('🗺️ GESTURE DEBUG: Touch end with remaining touches - likely multi-touch gesture');
+        // Don't process single tap logic during multi-touch
+        return;
+      }
+
+      // If no touch start data, nothing to process
+      if (!touchStart.current) {
+        console.log('🗺️ GESTURE DEBUG: Touch end cancelled - no start data');
         return;
       }
 
@@ -163,10 +188,10 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
     mapContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
     
     console.log('🗺️ GESTURE DEBUG: Adding touchend listener...');
-    mapContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+    mapContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
     
     console.log('🗺️ GESTURE DEBUG: Adding wheel listener...');
-    mapContainer.addEventListener('wheel', handleWheel);
+    mapContainer.addEventListener('wheel', handleWheel, { passive: true });
     
     // Document listener for debugging
     document.addEventListener('touchstart', handleDocumentTouchStart, { passive: true });
