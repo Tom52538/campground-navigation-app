@@ -67,10 +67,12 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
         
         console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
       } else {
-        console.log('🗺️ GESTURE DEBUG: Touch start detected', {
+        console.log('🗺️ GESTURE DEBUG: Multi-touch detected - cancelling single touch tracking', {
           touchCount: e.touches.length,
           target: e.target?.constructor.name
         });
+        // Cancel single touch tracking when multi-touch is detected (zoom gesture)
+        touchStart.current = null;
       }
     };
 
@@ -89,20 +91,35 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
       const duration = touchEnd - touchStart.current.time;
       const timeSinceLastTap = touchEnd - lastTapTime.current;
 
+      // Get the final touch position to check for movement
+      const finalTouch = e.changedTouches[0];
+      const movement = Math.sqrt(
+        Math.pow(finalTouch.clientX - touchStart.current.pos.x, 2) + 
+        Math.pow(finalTouch.clientY - touchStart.current.pos.y, 2)
+      );
+
       console.log('🗺️ GESTURE DEBUG: Touch end analysis -', {
         duration,
         timeSinceLastTap,
+        movement,
         isQuickTap: duration < 500,
         isRecentTap: timeSinceLastTap < 300,
-        startPos: touchStart.current.pos
+        startPos: touchStart.current.pos,
+        endPos: { x: finalTouch.clientX, y: finalTouch.clientY }
       });
 
-      if (duration > 500) {
+      // Only trigger long press if duration > 500ms AND movement is minimal (< 20px)
+      // This prevents zoom gestures from triggering destination pin
+      if (duration > 500 && movement < 20) {
         console.log('🗺️ GESTURE DEBUG: Long press detected - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
         console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
         onLongPress?.(latlng);
+        touchStart.current = null;
+        return;
+      } else if (duration > 500 && movement >= 20) {
+        console.log('🗺️ GESTURE DEBUG: Long duration detected but too much movement - likely zoom gesture, ignoring');
         touchStart.current = null;
         return;
       }
@@ -142,6 +159,14 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
       touchStart.current = null;
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      // If multi-touch is detected during move, cancel single touch tracking
+      if (e.touches.length > 1 && touchStart.current) {
+        console.log('🗺️ GESTURE DEBUG: Multi-touch during move - cancelling single touch (zoom gesture)');
+        touchStart.current = null;
+      }
+    };
+
     const handleWheel = (e: WheelEvent) => {
       // Track zoom gestures if needed
       if (e.ctrlKey) {
@@ -162,6 +187,9 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
     console.log('🗺️ GESTURE DEBUG: Adding touchstart listener...');
     mapContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
     
+    console.log('🗺️ GESTURE DEBUG: Adding touchmove listener...');
+    mapContainer.addEventListener('touchmove', handleTouchMove, { passive: true });
+    
     console.log('🗺️ GESTURE DEBUG: Adding touchend listener...');
     mapContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
     
@@ -176,6 +204,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
     return () => {
       console.log('🗺️ GESTURE DEBUG: Cleaning up touch event listeners');
       mapContainer.removeEventListener('touchstart', handleTouchStart);
+      mapContainer.removeEventListener('touchmove', handleTouchMove);
       mapContainer.removeEventListener('touchend', handleTouchEnd);
       mapContainer.removeEventListener('wheel', handleWheel);
       
