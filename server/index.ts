@@ -43,7 +43,7 @@ app.use((req, res, next) => {
     log(`🚀 Starting CampCompass Navigation Server`);
     log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     log(`Working Directory: ${process.cwd()}`);
-    log(`Server File Location: ${__dirname}`);
+    log(`Server File Location: ${import.meta.dirname || path.dirname(new URL(import.meta.url).pathname)}`);
     
     const server = await registerRoutes(app);
 
@@ -65,7 +65,7 @@ app.use((req, res, next) => {
     const possiblePaths = [
       "/app/dist/public",           // Railway absolute path
       path.join(process.cwd(), "dist", "public"),  // Relative path
-      path.join(__dirname, "..", "dist", "public"), // From server build location
+      path.join(import.meta.dirname || path.dirname(new URL(import.meta.url).pathname), "..", "dist", "public"), // From server build location
       "dist/public"                 // Simple relative
     ];
     
