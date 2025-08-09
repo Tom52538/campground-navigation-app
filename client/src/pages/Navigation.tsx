@@ -724,7 +724,7 @@ export default function Navigation() {
             {/* Lightweight POI Buttons - Left Side */}
             <LightweightPOIButtons
               onCategorySelect={handleCategoryFilter}
-              activeCategory={filteredCategories.length === 1 ? filteredCategories[0] : undefined}
+              activeCategories={filteredCategories}
               selectedPOI={!!selectedPOI}
             />
 

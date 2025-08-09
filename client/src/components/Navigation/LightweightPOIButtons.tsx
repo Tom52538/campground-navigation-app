@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 interface LightweightPOIButtonsProps {
   onCategorySelect: (category: string) => void;
-  activeCategory?: string;
+  activeCategories?: string[]; // Changed to array for multiple selections
   selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
@@ -24,15 +24,15 @@ const poiCategories = [
   { icon: '🏢', label: 'Facilities', id: 'facilities' },
 ];
 
-export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, selectedPOI }: LightweightPOIButtonsProps) => {
+export const LightweightPOIButtons = ({ onCategorySelect, activeCategories = [], selectedPOI }: LightweightPOIButtonsProps) => {
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
   const tooltipTimeoutRef = useRef<number | null>(null);
 
   const handleCategoryClick = useCallback((category: string) => {
     console.log(`🔍 POI BUTTON DEBUG: ===========================================`);
     console.log(`🔍 POI BUTTON DEBUG: Category button clicked: "${category}"`);
-    console.log(`🔍 POI BUTTON DEBUG: Previous active category: "${activeCategory}"`);
-    console.log(`🔍 POI BUTTON DEBUG: Button component activeCategory prop:`, activeCategory);
+    console.log(`🔍 POI BUTTON DEBUG: Previous active categories:`, activeCategories);
+    console.log(`🔍 POI BUTTON DEBUG: Button component activeCategories prop:`, activeCategories);
     
     // Call the parent handler
     console.log(`🔍 POI BUTTON DEBUG: Calling onCategorySelect with: "${category}"`);
@@ -68,11 +68,11 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategory, select
           ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
           hover:scale-105 active:scale-95`}
         style={{
-          background: activeCategory === poi.id
+          background: activeCategories.includes(poi.id)
             ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(59, 130, 246, 0.7))'
             : 'rgba(255, 255, 255, 0.2)',
-          border: activeCategory === poi.id ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: activeCategory === poi.id ? '0 3px 12px rgba(34, 197, 94, 0.3)' : 'none',
+          border: activeCategories.includes(poi.id) ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: activeCategories.includes(poi.id) ? '0 3px 12px rgba(34, 197, 94, 0.3)' : 'none',
         }}
         aria-label={poi.label}
       >
