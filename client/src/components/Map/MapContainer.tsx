@@ -272,8 +272,6 @@ export const MapContainer = ({
     });
   }, []);
 
-  const showPOIs = import.meta.env.VITE_DEBUG_SHOW_POIS === 'true';
-
   return (
     <div className="map-container relative">
       <LeafletMapContainer
@@ -336,8 +334,8 @@ export const MapContainer = ({
 
         <CurrentLocationMarker position={currentPosition} />
 
-        {/* Render POI markers */}
-        {showPOIs && pois.map((poi) => (
+        {/* Render POI markers - always show when POIs are provided */}
+        {pois.map((poi) => (
           <POIMarker 
             key={poi.id} 
             poi={poi} 
