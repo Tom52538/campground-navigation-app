@@ -66,7 +66,7 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
   // Reorganized POI categories for three-row layout with 2 buttons each
   const firstRowPOIs = [
     { 
-      category: 'facilities', 
+      category: 'toilets', 
       icon: '🚿', 
       label: 'Restrooms'
     },
@@ -79,27 +79,27 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
 
   const secondRowPOIs = [
     { 
-      category: 'recreation', 
+      category: 'leisure', 
       icon: '🔥', 
       label: 'Fire Pits'
     },
     { 
       category: 'services', 
       icon: '🥾', 
-      label: 'Trails'
+      label: 'Services'
     }
   ];
 
   const thirdRowPOIs = [
     { 
-      category: 'services', 
-      icon: '⛽', 
-      label: 'Services'
-    },
-    { 
-      category: 'recreation', 
+      category: 'camping', 
       icon: '🏕️', 
       label: 'Camping'
+    },
+    { 
+      category: 'bungalows', 
+      icon: '🏡', 
+      label: 'Bungalows'
     }
   ];
 
