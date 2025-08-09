@@ -685,7 +685,11 @@ export default function Navigation() {
           onPOINavigate={handleNavigateToPOI}
           onMapClick={handleDestinationTap}
           mapStyle={mapStyle}
-        />oord[0]])}
+        >
+          {/* Current route line */}
+          {currentRoute && currentRoute.geometry && (
+            <Polyline 
+              positions={currentRoute.geometry.map(coord => [coord[1], coord[0]])}
               color="blue" 
               weight={6}
               opacity={0.7}
