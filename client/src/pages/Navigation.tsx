@@ -631,15 +631,13 @@ export default function Navigation() {
       return filtered;
     }, [allPOIs, filteredCategories, searchQuery]);
 
-    const shouldShowPOIs = displayPOIs.length > 0 || searchQuery.length > 0 || filteredCategories.length > 0;
-
     console.log('🔍 POIRENDERING DEBUG:', {
       totalPOIs: displayPOIs.length,
       filteredCategories,
       firstFewPOIs: displayPOIs.slice(0, 3).map(poi => poi.name),
       poiDataLoading: poisLoading,
       poiDataError: undefined, // Assuming usePOI hook handles error display if any
-      shouldShowPOIs
+      shouldShowPOIs: displayPOIs.length > 0
     });
 
     // Handle loading state within main render flow
@@ -661,10 +659,10 @@ export default function Navigation() {
           center={mapCenter}
           zoom={mapZoom}
           currentPosition={trackingPosition}
-          pois={shouldShowPOIs ? displayPOIs.map(poi => ({
+          pois={displayPOIs.map(poi => ({
             ...poi,
             distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
-          })) : []}
+          }))}
           selectedPOI={selectedPOI}
           route={currentRoute}
           filteredCategories={filteredCategories}
