@@ -12,9 +12,9 @@ export const useWeather = (lat: number, lng: number) => {
       const data = await response.json();
       return data as WeatherData;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - weather doesn't change that fast
-    refetchInterval: false, // Disable automatic refetching
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    staleTime: 5 * 60 * 1000, // 5 minutes - more frequent updates
+    refetchInterval: 5 * 60 * 1000, // Auto-refetch every 5 minutes
+    refetchOnWindowFocus: true, // Refetch when window gains focus
     enabled: !!(lat && lng),
   });
 };
@@ -29,9 +29,9 @@ export const useWeatherForecast = (lat: number, lng: number) => {
       }
       return response.json();
     },
-    staleTime: 60 * 60 * 1000, // 1 hour - forecast changes even less frequently
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
+    staleTime: 15 * 60 * 1000, // 15 minutes - more frequent updates
+    refetchInterval: 15 * 60 * 1000, // Auto-refetch every 15 minutes
+    refetchOnWindowFocus: true, // Refetch when window gains focus
     enabled: !!(lat && lng),
   });
 };
