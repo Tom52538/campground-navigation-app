@@ -231,16 +231,16 @@ export default function Navigation() {
     console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', latlng);
     const newDestination = { lat: latlng.lat, lng: latlng.lng };
     console.log('🗺️ MAP TAP DEBUG: Setting destination marker', newDestination);
-    
+
     setDestinationMarker(newDestination);
     setMapCenter(newDestination); // Center map on the new destination
     setUIMode('route-planning');
     setOverlayStates(prev => ({ ...prev, routePlanning: true, search: false, poiInfo: false }));
     setCurrentRoute(null); // Clear existing route
     setIsNavigating(false); // Ensure we are not in navigating mode
-    
+
     console.log('🗺️ MAP TAP DEBUG: Destination marker state updated');
-    
+
     toast({
       title: "Destination Set",
       description: `Navigate to ${newDestination.lat.toFixed(4)}, ${newDestination.lng.toFixed(4)}?`,
