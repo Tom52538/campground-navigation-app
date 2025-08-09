@@ -7,15 +7,15 @@ interface LightweightPOIButtonsProps {
   selectedPOI?: boolean; // Add prop to know when POI is selected
 }
 
-// POI categories matching actual data structure
-// Updated categories to match actual POI data from server logs
+// POI categories matching actual data structure from server logs
+// Categories from server debug: services, leisure, parking, toilets, camping, food-drink, chalets, facilities, bungalows
 const poiCategories = [
-  // Main accommodation types (matching server data)
+  // Main accommodation types (matching server data exactly)
   { icon: '🏡', label: 'Bungalows', id: 'bungalows' },
-  { icon: '🏕️', label: 'Chalets', id: 'chalets' },
+  { icon: '🏕️', label: 'Chalets', id: 'chalets' }, 
   { icon: '🚐', label: 'Camping', id: 'camping' },
   
-  // Services & amenities (matching server data)
+  // Services & amenities (matching server data exactly)
   { icon: '🛠️', label: 'Services', id: 'services' },
   { icon: '🍽️', label: 'Food & Drinks', id: 'food-drink' },
   { icon: '🎯', label: 'Leisure', id: 'leisure' },

@@ -350,47 +350,38 @@ export default function Navigation() {
   }, []);
 
   const handleCategoryFilter = useCallback((category: string) => {
-    console.log('🔍 NAVIGATION DEBUG: ==========================================');
-    console.log('🔍 NAVIGATION DEBUG: handleCategoryFilter called with:', category);
-    console.log('🔍 NAVIGATION DEBUG: Current filteredCategories before:', filteredCategories);
-    console.log('🔍 NAVIGATION DEBUG: Type of category:', typeof category);
-    console.log('🔍 NAVIGATION DEBUG: Category length:', category.length);
+    console.log('🔍 CATEGORY FILTER DEBUG: ==========================================');
+    console.log('🔍 CATEGORY FILTER DEBUG: handleCategoryFilter called with:', category);
+    console.log('🔍 CATEGORY FILTER DEBUG: Current filteredCategories before:', filteredCategories);
     
     // Debug available POI categories from actual data
     if (allPOIs && allPOIs.length > 0) {
       const actualCategories = [...new Set(allPOIs.map(poi => poi.category))].sort();
-      console.log('🔍 NAVIGATION DEBUG: Available POI categories in data:', actualCategories);
-      console.log('🔍 NAVIGATION DEBUG: Does clicked category exist in data?', actualCategories.includes(category));
+      console.log('🔍 CATEGORY FILTER DEBUG: Available POI categories in data:', actualCategories);
+      console.log('🔍 CATEGORY FILTER DEBUG: Does clicked category exist in data?', actualCategories.includes(category));
       
       // Show sample POIs for this category
-      const samplePOIs = allPOIs.filter(poi => poi.category === category).slice(0, 5);
-      console.log(`🔍 NAVIGATION DEBUG: Sample POIs for "${category}":`, samplePOIs.map(poi => poi.name));
+      const samplePOIs = allPOIs.filter(poi => poi.category === category).slice(0, 3);
+      console.log(`🔍 CATEGORY FILTER DEBUG: Sample POIs for "${category}":`, samplePOIs.map(poi => poi.name));
     }
 
     setFilteredCategories(prev => {
       const isCurrentlySelected = prev.includes(category);
-      let newCategories;
-      if (isCurrentlySelected) {
-        newCategories = prev.filter(c => c !== category);
-        console.log('🔍 NAVIGATION DEBUG: ❌ Removing category:', category);
-      } else {
-        newCategories = [...prev, category];
-        console.log('🔍 NAVIGATION DEBUG: ✅ Adding category:', category);
-      }
+      const newCategories = isCurrentlySelected 
+        ? prev.filter(c => c !== category)
+        : [...prev, category];
 
-      console.log('🔍 NAVIGATION DEBUG: Previous filteredCategories:', prev);
-      console.log('🔍 NAVIGATION DEBUG: New filteredCategories:', newCategories);
-      console.log('🔍 NAVIGATION DEBUG: Change type:', isCurrentlySelected ? 'REMOVE' : 'ADD');
-      
-      // Trigger re-render debugging
-      setTimeout(() => {
-        console.log('🔍 NAVIGATION DEBUG: Category filter state should be updated now');
-        console.log('🔍 NAVIGATION DEBUG: Expected display POIs count for categories:', newCategories);
-      }, 100);
+      console.log('🔍 CATEGORY FILTER DEBUG: State change:', {
+        action: isCurrentlySelected ? 'REMOVE' : 'ADD',
+        category: category,
+        previousState: prev,
+        newState: newCategories,
+        willShowPOIs: newCategories.length > 0
+      });
       
       return newCategories;
     });
-  }, [filteredCategories, allPOIs]);
+  }, [allPOIs]);
 
   const handleSiteChange = useCallback((site: TestSite) => {
     setCurrentSite(site);
@@ -593,15 +584,15 @@ export default function Navigation() {
   });
 
   try {
-    // Display POIs logic - Fixed to show POIs correctly
+    // Display POIs logic - Show POIs when categories are selected OR when searching
     const displayPOIs = useMemo(() => {
       console.log('🔍 DISPLAY POIs DEBUG: ========================================');
       console.log('🔍 DISPLAY POIs DEBUG - Starting calculation:', {
         allPOIs: allPOIs?.length || 0,
         filteredCategories,
         searchQuery: searchQuery.length,
-        selectedPOI: !!selectedPOI,
-        timestamp: new Date().toISOString()
+        hasSearch: searchQuery.trim().length > 0,
+        hasFilters: filteredCategories.length > 0
       });
 
       if (!allPOIs || allPOIs.length === 0) {
@@ -609,37 +600,32 @@ export default function Navigation() {
         return [];
       }
 
-      // Debug all available categories
-      const allCategories = [...new Set(allPOIs.map(poi => poi.category))].sort();
-      console.log('🔍 DISPLAY POIs DEBUG: All available categories:', allCategories);
-      console.log('🔍 DISPLAY POIs DEBUG: Selected filter categories:', filteredCategories);
+      // If no search and no filters, return empty to avoid clutter
+      if (filteredCategories.length === 0 && !searchQuery.trim()) {
+        console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No filters or search - returning empty to avoid clutter');
+        return [];
+      }
 
-      // Start with all POIs
       let filtered = [...allPOIs];
       console.log(`🔍 DISPLAY POIs DEBUG: ✅ Starting with ${filtered.length} total POIs`);
 
-      // Apply category filters FIRST - ONLY if categories are selected
+      // Apply category filters if any categories are selected
       if (filteredCategories.length > 0) {
         console.log(`🔍 DISPLAY POIs DEBUG: 🎯 Applying ${filteredCategories.length} category filters:`, filteredCategories);
         const beforeFilter = filtered.length;
         
         filtered = filtered.filter(poi => {
           const hasCategory = poi && poi.category && filteredCategories.includes(poi.category);
+          if (hasCategory) {
+            console.log(`🔍 DISPLAY POIs DEBUG: ✅ Keeping POI "${poi.name}" (category: ${poi.category})`);
+          }
           return hasCategory;
         });
         
         console.log(`🔍 DISPLAY POIs DEBUG: ✅ Category filter: ${beforeFilter} → ${filtered.length} POIs`);
-      } else {
-        console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No category filters applied - showing all POIs');
-        // When no filters are applied, we want to show NO POIs by default to avoid clutter
-        // Only show POIs when actively searching or filtering
-        if (!searchQuery.trim()) {
-          console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No search query either - returning empty array to avoid clutter');
-          return [];
-        }
       }
 
-      // Apply search filter SECOND
+      // Apply search filter if there's a search query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         console.log(`🔍 DISPLAY POIs DEBUG: 🔍 Applying search filter: "${query}"`);
@@ -654,7 +640,7 @@ export default function Navigation() {
 
       console.log(`🔍 DISPLAY POIs DEBUG: 🏁 FINAL RESULT: ${filtered.length} POIs to display`);
       if (filtered.length > 0) {
-        console.log(`🔍 DISPLAY POIs DEBUG: Sample final POIs:`, filtered.slice(0, 5).map(poi => ({
+        console.log(`🔍 DISPLAY POIs DEBUG: First 3 POIs:`, filtered.slice(0, 3).map(poi => ({
           name: poi.name,
           category: poi.category
         })));
