@@ -50,7 +50,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategories = [],
       setVisibleTooltip(null);
       console.log(`🔍 POI BUTTON DEBUG: Cleared visible tooltip`);
     }, 20000);
-  }, [onCategorySelect, activeCategory]);
+  }, [onCategorySelect, activeCategories]);
 
   useEffect(() => {
     return () => {
@@ -65,7 +65,7 @@ export const LightweightPOIButtons = ({ onCategorySelect, activeCategories = [],
       <button
         onClick={() => handleCategoryClick(poi.id as string)}
         className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200 focus:outline-none
-          ${activeCategory === poi.id ? 'poi-button--active' : 'poi-button--inactive'}
+          ${activeCategories.includes(poi.id) ? 'poi-button--active' : 'poi-button--inactive'}
           hover:scale-105 active:scale-95`}
         style={{
           background: activeCategories.includes(poi.id)
