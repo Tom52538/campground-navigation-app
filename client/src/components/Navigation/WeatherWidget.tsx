@@ -20,6 +20,15 @@ const getWeatherIcon = (condition: string) => {
 
 export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   const { data: weather, isLoading, error } = useWeather(coordinates.lat, coordinates.lng);
+  
+  // Debug logging
+  console.log('🌦️ BASIC WEATHER WIDGET DEBUG:', {
+    coordinates,
+    weather,
+    isLoading,
+    error: error?.message,
+    timestamp: new Date().toLocaleTimeString()
+  });
 
   if (isLoading) {
     return (

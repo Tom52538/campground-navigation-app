@@ -49,10 +49,21 @@ const getCampingAlerts = (weather: any) => {
 };
 
 export const CampingWeatherWidget = ({ coordinates }: CampingWeatherWidgetProps) => {
-  const { data: weather, isLoading } = useWeather(coordinates.lat, coordinates.lng);
-  const { data: forecastData } = useWeatherForecast(coordinates.lat, coordinates.lng);
+  const { data: weather, isLoading, error } = useWeather(coordinates.lat, coordinates.lng);
+  const { data: forecastData, error: forecastError } = useWeatherForecast(coordinates.lat, coordinates.lng);
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Debug logging
+  console.log('🌤️ WEATHER WIDGET DEBUG:', {
+    coordinates,
+    weatherData: weather,
+    isLoading,
+    error: error?.message,
+    forecastData,
+    forecastError: forecastError?.message,
+    timestamp: new Date().toLocaleTimeString()
+  });
 
   const handleToggleExpanded = () => {
     setIsExpanded(!isExpanded);

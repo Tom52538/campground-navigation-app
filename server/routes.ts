@@ -676,7 +676,7 @@ async function getPOIData(site: string): Promise<POI[]> {
             return {
               id: feature.id?.toString() || `beachresort_${index}`,
               name: name,
-              category,
+              category: category,
               coordinates: coordinates,
               amenities: amenities.length > 0 ? amenities : undefined,
               hours: props.opening_hours || undefined
@@ -974,7 +974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         length: apiKey?.length || 0, 
         prefix: apiKey?.substring(0, 10) || 'none' 
       });
-      
+
       if (!apiKey) {
         console.error('❌ Google Directions API key not found in environment');
         throw new Error('Google Directions API key not configured');
