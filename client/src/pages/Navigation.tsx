@@ -26,8 +26,6 @@ import { Volume2, VolumeX, Settings } from 'lucide-react';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RouteTracker } from '@/lib/routeTracker';
 import { GestureEnhancedMap } from '@/components/Map/GestureEnhancedMap';
-import { Marker, Polyline, Popup } from 'react-leaflet';
-import L from 'leaflet';
 
 
 export default function Navigation() {
@@ -226,11 +224,11 @@ export default function Navigation() {
     }
   }, [selectedPOI]);
 
-  // New handler for setting destination marker and initiating route planning
-  const handleDestinationTap = useCallback((latlng: L.LatLng) => {
-    console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', latlng);
+  // Handler for setting destination marker on long press
+  const handleDestinationLongPress = useCallback((latlng: L.LatLng) => {
+    console.log('🗺️ LONG PRESS DEBUG: Destination long press detected at', latlng);
     const newDestination = { lat: latlng.lat, lng: latlng.lng };
-    console.log('🗺️ MAP TAP DEBUG: Setting destination marker', newDestination);
+    console.log('🗺️ LONG PRESS DEBUG: Setting destination marker', newDestination);
 
     setDestinationMarker(newDestination);
     setMapCenter(newDestination); // Center map on the new destination
@@ -239,36 +237,61 @@ export default function Navigation() {
     setCurrentRoute(null); // Clear existing route
     setIsNavigating(false); // Ensure we are not in navigating mode
 
-    console.log('🗺️ MAP TAP DEBUG: Destination marker state updated');
+    console.log('🗺️ LONG PRESS DEBUG: Destination marker state updated');
 
     toast({
-      title: "Destination Set",
-      description: `Navigate to ${newDestination.lat.toFixed(4)}, ${newDestination.lng.toFixed(4)}?`,
+      title: "📍 Destination Set",
+      description: `Tap "Start Navigation" to navigate to this location`,
+      duration: 5000,
       action: (
-        <Button variant="outline" size="sm" onClick={async () => {
-          try {
-            console.log('🗺️ MAP TAP DEBUG: Starting route calculation');
-            const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
-            const route = await getRoute.mutateAsync({
-              from: currentPosition,
-              to: newDestination,
-              profile
-            });
-            setCurrentRoute(route);
-            setIsNavigating(true);
-            setUIMode('navigation');
-            setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
-            toast({ title: "Navigation started!" });
-          } catch (error) {
-            console.error('🗺️ MAP TAP DEBUG: Route calculation failed', error);
-            toast({ title: "Route calculation failed", variant: "destructive" });
-          }
-        }}>
-          Go
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2"
+          onClick={async () => {
+            try {
+              console.log('🗺️ LONG PRESS DEBUG: Starting route calculation');
+              const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
+              const route = await getRoute.mutateAsync({
+                from: currentPosition,
+                to: newDestination,
+                profile
+              });
+              setCurrentRoute(route);
+              setIsNavigating(true);
+              setUIMode('navigation');
+              setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
+              toast({ 
+                title: "🚗 Navigation Started!", 
+                description: "Follow the blue route on the map",
+                duration: 3000
+              });
+            } catch (error) {
+              console.error('🗺️ LONG PRESS DEBUG: Route calculation failed', error);
+              toast({ 
+                title: "❌ Route Error", 
+                description: "Could not calculate route. Please try again.",
+                variant: "destructive",
+                duration: 4000
+              });
+            }
+          }}
+        >
+          Start Navigation
         </Button>
       ),
     });
   }, [toast, currentPosition, getRoute, travelMode]);
+
+  // Handler for single tap - just close overlays if needed
+  const handleMapSingleTap = useCallback(() => {
+    console.log('🗺️ SINGLE TAP DEBUG: Single tap detected - handling map interaction');
+    if (selectedPOI) {
+      setSelectedPOI(null);
+      setUIMode('start');
+      setOverlayStates(prev => ({ ...prev, poiInfo: false }));
+    }
+  }, [selectedPOI]);
 
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
@@ -567,30 +590,6 @@ export default function Navigation() {
     selectedPOI: !!selectedPOI
   });
 
-  // Define a simple icon for the destination marker
-  const destinationIcon = L.divIcon({
-    className: 'custom-destination-marker',
-    html: `<div style="
-      background: #ff4444; 
-      width: 20px; 
-      height: 20px; 
-      border-radius: 50%; 
-      border: 3px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      position: relative;
-    ">
-      <div style="
-        position: absolute;
-        top: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 10px;
-      ">📍</div>
-    </div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-  });
-
   try {
     // Display POIs logic
     const displayPOIs = useMemo(() => {
@@ -683,34 +682,11 @@ export default function Navigation() {
           filteredCategories={filteredCategories}
           onPOIClick={handlePOIClick}
           onPOINavigate={handleNavigateToPOI}
-          onMapClick={handleDestinationTap}
+          onMapClick={handleMapSingleTap}
+          onMapLongPress={handleDestinationLongPress}
           mapStyle={mapStyle}
-        >
-          {/* Current route line */}
-          {currentRoute && currentRoute.geometry && (
-            <Polyline 
-              positions={currentRoute.geometry.map(coord => [coord[1], coord[0]])}
-              color="blue" 
-              weight={6}
-              opacity={0.7}
-            />
-          )}
-
-          {/* Destination marker */}
-          {destinationMarker && (
-            <Marker 
-              position={[destinationMarker.lat, destinationMarker.lng]} 
-              icon={destinationIcon}
-            >
-              <Popup>
-                <div className="text-center">
-                  <strong>Destination</strong><br />
-                  {destinationMarker.lat.toFixed(4)}, {destinationMarker.lng.toFixed(4)}
-                </div>
-              </Popup>
-            </Marker>
-          )}
-        </MapContainer>
+          destinationMarker={destinationMarker}
+        />
 
         {/* EXPLORATION MODE - Only visible when NOT navigating */}
         {!isNavigating && (
