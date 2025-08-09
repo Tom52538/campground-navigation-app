@@ -167,8 +167,8 @@ export default function Navigation() {
     firstPOI: displayPOIs[0]?.name || 'none'
   });
 
-  // Add distance to POIs
-  const poisWithDistance = displayPOIs.map(poi => ({
+  // Add distance to POIs - always use all POIs for map rendering
+  const poisWithDistance = allPOIs.map(poi => ({
     ...poi,
     distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
   }));
