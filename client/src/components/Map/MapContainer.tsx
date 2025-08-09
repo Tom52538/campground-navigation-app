@@ -4,7 +4,6 @@ import { Icon, divIcon } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
-import { GestureController } from './GestureController';
 import { ZoomGestureIndicator } from './ZoomGestureIndicator';
 
 import 'leaflet/dist/leaflet.css';

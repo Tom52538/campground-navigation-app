@@ -23,6 +23,15 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
     }
   });
 
+  // Add mobile logger entry
+  if (typeof window !== 'undefined' && window.mobileLogger) {
+    window.mobileLogger.log('GESTURE_COMPONENT', 'GestureEnhancedMap rendered - callbacks: ' + JSON.stringify({
+      onDoubleTab: !!onDoubleTab,
+      onLongPress: !!onLongPress,
+      onSingleTap: !!onSingleTap
+    }));
+  }
+
   useEffect(() => {
     if (!map) return;
 
@@ -175,5 +184,23 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
     };
   }, [map, onDoubleTab, onLongPress, onSingleTap]);
 
-  return null;
+  // Render a visible debug indicator during development
+  return (
+    <div 
+      style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        background: 'red',
+        color: 'white',
+        padding: '4px 8px',
+        fontSize: '10px',
+        zIndex: 9999,
+        borderRadius: '4px',
+        pointerEvents: 'none'
+      }}
+    >
+      GESTURE DEBUG: {map ? 'MAP READY' : 'NO MAP'}
+    </div>
+  );
 };
