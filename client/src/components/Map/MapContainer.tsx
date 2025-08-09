@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { Icon, divIcon } from 'leaflet';
+import { Icon, divIcon, LatLng } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
@@ -232,8 +232,8 @@ export const MapContainer = ({
     isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   });
 
-  // Define destination marker icon
-  const destinationIcon = L.divIcon({
+  // Define destination marker icon only when needed
+  const destinationIcon = destinationMarker ? divIcon({
     className: 'custom-destination-marker',
     html: `<div style="
       background: #ff4444; 
@@ -256,7 +256,7 @@ export const MapContainer = ({
     </div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 12]
-  });
+  }) : null;
 
   // Create markers with proper types
   const createIcon = useCallback((iconName: string, category?: string) => {
@@ -355,8 +355,8 @@ export const MapContainer = ({
           />
         )}
 
-        {/* Destination marker */}
-        {destinationMarker && (
+        {/* Destination marker - only render when destinationMarker exists and icon is created */}
+        {destinationMarker && destinationIcon && (
           <Marker 
             position={[destinationMarker.lat, destinationMarker.lng]} 
             icon={destinationIcon}
