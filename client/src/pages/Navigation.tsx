@@ -684,6 +684,7 @@ export default function Navigation() {
           onPOINavigate={handleNavigateToPOI}
           onMapClick={handleMapSingleTap}
           onMapLongPress={handleDestinationLongPress}
+          onMapDoubleTap={handleDestinationLongPress}
           mapStyle={mapStyle}
           destinationMarker={destinationMarker}
         />
