@@ -683,20 +683,9 @@ export default function Navigation() {
           filteredCategories={filteredCategories}
           onPOIClick={handlePOIClick}
           onPOINavigate={handleNavigateToPOI}
-          onMapClick={handleMapClick}
+          onMapClick={handleDestinationTap}
           mapStyle={mapStyle}
-        >
-          {/* GestureEnhancedMap for handling taps */}
-          <GestureEnhancedMap
-            onDoubleTab={handlePOIClick}
-            onLongPress={handlePOIClick}
-            onSingleTap={handleDestinationTap}
-          />
-
-          {/* Current route line */}
-          {currentRoute && currentRoute.geometry && (
-            <Polyline 
-              positions={currentRoute.geometry.map(coord => [coord[1], coord[0]])}
+        />oord[0]])}
               color="blue" 
               weight={6}
               opacity={0.7}
