@@ -20,7 +20,20 @@ export const usePOI = (site: TestSite = 'kamperland') => {
         console.log(`🔍 POI FETCH DEBUG: Sample POIs:`, data.slice(0, 3));
       }
 
-      return data as POI[];
+      // Optimize memory usage by limiting POI properties
+      const optimizedPOIs = data.map((poi: POI) => ({
+        id: poi.id,
+        name: poi.name,
+        category: poi.category,
+        subCategory: poi.subCategory,
+        coordinates: poi.coordinates,
+        // Only include essential data to reduce memory footprint
+        ...(poi.amenities && poi.amenities.length > 0 && { amenities: poi.amenities.slice(0, 3) }),
+        ...(poi.hours && { hours: poi.hours }),
+        ...(poi.description && { description: poi.description.substring(0, 100) })
+      }));
+
+      return optimizedPOIs as POI[];
     },
     staleTime: Infinity, // POI data doesn't change frequently
   });
