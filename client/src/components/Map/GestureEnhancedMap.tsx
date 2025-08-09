@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 
@@ -10,12 +11,12 @@ interface GestureEnhancedMapProps {
 export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
   const map = useMap();
   const touchStart = useRef<{ time: number; pos: { x: number; y: number } } | null>(null);
-  const lastTap = useRef<number>(0);
+  const lastTapTime = useRef<number>(0);
+  const tapTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!map) return;
 
-    // Enhanced touch handling for smartphone gestures
     const handleTouchStart = (e: TouchEvent) => {
       console.log('🗺️ GESTURE DEBUG: Touch start detected', { touchCount: e.touches.length });
       if (e.touches.length === 1) {
@@ -33,9 +34,14 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
 
       const touchEnd = Date.now();
       const duration = touchEnd - touchStart.current.time;
-      const now = Date.now();
+      const timeSinceLastTap = touchEnd - lastTapTime.current;
 
-      console.log('🗺️ GESTURE DEBUG: Touch end -', { duration, timeSinceLastTap: now - lastTap.current });
+      console.log('🗺️ GESTURE DEBUG: Touch end -', { 
+        duration, 
+        timeSinceLastTap,
+        isQuickTap: duration < 500,
+        isRecentTap: timeSinceLastTap < 300
+      });
 
       // Long press detection (for camping waypoints)
       if (duration > 800) {
@@ -52,36 +58,36 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       }
       // Quick tap detection
       else if (duration < 500) {
-        const timeSinceLastTap = now - lastTap.current;
-        
-        if (timeSinceLastTap < 400 && lastTap.current > 0) {
-          // Double tap
+        // Clear any pending single tap
+        if (tapTimeoutId.current) {
+          clearTimeout(tapTimeoutId.current);
+          tapTimeoutId.current = null;
+        }
+
+        if (timeSinceLastTap < 300 && lastTapTime.current > 0) {
+          // Double tap detected
           console.log('🗺️ GESTURE DEBUG: Double tap confirmed');
           const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
           const latlng = map.containerPointToLatLng(containerPoint);
           console.log('🗺️ GESTURE DEBUG: Double tap coordinates:', { containerPoint, latlng });
           onDoubleTab?.(latlng);
-          lastTap.current = 0; // Reset to prevent triple tap
+          lastTapTime.current = 0; // Reset to prevent triple tap
           e.preventDefault();
         } else {
-          // Potential single tap - wait to see if double tap follows
-          console.log('🗺️ GESTURE DEBUG: Single tap detected, waiting for potential double tap...');
-          const currentTapTime = now;
-          const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+          // Single tap - wait briefly to see if double tap follows
+          console.log('🗺️ GESTURE DEBUG: Potential single tap detected, waiting...');
+          const currentTouchPos = { x: touchStart.current.pos.x, y: touchStart.current.pos.y };
           
-          setTimeout(() => {
-            // Only trigger single tap if no double tap occurred
-            if (lastTap.current === currentTapTime) {
-              console.log('🗺️ GESTURE DEBUG: Single tap confirmed, triggering destination setting');
-              const latlng = map.containerPointToLatLng(containerPoint);
-              console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
-              onSingleTap?.(latlng);
-            } else {
-              console.log('🗺️ GESTURE DEBUG: Single tap cancelled due to double tap');
-            }
-          }, 400); // Wait for potential double tap
+          tapTimeoutId.current = setTimeout(() => {
+            console.log('🗺️ GESTURE DEBUG: Single tap confirmed - firing destination event');
+            const containerPoint = [currentTouchPos.x, currentTouchPos.y];
+            const latlng = map.containerPointToLatLng(containerPoint);
+            console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
+            onSingleTap?.(latlng);
+            tapTimeoutId.current = null;
+          }, 250); // Shorter wait time for better responsiveness
           
-          lastTap.current = currentTapTime;
+          lastTapTime.current = touchEnd;
         }
       }
 
@@ -106,6 +112,11 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       mapContainer.removeEventListener('touchstart', handleTouchStart);
       mapContainer.removeEventListener('touchend', handleTouchEnd);
       mapContainer.removeEventListener('wheel', handleWheel);
+      
+      // Clean up timeout
+      if (tapTimeoutId.current) {
+        clearTimeout(tapTimeoutId.current);
+      }
     };
   }, [map, onDoubleTab, onLongPress, onSingleTap]);
 
