@@ -154,7 +154,7 @@ export default function Navigation() {
     // Filter POIs directly without problematic memoization
     displayPOIs = allPOIs.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
   }
-  
+
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.length > 0) {
@@ -353,13 +353,13 @@ export default function Navigation() {
     console.log('🔍 CATEGORY FILTER DEBUG: ==========================================');
     console.log('🔍 CATEGORY FILTER DEBUG: handleCategoryFilter called with:', category);
     console.log('🔍 CATEGORY FILTER DEBUG: Current filteredCategories before:', filteredCategories);
-    
+
     // Debug available POI categories from actual data
     if (allPOIs && allPOIs.length > 0) {
       const actualCategories = [...new Set(allPOIs.map(poi => poi.category))].sort();
       console.log('🔍 CATEGORY FILTER DEBUG: Available POI categories in data:', actualCategories);
       console.log('🔍 CATEGORY FILTER DEBUG: Does clicked category exist in data?', actualCategories.includes(category));
-      
+
       // Show sample POIs for this category
       const samplePOIs = allPOIs.filter(poi => poi.category === category).slice(0, 3);
       console.log(`🔍 CATEGORY FILTER DEBUG: Sample POIs for "${category}":`, samplePOIs.map(poi => poi.name));
@@ -378,7 +378,7 @@ export default function Navigation() {
         newState: newCategories,
         willShowPOIs: newCategories.length > 0
       });
-      
+
       return newCategories;
     });
   }, [allPOIs]);
@@ -613,7 +613,7 @@ export default function Navigation() {
       if (filteredCategories.length > 0) {
         console.log(`🔍 DISPLAY POIs DEBUG: 🎯 Applying ${filteredCategories.length} category filters:`, filteredCategories);
         const beforeFilter = filtered.length;
-        
+
         filtered = filtered.filter(poi => {
           const hasCategory = poi && poi.category && filteredCategories.includes(poi.category);
           if (hasCategory) {
@@ -621,8 +621,16 @@ export default function Navigation() {
           }
           return hasCategory;
         });
-        
+
         console.log(`🔍 DISPLAY POIs DEBUG: ✅ Category filter: ${beforeFilter} → ${filtered.length} POIs`);
+      } else {
+        console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No category filters applied');
+        // When no filters AND no search are applied, show nothing to avoid clutter
+        if (!searchQuery.trim()) {
+          console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No search query either - returning empty array to avoid clutter');
+          return [];
+        }
+        console.log('🔍 DISPLAY POIs DEBUG: ℹ️ Search active without category filters - showing all matching POIs');
       }
 
       // Apply search filter if there's a search query
