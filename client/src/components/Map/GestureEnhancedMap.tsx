@@ -38,10 +38,6 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
       return;
     }
 
-    // Disable map's default double-click zoom behavior
-    map.doubleClickZoom.disable();
-    console.log('🗺️ GESTURE DEBUG: Disabled map double-click zoom');
-
     console.log('🗺️ GESTURE DEBUG: Setting up gesture handlers for map - map exists:', !!map);
 
     const mapContainer = map.getContainer();
@@ -117,7 +113,7 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
         tapTimeoutId.current = null;
       }
 
-      if (timeSinceLastTap < 400 && lastTapTime.current > 0) {
+      if (timeSinceLastTap < 300 && lastTapTime.current > 0) {
         // Double tap detected - set destination
         console.log('🗺️ GESTURE DEBUG: Double tap confirmed - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
@@ -126,8 +122,6 @@ const GestureEnhancedMapInner = ({ onDoubleTap, onLongPress, onSingleTap }: Gest
         onDoubleTap?.(latlng);
         lastTapTime.current = 0; // Reset to prevent triple tap
         e.preventDefault();
-        e.stopPropagation();
-        return; // Exit early to prevent single tap logic
       } else {
         // Single tap - wait briefly to see if double tap follows
         console.log('🗺️ GESTURE DEBUG: Potential single tap detected, waiting...');
