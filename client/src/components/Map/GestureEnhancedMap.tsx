@@ -48,6 +48,7 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       // Double tap detection (enhanced for camping use)
       else if (duration < 300) {
         if (now - lastTap.current < 500) {
+          console.log('🗺️ GESTURE DEBUG: Double tap detected');
           const latlng = map.containerPointToLatLng([
             touchStart.current.pos.x,
             touchStart.current.pos.y
@@ -55,17 +56,22 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
           onDoubleTab?.(latlng);
           e.preventDefault();
         } else {
+          console.log('🗺️ GESTURE DEBUG: Single tap detected, waiting for potential double tap...');
           // Single tap detection for destination setting
+          const currentTapTime = now;
           setTimeout(() => {
             // Only trigger single tap if no double tap occurred
-            if (now === lastTap.current) {
+            if (lastTap.current === currentTapTime) {
+              console.log('🗺️ GESTURE DEBUG: Single tap confirmed, triggering destination setting');
               const latlng = map.containerPointToLatLng([
                 touchStart.current.pos.x,
                 touchStart.current.pos.y
               ]);
               onSingleTap?.(latlng);
+            } else {
+              console.log('🗺️ GESTURE DEBUG: Single tap cancelled due to double tap');
             }
-          }, 500); // Wait for potential double tap
+          }, 300); // Wait for potential double tap
         }
         lastTap.current = now;
       }
@@ -92,7 +98,7 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       mapContainer.removeEventListener('touchend', handleTouchEnd);
       mapContainer.removeEventListener('wheel', handleWheel);
     };
-  }, [map, onDoubleTab, onLongPress]);
+  }, [map, onDoubleTab, onLongPress, onSingleTap]);
 
   return null;
 };
