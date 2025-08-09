@@ -302,6 +302,9 @@ export const MapContainer = ({
         ))}
         
         {route && <RoutePolyline route={route} />}
+        
+        {/* Destination marker - render last to appear on top */}
+        {children}
       </LeafletMapContainer>
       
       <ZoomGestureIndicator

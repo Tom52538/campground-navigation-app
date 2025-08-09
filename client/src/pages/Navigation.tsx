@@ -242,29 +242,44 @@ export default function Navigation() {
     console.log('🗺️ LONG PRESS DEBUG: Destination marker state updated');
 
     toast({
-      title: "Destination Set",
-      description: `Navigate to ${newDestination.lat.toFixed(4)}, ${newDestination.lng.toFixed(4)}?`,
+      title: "📍 Destination Set",
+      description: `Tap "Start Navigation" to navigate to this location`,
+      duration: 5000,
       action: (
-        <Button variant="outline" size="sm" onClick={async () => {
-          try {
-            console.log('🗺️ LONG PRESS DEBUG: Starting route calculation');
-            const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
-            const route = await getRoute.mutateAsync({
-              from: currentPosition,
-              to: newDestination,
-              profile
-            });
-            setCurrentRoute(route);
-            setIsNavigating(true);
-            setUIMode('navigation');
-            setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
-            toast({ title: "Navigation started!" });
-          } catch (error) {
-            console.error('🗺️ LONG PRESS DEBUG: Route calculation failed', error);
-            toast({ title: "Route calculation failed", variant: "destructive" });
-          }
-        }}>
-          Go
+        <Button 
+          variant="default" 
+          size="sm" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2"
+          onClick={async () => {
+            try {
+              console.log('🗺️ LONG PRESS DEBUG: Starting route calculation');
+              const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
+              const route = await getRoute.mutateAsync({
+                from: currentPosition,
+                to: newDestination,
+                profile
+              });
+              setCurrentRoute(route);
+              setIsNavigating(true);
+              setUIMode('navigation');
+              setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
+              toast({ 
+                title: "🚗 Navigation Started!", 
+                description: "Follow the blue route on the map",
+                duration: 3000
+              });
+            } catch (error) {
+              console.error('🗺️ LONG PRESS DEBUG: Route calculation failed', error);
+              toast({ 
+                title: "❌ Route Error", 
+                description: "Could not calculate route. Please try again.",
+                variant: "destructive",
+                duration: 4000
+              });
+            }
+          }}
+        >
+          Start Navigation
         </Button>
       ),
     });
@@ -577,28 +592,30 @@ export default function Navigation() {
     selectedPOI: !!selectedPOI
   });
 
-  // Define a simple icon for the destination marker
+  // Define a more visible destination marker
   const destinationIcon = L.divIcon({
     className: 'custom-destination-marker',
     html: `<div style="
       background: #ff4444; 
-      width: 20px; 
-      height: 20px; 
+      width: 24px; 
+      height: 24px; 
       border-radius: 50%; 
-      border: 3px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      border: 4px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
       position: relative;
+      z-index: 1000;
     ">
       <div style="
         position: absolute;
-        top: -8px;
+        top: -12px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 10px;
+        font-size: 16px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
       ">📍</div>
     </div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   });
 
   try {
