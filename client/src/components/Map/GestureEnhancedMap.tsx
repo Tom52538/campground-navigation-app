@@ -18,7 +18,11 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
     if (!map) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      console.log('🗺️ GESTURE DEBUG: Touch start detected', { touchCount: e.touches.length });
+      console.log('🗺️ GESTURE DEBUG: Touch start detected', { 
+        touchCount: e.touches.length,
+        target: e.target?.constructor?.name || 'unknown'
+      });
+      
       if (e.touches.length === 1) {
         const touch = e.touches[0];
         touchStart.current = {
@@ -26,22 +30,37 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
           pos: { x: touch.clientX, y: touch.clientY }
         };
         console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
+        
+        // Prevent event from being handled by other components
+        e.stopPropagation();
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!touchStart.current || e.touches.length > 0) return;
+      console.log('🗺️ GESTURE DEBUG: Touch end triggered', {
+        hasStartData: !!touchStart.current,
+        remainingTouches: e.touches.length
+      });
+      
+      if (!touchStart.current || e.touches.length > 0) {
+        console.log('🗺️ GESTURE DEBUG: Touch end cancelled - no start data or multi-touch');
+        return;
+      }
 
       const touchEnd = Date.now();
       const duration = touchEnd - touchStart.current.time;
       const timeSinceLastTap = touchEnd - lastTapTime.current;
 
-      console.log('🗺️ GESTURE DEBUG: Touch end -', { 
+      console.log('🗺️ GESTURE DEBUG: Touch end analysis -', { 
         duration, 
         timeSinceLastTap,
         isQuickTap: duration < 500,
-        isRecentTap: timeSinceLastTap < 300
+        isRecentTap: timeSinceLastTap < 300,
+        startPos: touchStart.current.pos
       });
+      
+      // Prevent event from being handled by other components
+      e.stopPropagation();
 
       // Long press detection (for camping waypoints)
       if (duration > 800) {
@@ -104,13 +123,24 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
     };
 
     const mapContainer = map.getContainer();
-    mapContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
-    mapContainer.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    console.log('🗺️ GESTURE DEBUG: Setting up touch event listeners on map container');
+    
+    // Use capture phase to ensure we get events first
+    mapContainer.addEventListener('touchstart', handleTouchStart, { 
+      passive: false, 
+      capture: true 
+    });
+    mapContainer.addEventListener('touchend', handleTouchEnd, { 
+      passive: false, 
+      capture: true 
+    });
     mapContainer.addEventListener('wheel', handleWheel, { passive: false });
 
     return () => {
-      mapContainer.removeEventListener('touchstart', handleTouchStart);
-      mapContainer.removeEventListener('touchend', handleTouchEnd);
+      console.log('🗺️ GESTURE DEBUG: Cleaning up touch event listeners');
+      mapContainer.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      mapContainer.removeEventListener('touchend', handleTouchEnd, { capture: true });
       mapContainer.removeEventListener('wheel', handleWheel);
       
       // Clean up timeout
