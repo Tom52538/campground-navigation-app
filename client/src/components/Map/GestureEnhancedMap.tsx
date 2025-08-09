@@ -38,7 +38,7 @@ const GestureEnhancedMapInner = ({ onDoubleTab, onLongPress, onSingleTap }: Gest
       return;
     }
 
-    console.log('🗺️ GESTURE DEBUG: Setting up gesture handlers for map:', map);
+    console.log('🗺️ GESTURE DEBUG: Setting up gesture handlers for map - map exists:', !!map);
 
     const mapContainer = map.getContainer();
     if (!mapContainer) {
