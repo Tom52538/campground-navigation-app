@@ -4,9 +4,10 @@ import { useMap } from 'react-leaflet';
 interface GestureEnhancedMapProps {
   onDoubleTab?: (latlng: any) => void;
   onLongPress?: (latlng: any) => void;
+  onSingleTap?: (latlng: any) => void;
 }
 
-export const GestureEnhancedMap = ({ onDoubleTab, onLongPress }: GestureEnhancedMapProps) => {
+export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: GestureEnhancedMapProps) => {
   const map = useMap();
   const touchStart = useRef<{ time: number; pos: { x: number; y: number } } | null>(null);
   const lastTap = useRef<number>(0);
@@ -31,19 +32,6 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress }: GestureEnhanced
       const duration = touchEnd - touchStart.current.time;
       const now = Date.now();
 
-      // Double tap detection (enhanced for camping use)
-      if (duration < 300) {
-        if (now - lastTap.current < 500) {
-          const latlng = map.containerPointToLatLng([
-            touchStart.current.pos.x,
-            touchStart.current.pos.y
-          ]);
-          onDoubleTab?.(latlng);
-          e.preventDefault();
-        }
-        lastTap.current = now;
-      }
-
       // Long press detection (for camping waypoints)
       if (duration > 800) {
         const latlng = map.containerPointToLatLng([
@@ -56,6 +44,30 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress }: GestureEnhanced
         if ('vibrate' in navigator) {
           navigator.vibrate(50);
         }
+      }
+      // Double tap detection (enhanced for camping use)
+      else if (duration < 300) {
+        if (now - lastTap.current < 500) {
+          const latlng = map.containerPointToLatLng([
+            touchStart.current.pos.x,
+            touchStart.current.pos.y
+          ]);
+          onDoubleTab?.(latlng);
+          e.preventDefault();
+        } else {
+          // Single tap detection for destination setting
+          setTimeout(() => {
+            // Only trigger single tap if no double tap occurred
+            if (now === lastTap.current) {
+              const latlng = map.containerPointToLatLng([
+                touchStart.current.pos.x,
+                touchStart.current.pos.y
+              ]);
+              onSingleTap?.(latlng);
+            }
+          }, 500); // Wait for potential double tap
+        }
+        lastTap.current = now;
       }
 
       touchStart.current = null;

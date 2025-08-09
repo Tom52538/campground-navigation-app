@@ -18,13 +18,16 @@ import { useWeather } from '@/hooks/useWeather';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigationTracking } from '@/hooks/useNavigationTracking';
 import { mobileLogger } from '@/utils/mobileLogger';
-import { POI, NavigationRoute, TestSite, TEST_SITES } from '@/types/navigation';
+import { POI, NavigationRoute, TestSite, TEST_SITES, Coordinates } from '@/types/navigation';
 import { calculateDistance, formatDistance, calculateBearing } from '@/lib/mapUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RouteTracker } from '@/lib/routeTracker';
+import { GestureEnhancedMap } from '@/components/Map/GestureEnhancedMap';
+import { Marker, Polyline } from 'react-leaflet';
+import L from 'leaflet';
 
 
 export default function Navigation() {
@@ -46,6 +49,9 @@ export default function Navigation() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
+
+  // New state for destination marker
+  const [destinationMarker, setDestinationMarker] = useState<Coordinates | null>(null);
 
   // Transparent Overlay UI state
   const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
@@ -109,7 +115,7 @@ export default function Navigation() {
           setCurrentBearing(routeBearing);
         } else if (routeProgress?.heading) {
           console.log('📍 Using route progress bearing:', routeProgress.heading);
-          setCurrentBearing(routeProgress.heading);
+          setCurrentBearing(routeBearing);
         } else {
           // Default driving direction simulation for testing
           setCurrentBearing(45); // Northeast direction for testing
@@ -220,6 +226,35 @@ export default function Navigation() {
     }
   }, [selectedPOI]);
 
+  // New handler for setting destination marker and initiating route planning
+  const handleDestinationTap = useCallback((event: L.LeafletMouseEvent) => {
+    console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', event.latlng);
+    const newDestination = { lat: event.latlng.lat, lng: event.latlng.lng };
+    setDestinationMarker(newDestination);
+    setMapCenter(newDestination); // Center map on the new destination
+    setUIMode('route-planning');
+    setOverlayStates(prev => ({ ...prev, routePlanning: true, search: false, poiInfo: false }));
+    setCurrentRoute(null); // Clear existing route
+    setIsNavigating(false); // Ensure we are not in navigating mode
+    toast({
+      title: "Destination Set",
+      description: `Navigate to ${newDestination.lat.toFixed(4)}, ${newDestination.lng.toFixed(4)}?`,
+      action: (
+        <Button variant="outline" size="sm" onClick={() => {
+          // Logic to start navigation to this destination
+          // For now, we'll just log it. A full route calculation would go here.
+          console.log(`Planning route to destination: ${JSON.stringify(newDestination)}`);
+          // Example: Call getRoute or similar logic
+          // handleNavigateToDestination(newDestination); // You would implement this function
+          toast({ title: "Route calculation initiated." });
+        }}>
+          Go
+        </Button>
+      ),
+    });
+  }, [toast]);
+
+
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
     const startTime = performance.now();
     mobileLogger.log('NAVIGATION', `Starting navigation to ${poi.name} with mode: ${travelMode}`);
@@ -314,6 +349,7 @@ export default function Navigation() {
     setIsNavigating(false);
     setSearchQuery('');
     setFilteredCategories([]);
+    setDestinationMarker(null); // Clear destination marker on site change
 
     toast({
       title: t('alerts.siteChanged'),
@@ -327,6 +363,7 @@ export default function Navigation() {
     setSelectedPOI(null);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false }));
+    setDestinationMarker(null); // Clear destination marker
 
     toast({
       title: t('alerts.poisCleared'),
@@ -338,6 +375,7 @@ export default function Navigation() {
     setSelectedPOI(null);
     setUIMode('start');
     setOverlayStates(prev => ({ ...prev, search: false, poiInfo: false, routePlanning: false }));
+    setDestinationMarker(null); // Clear destination marker
   }, []);
 
   // Gesture navigation handlers
@@ -607,7 +645,53 @@ export default function Navigation() {
           onPOINavigate={handleNavigateToPOI}
           onMapClick={handleMapClick}
           mapStyle={mapStyle}
-        />
+        >
+          {/* GestureEnhancedMap for handling taps */}
+          <GestureEnhancedMap 
+            onDoubleTab={handlePOIClick}
+            onLongPress={handlePOIClick}
+            onSingleTap={handleDestinationTap}
+          />
+
+          {/* Current route line */}
+          {currentRoute && currentRoute.geometry && (
+            <Polyline 
+              positions={currentRoute.geometry.map(coord => [coord[1], coord[0]])}
+              color="blue" 
+              weight={6}
+              opacity={0.7}
+            />
+          )}
+
+          {/* Destination marker */}
+          {destinationMarker && (
+            <Marker 
+              position={[destinationMarker.lat, destinationMarker.lng]}
+              icon={L.divIcon({
+                className: 'custom-destination-marker',
+                html: `<div style="
+                  background: #ff4444; 
+                  width: 20px; 
+                  height: 20px; 
+                  border-radius: 50%; 
+                  border: 3px solid white;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                  position: relative;
+                ">
+                  <div style="
+                    position: absolute;
+                    top: -8px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    font-size: 10px;
+                  ">📍</div>
+                </div>`,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+              })}
+            />
+          )}
+        </MapContainer>
 
         {/* EXPLORATION MODE - Only visible when NOT navigating */}
         {!isNavigating && (
