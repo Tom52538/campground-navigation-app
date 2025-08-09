@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer as LeafletMapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { Icon, divIcon } from 'leaflet';
+import { Icon, divIcon, LatLng } from 'leaflet';
 import { Coordinates, POI, NavigationRoute } from '@/types/navigation';
 import { POIMarker } from './POIMarker';
 import { GestureEnhancedMap } from './GestureEnhancedMap';
@@ -27,7 +27,10 @@ interface MapContainerProps {
   onPOIClick: (poi: POI) => void;
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
+  onMapLongPress: (latlng: L.LatLng) => void;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  destinationMarker?: { lat: number; lng: number } | null;
+  children?: React.ReactNode;
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -110,23 +113,23 @@ const MapController = ({
   zoom: number; 
 }) => {
   const map = useMap();
-  
+
   useEffect(() => {
     map.setView([center.lat, center.lng], zoom);
   }, [center, zoom, map]);
-  
+
   return null;
 };
 
 const PopupController = ({ selectedPOI }: { selectedPOI: POI | null }) => {
   const map = useMap();
-  
+
   useEffect(() => {
     if (!selectedPOI) {
       map.closePopup();
     }
   }, [selectedPOI, map]);
-  
+
   return null;
 };
 
@@ -159,7 +162,10 @@ export const MapContainer = ({
   onPOIClick,
   onPOINavigate,
   onMapClick,
+  onMapLongPress,
   mapStyle = 'outdoors',
+  destinationMarker,
+  children,
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
     isVisible: boolean;
@@ -200,7 +206,7 @@ export const MapContainer = ({
     dev: import.meta.env.DEV,
     prod: import.meta.env.PROD
   });
-  
+
   // Debug POI rendering
   console.log('🔍 POI RENDERING DEBUG:', {
     totalPOIs: pois.length,
@@ -226,6 +232,45 @@ export const MapContainer = ({
     isMobile: /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
   });
 
+  // Define destination marker icon only when needed
+  const destinationIcon = destinationMarker ? divIcon({
+    className: 'custom-destination-marker',
+    html: `<div style="
+      background: #ff4444; 
+      width: 24px; 
+      height: 24px; 
+      border-radius: 50%; 
+      border: 4px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1000;
+    ">
+      <div style="
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 16px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      ">📍</div>
+    </div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  }) : null;
+
+  // Create markers with proper types
+  const createIcon = useCallback((iconName: string, category?: string) => {
+    // Placeholder for actual icon creation logic if needed
+    return divIcon({
+      html: `<i class="text-2xl ${iconName}"></i>`,
+      className: '',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+    });
+  }, []);
+
+  const showPOIs = import.meta.env.VITE_DEBUG_SHOW_POIS === 'true';
+
   return (
     <div className="map-container relative">
       <LeafletMapContainer
@@ -241,7 +286,7 @@ export const MapContainer = ({
         />
 
         <PopupController selectedPOI={selectedPOI} />
-        
+
         <TileLayer
           key={`mapbox-${mapStyle}-${MAP_STYLES[mapStyle]}-${import.meta.env.MODE}`}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.mapbox.com/">Mapbox</a>'
@@ -265,7 +310,7 @@ export const MapContainer = ({
             }
           }}
         />
-        
+
         {/* SVG Gradient Definition for Route */}
         <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
           <defs>
@@ -277,31 +322,57 @@ export const MapContainer = ({
             </linearGradient>
           </defs>
         </svg>
-        
 
-        
+
+
         <GestureEnhancedMap
-          onDoubleTab={handleDoubleTap}
-          onLongPress={handleLongPress}
+          onDoubleTap={handleDoubleTap}
+          onLongPress={onMapLongPress}
           onSingleTap={onMapClick}
         />
-        
+
         <CurrentLocationMarker position={currentPosition} />
-        
-        {pois.map((poi, index) => (
-          <POIMarker
-            key={poi.id}
-            poi={poi}
+
+        {/* Render POI markers */}
+        {showPOIs && pois.map((poi) => (
+          <POIMarker 
+            key={poi.id} 
+            poi={poi} 
             isSelected={selectedPOI?.id === poi.id}
-            onClick={() => onPOIClick(poi)}
+            onClick={onPOIClick}
             onNavigate={onPOINavigate}
             showHoverTooltip={true}
           />
         ))}
-        
-        {route && <RoutePolyline route={route} />}
+
+        {/* Current route line */}
+        {route && route.geometry && (
+          <Polyline 
+            positions={route.geometry.map(coord => [coord[1], coord[0]])}
+            color="blue" 
+            weight={6}
+            opacity={0.7}
+          />
+        )}
+
+        {/* Destination marker - only render when destinationMarker exists and icon is created */}
+        {destinationMarker && destinationIcon && (
+          <Marker 
+            position={[destinationMarker.lat, destinationMarker.lng]} 
+            icon={destinationIcon}
+          >
+            <Popup>
+              <div className="text-center">
+                <strong>Destination</strong><br />
+                {destinationMarker.lat.toFixed(4)}, {destinationMarker.lng.toFixed(4)}
+              </div>
+            </Popup>
+          </Marker>
+        )}
+
+        {children}
       </LeafletMapContainer>
-      
+
       <ZoomGestureIndicator
         isVisible={gestureIndicator.isVisible}
         gestureType={gestureIndicator.type}
