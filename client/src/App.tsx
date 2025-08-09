@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Navigation from "@/pages/Navigation";
 import NotFound from "@/pages/not-found";
+import { MemoryMonitor } from '@/utils/memoryMonitor';
+import { useEffect } from 'react';
 
 function Router() {
   return (
@@ -17,6 +19,16 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    // Start memory monitoring to prevent crashes
+    const memoryMonitor = MemoryMonitor.getInstance();
+    memoryMonitor.startMonitoring();
+
+    return () => {
+      memoryMonitor.stopMonitoring();
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

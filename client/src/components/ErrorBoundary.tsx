@@ -23,16 +23,25 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('🚨 Error Boundary Details:', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack
-    });
-    
-    this.setState({
-      error,
-      errorInfo
-    });
+    console.error('Navigation Error Boundary caught an error:', error, errorInfo);
+
+    // Log additional context for debugging
+    console.error('Error stack:', error.stack);
+    console.error('Component stack:', errorInfo.componentStack);
+
+    // Clear any potential memory leaks
+    if (typeof window !== 'undefined') {
+      // Clear any ongoing timers or intervals
+      for (let i = 1; i < 99999; i++) {
+        window.clearTimeout(i);
+        window.clearInterval(i);
+      }
+
+      // Force garbage collection if available
+      if ('gc' in window) {
+        (window as any).gc();
+      }
+    }
   }
 
   private handleReload = () => {
@@ -55,11 +64,11 @@ export class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle className="w-6 h-6 text-red-500" />
               <h2 className="text-lg font-semibold text-gray-900">App Error</h2>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               The navigation app encountered an error. This might be due to GPS access issues or network problems.
             </p>
-            
+
             <div className="space-y-2">
               <Button 
                 onClick={this.handleReset}
@@ -69,7 +78,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
               </Button>
-              
+
               <Button 
                 onClick={this.handleReload}
                 className="w-full"
@@ -78,7 +87,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Reload App
               </Button>
             </div>
-            
+
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="mt-4 text-xs">
                 <summary className="cursor-pointer text-gray-500">Error Details</summary>
