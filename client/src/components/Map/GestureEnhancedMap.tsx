@@ -14,6 +14,15 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
   const lastTapTime = useRef<number>(0);
   const tapTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
+  console.log('🗺️ GESTURE DEBUG: GestureEnhancedMap component rendered', {
+    mapExists: !!map,
+    callbacks: {
+      onDoubleTab: !!onDoubleTab,
+      onLongPress: !!onLongPress,
+      onSingleTap: !!onSingleTap
+    }
+  });
+
   useEffect(() => {
     if (!map) return;
 
@@ -124,24 +133,40 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
 
     const mapContainer = map.getContainer();
     
-    console.log('🗺️ GESTURE DEBUG: Setting up touch event listeners on map container');
+    console.log('🗺️ GESTURE DEBUG: Setting up touch event listeners on map container', {
+      containerExists: !!mapContainer,
+      containerTagName: mapContainer?.tagName,
+      containerClass: mapContainer?.className
+    });
     
-    // Use capture phase to ensure we get events first
-    mapContainer.addEventListener('touchstart', handleTouchStart, { 
-      passive: false, 
-      capture: true 
-    });
-    mapContainer.addEventListener('touchend', handleTouchEnd, { 
-      passive: false, 
-      capture: true 
-    });
+    // Add multiple event listener strategies to ensure capture
+    const eventOptions = { passive: false, capture: true };
+    
+    console.log('🗺️ GESTURE DEBUG: Adding touchstart listener...');
+    mapContainer.addEventListener('touchstart', handleTouchStart, eventOptions);
+    console.log('🗺️ GESTURE DEBUG: Adding touchend listener...');
+    mapContainer.addEventListener('touchend', handleTouchEnd, eventOptions);
+    console.log('🗺️ GESTURE DEBUG: Adding wheel listener...');
     mapContainer.addEventListener('wheel', handleWheel, { passive: false });
+    
+    // Also add to document to catch events that might be bubbling
+    document.addEventListener('touchstart', (e) => {
+      console.log('🗺️ GESTURE DEBUG: Document touchstart detected', {
+        target: e.target?.constructor?.name || 'unknown',
+        targetClass: e.target?.className || 'none'
+      });
+    }, eventOptions);
+    
+    console.log('🗺️ GESTURE DEBUG: All touch event listeners attached successfully');
 
     return () => {
       console.log('🗺️ GESTURE DEBUG: Cleaning up touch event listeners');
       mapContainer.removeEventListener('touchstart', handleTouchStart, { capture: true });
       mapContainer.removeEventListener('touchend', handleTouchEnd, { capture: true });
       mapContainer.removeEventListener('wheel', handleWheel);
+      
+      // Clean up document listeners
+      document.removeEventListener('touchstart', handleTouchStart, { capture: true });
       
       // Clean up timeout
       if (tapTimeoutId.current) {
