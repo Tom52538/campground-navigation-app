@@ -17,11 +17,14 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
 
     // Enhanced touch handling for smartphone gestures
     const handleTouchStart = (e: TouchEvent) => {
+      console.log('🗺️ GESTURE DEBUG: Touch start detected', { touchCount: e.touches.length });
       if (e.touches.length === 1) {
+        const touch = e.touches[0];
         touchStart.current = {
           time: Date.now(),
-          pos: { x: e.touches[0].clientX, y: e.touches[0].clientY }
+          pos: { x: touch.clientX, y: touch.clientY }
         };
+        console.log('🗺️ GESTURE DEBUG: Single touch started at', touchStart.current.pos);
       }
     };
 
@@ -32,12 +35,14 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       const duration = touchEnd - touchStart.current.time;
       const now = Date.now();
 
+      console.log('🗺️ GESTURE DEBUG: Touch end -', { duration, timeSinceLastTap: now - lastTap.current });
+
       // Long press detection (for camping waypoints)
       if (duration > 800) {
-        const latlng = map.containerPointToLatLng([
-          touchStart.current.pos.x,
-          touchStart.current.pos.y
-        ]);
+        console.log('🗺️ GESTURE DEBUG: Long press detected');
+        const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+        const latlng = map.containerPointToLatLng(containerPoint);
+        console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
         onLongPress?.(latlng);
         
         // Haptic feedback if available
@@ -45,35 +50,39 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
           navigator.vibrate(50);
         }
       }
-      // Double tap detection (enhanced for camping use)
-      else if (duration < 300) {
-        if (now - lastTap.current < 500) {
-          console.log('🗺️ GESTURE DEBUG: Double tap detected');
-          const latlng = map.containerPointToLatLng([
-            touchStart.current.pos.x,
-            touchStart.current.pos.y
-          ]);
+      // Quick tap detection
+      else if (duration < 500) {
+        const timeSinceLastTap = now - lastTap.current;
+        
+        if (timeSinceLastTap < 400 && lastTap.current > 0) {
+          // Double tap
+          console.log('🗺️ GESTURE DEBUG: Double tap confirmed');
+          const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+          const latlng = map.containerPointToLatLng(containerPoint);
+          console.log('🗺️ GESTURE DEBUG: Double tap coordinates:', { containerPoint, latlng });
           onDoubleTab?.(latlng);
+          lastTap.current = 0; // Reset to prevent triple tap
           e.preventDefault();
         } else {
+          // Potential single tap - wait to see if double tap follows
           console.log('🗺️ GESTURE DEBUG: Single tap detected, waiting for potential double tap...');
-          // Single tap detection for destination setting
           const currentTapTime = now;
+          const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
+          
           setTimeout(() => {
             // Only trigger single tap if no double tap occurred
             if (lastTap.current === currentTapTime) {
               console.log('🗺️ GESTURE DEBUG: Single tap confirmed, triggering destination setting');
-              const latlng = map.containerPointToLatLng([
-                touchStart.current.pos.x,
-                touchStart.current.pos.y
-              ]);
+              const latlng = map.containerPointToLatLng(containerPoint);
+              console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });
               onSingleTap?.(latlng);
             } else {
               console.log('🗺️ GESTURE DEBUG: Single tap cancelled due to double tap');
             }
-          }, 300); // Wait for potential double tap
+          }, 400); // Wait for potential double tap
+          
+          lastTap.current = currentTapTime;
         }
-        lastTap.current = now;
       }
 
       touchStart.current = null;

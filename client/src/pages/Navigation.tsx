@@ -227,32 +227,48 @@ export default function Navigation() {
   }, [selectedPOI]);
 
   // New handler for setting destination marker and initiating route planning
-  const handleDestinationTap = useCallback((event: L.LeafletMouseEvent) => {
-    console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', event.latlng);
-    const newDestination = { lat: event.latlng.lat, lng: event.latlng.lng };
+  const handleDestinationTap = useCallback((latlng: L.LatLng) => {
+    console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', latlng);
+    const newDestination = { lat: latlng.lat, lng: latlng.lng };
+    console.log('🗺️ MAP TAP DEBUG: Setting destination marker', newDestination);
+    
     setDestinationMarker(newDestination);
     setMapCenter(newDestination); // Center map on the new destination
     setUIMode('route-planning');
     setOverlayStates(prev => ({ ...prev, routePlanning: true, search: false, poiInfo: false }));
     setCurrentRoute(null); // Clear existing route
     setIsNavigating(false); // Ensure we are not in navigating mode
+    
+    console.log('🗺️ MAP TAP DEBUG: Destination marker state updated');
+    
     toast({
       title: "Destination Set",
       description: `Navigate to ${newDestination.lat.toFixed(4)}, ${newDestination.lng.toFixed(4)}?`,
       action: (
-        <Button variant="outline" size="sm" onClick={() => {
-          // Logic to start navigation to this destination
-          // For now, we'll just log it. A full route calculation would go here.
-          console.log(`Planning route to destination: ${JSON.stringify(newDestination)}`);
-          // Example: Call getRoute or similar logic
-          // handleNavigateToDestination(newDestination); // You would implement this function
-          toast({ title: "Route calculation initiated." });
+        <Button variant="outline" size="sm" onClick={async () => {
+          try {
+            console.log('🗺️ MAP TAP DEBUG: Starting route calculation');
+            const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
+            const route = await getRoute.mutateAsync({
+              from: currentPosition,
+              to: newDestination,
+              profile
+            });
+            setCurrentRoute(route);
+            setIsNavigating(true);
+            setUIMode('navigation');
+            setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
+            toast({ title: "Navigation started!" });
+          } catch (error) {
+            console.error('🗺️ MAP TAP DEBUG: Route calculation failed', error);
+            toast({ title: "Route calculation failed", variant: "destructive" });
+          }
         }}>
           Go
         </Button>
       ),
     });
-  }, [toast]);
+  }, [toast, currentPosition, getRoute, travelMode]);
 
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
