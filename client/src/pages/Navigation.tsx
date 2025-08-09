@@ -593,7 +593,7 @@ export default function Navigation() {
   });
 
   try {
-    // Display POIs logic - Enhanced debugging for category filtering issues
+    // Display POIs logic - Fixed to show POIs correctly
     const displayPOIs = useMemo(() => {
       console.log('🔍 DISPLAY POIs DEBUG: ========================================');
       console.log('🔍 DISPLAY POIs DEBUG - Starting calculation:', {
@@ -618,20 +618,10 @@ export default function Navigation() {
       let filtered = [...allPOIs];
       console.log(`🔍 DISPLAY POIs DEBUG: ✅ Starting with ${filtered.length} total POIs`);
 
-      // Apply category filters FIRST
+      // Apply category filters FIRST - ONLY if categories are selected
       if (filteredCategories.length > 0) {
         console.log(`🔍 DISPLAY POIs DEBUG: 🎯 Applying ${filteredCategories.length} category filters:`, filteredCategories);
         const beforeFilter = filtered.length;
-        
-        // Debug each filter category
-        filteredCategories.forEach(filterCat => {
-          const matchingPOIs = allPOIs.filter(poi => poi.category === filterCat);
-          console.log(`🔍 DISPLAY POIs DEBUG: Category "${filterCat}" has ${matchingPOIs.length} POIs`);
-          if (matchingPOIs.length > 0) {
-            console.log(`🔍 DISPLAY POIs DEBUG: Sample POIs for "${filterCat}":`, 
-              matchingPOIs.slice(0, 3).map(poi => poi.name));
-          }
-        });
         
         filtered = filtered.filter(poi => {
           const hasCategory = poi && poi.category && filteredCategories.includes(poi.category);
@@ -639,24 +629,14 @@ export default function Navigation() {
         });
         
         console.log(`🔍 DISPLAY POIs DEBUG: ✅ Category filter: ${beforeFilter} → ${filtered.length} POIs`);
-
-        if (filtered.length === 0) {
-          console.log(`🔍 DISPLAY POIs DEBUG: ❌ No POIs match selected categories!`);
-          console.log(`🔍 DISPLAY POIs DEBUG: Available categories:`, allCategories);
-          console.log(`🔍 DISPLAY POIs DEBUG: Selected categories:`, filteredCategories);
-          console.log(`🔍 DISPLAY POIs DEBUG: Exact match check:`, 
-            filteredCategories.map(cat => ({
-              category: cat,
-              exists: allCategories.includes(cat),
-              similarCategories: allCategories.filter(available => 
-                available.toLowerCase().includes(cat.toLowerCase()) || 
-                cat.toLowerCase().includes(available.toLowerCase())
-              )
-            }))
-          );
-        }
       } else {
         console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No category filters applied - showing all POIs');
+        // When no filters are applied, we want to show NO POIs by default to avoid clutter
+        // Only show POIs when actively searching or filtering
+        if (!searchQuery.trim()) {
+          console.log('🔍 DISPLAY POIs DEBUG: ℹ️ No search query either - returning empty array to avoid clutter');
+          return [];
+        }
       }
 
       // Apply search filter SECOND
@@ -678,14 +658,6 @@ export default function Navigation() {
           name: poi.name,
           category: poi.category
         })));
-      } else {
-        console.log(`🔍 DISPLAY POIs DEBUG: ❌ NO POIS TO DISPLAY - Debug summary:`, {
-          totalPOIs: allPOIs.length,
-          hasFilters: filteredCategories.length > 0,
-          hasSearch: searchQuery.length > 0,
-          filterCategories: filteredCategories,
-          searchQuery
-        });
       }
 
       return filtered;
