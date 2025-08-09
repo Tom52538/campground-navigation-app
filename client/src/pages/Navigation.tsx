@@ -154,23 +154,7 @@ export default function Navigation() {
     // Filter POIs directly without problematic memoization
     displayPOIs = allPOIs.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
   }
-  // Show POIs when searched or filtered
-  const shouldShowPOIs = displayPOIs.length > 0;
-
-  console.log('🔍 DISPLAY POIs DEBUG:', {
-    searchQuery: searchQuery.length,
-    filteredCategoriesCount: filteredCategories.length,
-    displayPOIsCount: displayPOIs.length,
-    shouldShowPOIs,
-    firstPOI: displayPOIs[0]?.name || 'none'
-  });
-
-  // Add distance to POIs - only use display POIs for map rendering
-  const poisWithDistance = displayPOIs.map(poi => ({
-    ...poi,
-    distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
-  }));
-
+  
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     if (query.length > 0) {
@@ -365,19 +349,25 @@ export default function Navigation() {
     setSelectedPOI(null);
   }, []);
 
-  const handleToggleCategory = useCallback((category: string) => {
+  const handleCategoryFilter = useCallback((category: string) => {
+    console.log('🔍NAVIGATION DEBUG: handleCategoryFilter called with:', category);
+    console.log('🔍NAVIGATION DEBUG: Current filteredCategories before:', filteredCategories);
+
     setFilteredCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else if (prev.length === 0) {
-        // If no categories selected, select only this one
-        return [category];
+      const isCurrentlySelected = prev.includes(category);
+      let newCategories;
+      if (isCurrentlySelected) {
+        newCategories = prev.filter(c => c !== category);
+        console.log('🔍NAVIGATION DEBUG: Removing category:', category);
       } else {
-        // Add to existing selection
-        return [...prev, category];
+        newCategories = [...prev, category];
+        console.log('🔍NAVIGATION DEBUG: Adding category:', category);
       }
+
+      console.log('🔍NAVIGATION DEBUG: New filteredCategories:', newCategories);
+      return newCategories;
     });
-  }, []);
+  }, [filteredCategories]);
 
   const handleSiteChange = useCallback((site: TestSite) => {
     setCurrentSite(site);
@@ -593,20 +583,22 @@ export default function Navigation() {
   try {
     // Display POIs logic
     const displayPOIs = useMemo(() => {
-      console.log(`🔍 DISPLAY POIs DEBUG:`, {
-        'searchQuery': searchQuery.length,
-        'filteredCategoriesCount': filteredCategories.length,
-        'displayPOIsCount': allPOIs?.length || 0,
-        'shouldShowPOIs': (filteredCategories.length > 0 || searchQuery.trim().length > 0),
-        'firstPOI': allPOIs?.[0]?.name || 'none'
+      const shouldShow = searchQuery.trim().length > 0 || filteredCategories.length > 0 || selectedPOI;
+
+      console.log('🔍 DISPLAY POIs DEBUG:', {
+        searchQuery: searchQuery.length,
+        filteredCategoriesCount: filteredCategories.length,
+        displayPOIsCount: allPOIs?.length || 0,
+        shouldShowPOIs: shouldShow,
+        firstPOI: allPOIs?.[0]?.name || 'none'
       });
 
-      if (!allPOIs) {
-        console.log(`🔍 DISPLAY POIs DEBUG: No POI data available`);
+      if (!shouldShow) {
+        console.log(`🔍 DISPLAY POIs DEBUG: No POIs to show based on filters/selection`);
         return [];
       }
 
-      let filtered = allPOIs;
+      let filtered = allPOIs || [];
       console.log(`🔍 DISPLAY POIs DEBUG: Starting with ${filtered.length} total POIs`);
 
       // Apply category filters
@@ -624,7 +616,7 @@ export default function Navigation() {
 
       // Apply search filter
       if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
+        const query = searchQuery.toLowerCase().trim();
         console.log(`🔍 DISPLAY POIs DEBUG: Applying search filter: "${query}"`);
         const beforeSearch = filtered.length;
         filtered = filtered.filter(poi => 
@@ -644,11 +636,11 @@ export default function Navigation() {
       }
 
       return filtered;
-    }, [allPOIs, filteredCategories, searchQuery]);
+    }, [allPOIs, filteredCategories, searchQuery, selectedPOI]);
 
     const shouldShowPOIs = displayPOIs.length > 0;
 
-    console.log('🔍 POI RENDERING DEBUG:', {
+    console.log('🔍 POIRENDERING DEBUG:', {
       totalPOIs: displayPOIs.length,
       filteredCategories,
       firstFewPOIs: displayPOIs.slice(0, 3).map(poi => poi.name),
@@ -676,7 +668,10 @@ export default function Navigation() {
           center={mapCenter}
           zoom={mapZoom}
           currentPosition={trackingPosition}
-          pois={poisWithDistance}
+          pois={displayPOIs.map(poi => ({ // Use displayPOIs here
+            ...poi,
+            distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
+          }))}
           selectedPOI={selectedPOI}
           route={currentRoute}
           filteredCategories={filteredCategories}

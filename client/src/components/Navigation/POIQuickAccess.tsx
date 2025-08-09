@@ -105,8 +105,10 @@ export const POIQuickAccess = ({ onCategorySelect, selectedCategories }: POIQuic
 
   const handleCategoryClick = useCallback((category: string) => {
     console.log('🎯 POI QUICK ACCESS DEBUG: Button clicked:', category);
+    console.log('🎯 POI QUICK ACCESS DEBUG: Current selected categories before:', selectedCategories);
     onCategorySelect(category);
-  }, [onCategorySelect]);
+    console.log('🎯 POI QUICK ACCESS DEBUG: onCategorySelect called with:', category);
+  }, [onCategorySelect, selectedCategories]);
 
   console.log('🎯 POI QUICK ACCESS DEBUG: Data prepared:', {
     firstRowPOIs: firstRowPOIs.length,
