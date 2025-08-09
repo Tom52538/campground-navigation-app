@@ -29,6 +29,7 @@ interface MapContainerProps {
   onMapClick: () => void;
   onMapLongPress?: (latlng: any) => void;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
+  children?: React.ReactNode;
 }
 
 const CurrentLocationMarker = ({ position }: { position: Coordinates }) => {
@@ -162,6 +163,7 @@ export const MapContainer = ({
   onMapClick,
   onMapLongPress,
   mapStyle = 'outdoors',
+  children,
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
     isVisible: boolean;
@@ -302,10 +304,10 @@ export const MapContainer = ({
         ))}
         
         {route && <RoutePolyline route={route} />}
-        
-        {/* Destination marker - render last to appear on top */}
-        {children}
       </LeafletMapContainer>
+      
+      {/* Destination marker - render as overlay */}
+      {children}
       
       <ZoomGestureIndicator
         isVisible={gestureIndicator.isVisible}
