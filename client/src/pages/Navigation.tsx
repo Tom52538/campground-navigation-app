@@ -570,31 +570,35 @@ export default function Navigation() {
   });
 
   try {
-    // Display POIs logic
+    // Display POIs logic - Fixed to properly show filtered POIs
     const displayPOIs = useMemo(() => {
-      const shouldShow = searchQuery.trim().length > 0 || filteredCategories.length > 0 || selectedPOI;
-
-      console.log('🔍 DISPLAY POIs DEBUG:', {
+      console.log('🔍 DISPLAY POIs DEBUG - Starting calculation:', {
+        allPOIs: allPOIs?.length || 0,
+        filteredCategories,
         searchQuery: searchQuery.length,
-        filteredCategoriesCount: filteredCategories.length,
-        displayPOIsCount: allPOIs?.length || 0,
-        shouldShowPOIs: shouldShow,
-        firstPOI: allPOIs?.[0]?.name || 'none'
+        selectedPOI: !!selectedPOI
       });
 
-      if (!shouldShow) {
-        console.log(`🔍 DISPLAY POIs DEBUG: No POIs to show based on filters/selection`);
+      if (!allPOIs || allPOIs.length === 0) {
+        console.log('🔍 DISPLAY POIs DEBUG: No POIs available');
         return [];
       }
 
-      let filtered = allPOIs || [];
+      // Start with all POIs
+      let filtered = [...allPOIs];
       console.log(`🔍 DISPLAY POIs DEBUG: Starting with ${filtered.length} total POIs`);
 
-      // Apply category filters
+      // Apply category filters FIRST
       if (filteredCategories.length > 0) {
         console.log(`🔍 DISPLAY POIs DEBUG: Applying category filters:`, filteredCategories);
         const beforeFilter = filtered.length;
-        filtered = filtered.filter(poi => poi && poi.category && filteredCategories.includes(poi.category));
+        filtered = filtered.filter(poi => {
+          const hasCategory = poi && poi.category && filteredCategories.includes(poi.category);
+          if (!hasCategory && poi) {
+            console.log(`🔍 DISPLAY POIs DEBUG: POI "${poi.name}" with category "${poi.category}" filtered out`);
+          }
+          return hasCategory;
+        });
         console.log(`🔍 DISPLAY POIs DEBUG: Category filter reduced POIs from ${beforeFilter} to ${filtered.length}`);
 
         if (filtered.length === 0) {
@@ -603,7 +607,7 @@ export default function Navigation() {
         }
       }
 
-      // Apply search filter
+      // Apply search filter SECOND
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
         console.log(`🔍 DISPLAY POIs DEBUG: Applying search filter: "${query}"`);
@@ -618,16 +622,16 @@ export default function Navigation() {
 
       console.log(`🔍 DISPLAY POIs DEBUG: Final filtered POIs count: ${filtered.length}`);
       if (filtered.length > 0) {
-        console.log(`🔍 DISPLAY POIs DEBUG: Sample filtered POIs:`, filtered.slice(0, 3).map(poi => ({
+        console.log(`🔍 DISPLAY POIs DEBUG: Sample filtered POIs:`, filtered.slice(0, 5).map(poi => ({
           name: poi.name,
           category: poi.category
         })));
       }
 
       return filtered;
-    }, [allPOIs, filteredCategories, searchQuery, selectedPOI]);
+    }, [allPOIs, filteredCategories, searchQuery]);
 
-    const shouldShowPOIs = displayPOIs.length > 0;
+    const shouldShowPOIs = displayPOIs.length > 0 || searchQuery.length > 0 || filteredCategories.length > 0;
 
     console.log('🔍 POIRENDERING DEBUG:', {
       totalPOIs: displayPOIs.length,
@@ -657,10 +661,10 @@ export default function Navigation() {
           center={mapCenter}
           zoom={mapZoom}
           currentPosition={trackingPosition}
-          pois={displayPOIs.map(poi => ({ // Use displayPOIs here
+          pois={shouldShowPOIs ? displayPOIs.map(poi => ({
             ...poi,
             distance: formatDistance(calculateDistance(trackingPosition, poi.coordinates))
-          }))}
+          })) : []}
           selectedPOI={selectedPOI}
           route={currentRoute}
           filteredCategories={filteredCategories}
