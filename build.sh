@@ -25,12 +25,10 @@ else
     exit 1
 fi
 
-# Build server
-echo "🏗️ Building server..."
-npx esbuild server/index.ts --bundle --platform=node --target=node18 --outfile=dist/server.js --external:express --external:cors --external:fs --external:path
-
-if [ -f "dist/server.js" ]; then
+# Verify server build
+if [ -f "dist/index.js" ]; then
     echo "✅ Server build successful"
+    ls -la dist/index.js
 else
     echo "❌ Server build failed"
     exit 1
