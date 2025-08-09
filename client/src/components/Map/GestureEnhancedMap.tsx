@@ -80,9 +80,9 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
       // Prevent event from being handled by other components
       e.stopPropagation();
 
-      // Long press detection (for camping waypoints)
+      // Long press detection (for destination setting)
       if (duration > 800) {
-        console.log('🗺️ GESTURE DEBUG: Long press detected');
+        console.log('🗺️ GESTURE DEBUG: Long press detected - setting destination');
         const containerPoint = [touchStart.current.pos.x, touchStart.current.pos.y];
         const latlng = map.containerPointToLatLng(containerPoint);
         console.log('🗺️ GESTURE DEBUG: Long press coordinates:', { containerPoint, latlng });
@@ -116,7 +116,7 @@ export const GestureEnhancedMap = ({ onDoubleTab, onLongPress, onSingleTap }: Ge
           const currentTouchPos = { x: touchStart.current.pos.x, y: touchStart.current.pos.y };
           
           tapTimeoutId.current = setTimeout(() => {
-            console.log('🗺️ GESTURE DEBUG: Single tap confirmed - firing destination event');
+            console.log('🗺️ GESTURE DEBUG: Single tap confirmed - map interaction only');
             const containerPoint = [currentTouchPos.x, currentTouchPos.y];
             const latlng = map.containerPointToLatLng(containerPoint);
             console.log('🗺️ GESTURE DEBUG: Single tap coordinates:', { containerPoint, latlng });

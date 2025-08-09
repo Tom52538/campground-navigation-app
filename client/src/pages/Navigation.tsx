@@ -226,11 +226,11 @@ export default function Navigation() {
     }
   }, [selectedPOI]);
 
-  // New handler for setting destination marker and initiating route planning
-  const handleDestinationTap = useCallback((latlng: L.LatLng) => {
-    console.log('🗺️ MAP TAP DEBUG: Destination tap detected at', latlng);
+  // Handler for setting destination marker on long press
+  const handleDestinationLongPress = useCallback((latlng: L.LatLng) => {
+    console.log('🗺️ LONG PRESS DEBUG: Destination long press detected at', latlng);
     const newDestination = { lat: latlng.lat, lng: latlng.lng };
-    console.log('🗺️ MAP TAP DEBUG: Setting destination marker', newDestination);
+    console.log('🗺️ LONG PRESS DEBUG: Setting destination marker', newDestination);
 
     setDestinationMarker(newDestination);
     setMapCenter(newDestination); // Center map on the new destination
@@ -239,7 +239,7 @@ export default function Navigation() {
     setCurrentRoute(null); // Clear existing route
     setIsNavigating(false); // Ensure we are not in navigating mode
 
-    console.log('🗺️ MAP TAP DEBUG: Destination marker state updated');
+    console.log('🗺️ LONG PRESS DEBUG: Destination marker state updated');
 
     toast({
       title: "Destination Set",
@@ -247,7 +247,7 @@ export default function Navigation() {
       action: (
         <Button variant="outline" size="sm" onClick={async () => {
           try {
-            console.log('🗺️ MAP TAP DEBUG: Starting route calculation');
+            console.log('🗺️ LONG PRESS DEBUG: Starting route calculation');
             const profile = travelMode === 'pedestrian' ? 'walking' : travelMode === 'car' ? 'driving' : 'cycling';
             const route = await getRoute.mutateAsync({
               from: currentPosition,
@@ -260,7 +260,7 @@ export default function Navigation() {
             setOverlayStates(prev => ({ ...prev, navigation: true, routePlanning: false }));
             toast({ title: "Navigation started!" });
           } catch (error) {
-            console.error('🗺️ MAP TAP DEBUG: Route calculation failed', error);
+            console.error('🗺️ LONG PRESS DEBUG: Route calculation failed', error);
             toast({ title: "Route calculation failed", variant: "destructive" });
           }
         }}>
@@ -269,6 +269,16 @@ export default function Navigation() {
       ),
     });
   }, [toast, currentPosition, getRoute, travelMode]);
+
+  // Handler for single tap - just close overlays if needed
+  const handleMapSingleTap = useCallback(() => {
+    console.log('🗺️ SINGLE TAP DEBUG: Single tap detected - handling map interaction');
+    if (selectedPOI) {
+      setSelectedPOI(null);
+      setUIMode('start');
+      setOverlayStates(prev => ({ ...prev, poiInfo: false }));
+    }
+  }, [selectedPOI]);
 
 
   const handleNavigateToPOI = useCallback(async (poi: POI) => {
@@ -683,7 +693,8 @@ export default function Navigation() {
           filteredCategories={filteredCategories}
           onPOIClick={handlePOIClick}
           onPOINavigate={handleNavigateToPOI}
-          onMapClick={handleDestinationTap}
+          onMapClick={handleMapSingleTap}
+          onMapLongPress={handleDestinationLongPress}
           mapStyle={mapStyle}
         >
           {/* Current route line */}

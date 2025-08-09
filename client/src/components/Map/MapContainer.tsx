@@ -27,6 +27,7 @@ interface MapContainerProps {
   onPOIClick: (poi: POI) => void;
   onPOINavigate?: (poi: POI) => void;
   onMapClick: () => void;
+  onMapLongPress?: (latlng: any) => void;
   mapStyle?: 'outdoors' | 'satellite' | 'streets' | 'navigation';
 }
 
@@ -159,6 +160,7 @@ export const MapContainer = ({
   onPOIClick,
   onPOINavigate,
   onMapClick,
+  onMapLongPress,
   mapStyle = 'outdoors',
 }: MapContainerProps) => {
   const [gestureIndicator, setGestureIndicator] = useState<{
@@ -282,7 +284,7 @@ export const MapContainer = ({
         
         <GestureEnhancedMap
           onDoubleTab={handleDoubleTap}
-          onLongPress={handleLongPress}
+          onLongPress={onMapLongPress}
           onSingleTap={onMapClick}
         />
         
