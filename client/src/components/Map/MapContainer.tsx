@@ -280,14 +280,10 @@ export const MapContainer = ({
         
 
         
-        <GestureController
-          onPinchZoom={handlePinchZoom}
-          onDoubleTap={handleDoubleTap}
+        <GestureEnhancedMap
+          onDoubleTab={handleDoubleTap}
           onLongPress={handleLongPress}
-          onSwipeLeft={() => console.log('Swipe left - next panel')}
-          onSwipeRight={() => console.log('Swipe right - previous panel')}
-          onSwipeUp={() => console.log('Swipe up - show details')}
-          onSwipeDown={() => console.log('Swipe down - hide panels')}
+          onSingleTap={onMapClick}
         />
         
         <CurrentLocationMarker position={currentPosition} />
