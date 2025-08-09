@@ -81,7 +81,7 @@ app.use((req, res, next) => {
     if (!distPath) {
       log(`❌ Build directory not found. Tried: ${possiblePaths.join(', ')}`);
       log(`Current working directory: ${process.cwd()}`);
-      log(`Server location: ${__dirname}`);
+      log(`Server location: ${import.meta.dirname || path.dirname(new URL(import.meta.url).pathname)}`);
       
       // List actual directory contents for debugging
       try {
