@@ -26,7 +26,7 @@ import { Volume2, VolumeX, Settings } from 'lucide-react';
 import { VoiceGuide } from '@/lib/voiceGuide';
 import { RouteTracker } from '@/lib/routeTracker';
 import { GestureEnhancedMap } from '@/components/Map/GestureEnhancedMap';
-import { Marker, Polyline } from 'react-leaflet';
+import { Marker, Polyline, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
 
@@ -51,7 +51,7 @@ export default function Navigation() {
   const [currentPanel, setCurrentPanel] = useState<'map' | 'search' | 'navigation' | 'settings'>('map');
 
   // New state for destination marker
-  const [destinationMarker, setDestinationMarker] = useState<Coordinates | null>(null);
+  const [destinationMarker, setDestinationMarker] = useState<{ lat: number; lng: number } | null>(null);
 
   // Transparent Overlay UI state
   const [uiMode, setUIMode] = useState<'start' | 'search' | 'poi-info' | 'route-planning' | 'navigation'>('start');
@@ -551,6 +551,30 @@ export default function Navigation() {
     selectedPOI: !!selectedPOI
   });
 
+  // Define a simple icon for the destination marker
+  const destinationIcon = L.divIcon({
+    className: 'custom-destination-marker',
+    html: `<div style="
+      background: #ff4444; 
+      width: 20px; 
+      height: 20px; 
+      border-radius: 50%; 
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      position: relative;
+    ">
+      <div style="
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+      ">📍</div>
+    </div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
+
   try {
     // Display POIs logic
     const displayPOIs = useMemo(() => {
@@ -647,7 +671,7 @@ export default function Navigation() {
           mapStyle={mapStyle}
         >
           {/* GestureEnhancedMap for handling taps */}
-          <GestureEnhancedMap 
+          <GestureEnhancedMap
             onDoubleTab={handlePOIClick}
             onLongPress={handlePOIClick}
             onSingleTap={handleDestinationTap}
@@ -666,30 +690,16 @@ export default function Navigation() {
           {/* Destination marker */}
           {destinationMarker && (
             <Marker 
-              position={[destinationMarker.lat, destinationMarker.lng]}
-              icon={L.divIcon({
-                className: 'custom-destination-marker',
-                html: `<div style="
-                  background: #ff4444; 
-                  width: 20px; 
-                  height: 20px; 
-                  border-radius: 50%; 
-                  border: 3px solid white;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                  position: relative;
-                ">
-                  <div style="
-                    position: absolute;
-                    top: -8px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    font-size: 10px;
-                  ">📍</div>
-                </div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-              })}
-            />
+              position={[destinationMarker.lat, destinationMarker.lng]} 
+              icon={destinationIcon}
+            >
+              <Popup>
+                <div className="text-center">
+                  <strong>Destination</strong><br />
+                  {destinationMarker.lat.toFixed(4)}, {destinationMarker.lng.toFixed(4)}
+                </div>
+              </Popup>
+            </Marker>
           )}
         </MapContainer>
 
