@@ -78,6 +78,38 @@ app.use((req, res, next) => {
 
   // Use Railway's PORT environment variable or fallback to 5000
   const port = process.env.PORT || 5000;
+  
+  // Handle port conflicts gracefully
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      log(`Port ${port} is in use, attempting to find available port...`);
+      
+      // Kill any processes using the port
+      const { exec } = require('child_process');
+      exec(`fuser -k ${port}/tcp 2>/dev/null || pkill -f "tsx.*server" || pkill -f "node.*${port}" || true`, (error: any) => {
+        if (error) {
+          log(`Failed to kill processes on port ${port}: ${error.message}`);
+        } else {
+          log(`Cleaned up processes on port ${port}`);
+        }
+        
+        // Try to start server again after cleanup
+        setTimeout(() => {
+          server.listen({
+            port,
+            host: "0.0.0.0",
+            reusePort: true,
+          }, () => {
+            log(`serving on port ${port} after cleanup`);
+          });
+        }, 1000);
+      });
+    } else {
+      log(`Server error: ${err.message}`);
+      throw err;
+    }
+  });
+  
   server.listen({
     port,
     host: "0.0.0.0",
