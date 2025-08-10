@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Navigation from "@/pages/Navigation";
 import NotFound from "@/pages/not-found";
 import { MemoryMonitor } from '@/utils/memoryMonitor';
+import { mobileLogger } from '@/utils/mobileLogger';
 import { useEffect } from 'react';
 
 function Router() {
@@ -24,8 +25,16 @@ function App() {
     const memoryMonitor = MemoryMonitor.getInstance();
     memoryMonitor.startMonitoring();
 
+    // Initialize crash detection
+    mobileLogger.logAppState();
+    mobileLogger.log('APP_STARTUP', 'Application starting with crash detection enabled');
+
+    // Log device info for debugging
+    mobileLogger.logDeviceInfo();
+
     return () => {
       memoryMonitor.stopMonitoring();
+      mobileLogger.log('APP_SHUTDOWN', 'Application shutting down');
     };
   }, []);
 

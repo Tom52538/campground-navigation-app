@@ -8,6 +8,7 @@ export class MobileLogger {
   constructor() {
     this.setupMobileLogging();
     this.createLogDisplay();
+    this.setupCrashDetection();
   }
 
   private setupMobileLogging() {
@@ -217,6 +218,136 @@ export class MobileLogger {
   // Export logs for sharing
   exportLogs(): string {
     return this.logs.join('\n');
+  }
+
+  // Crash detection and recovery
+  private setupCrashDetection() {
+    // Detect potential app crashes
+    let lastActivity = Date.now();
+    
+    // Monitor for sudden inactivity (potential crash)
+    setInterval(() => {
+      const now = Date.now();
+      if (now - lastActivity > 60000) { // 1 minute of inactivity
+        this.log('CRASH_DETECTION', 'Potential crash detected - app inactive for >1 minute');
+        this.triggerCrashRecovery();
+      }
+      lastActivity = now;
+    }, 30000);
+
+    // Monitor memory usage
+    if ('memory' in performance) {
+      setInterval(() => {
+        const memory = (performance as any).memory;
+        const usedMB = Math.round(memory.usedJSHeapSize / 1048576);
+        const limitMB = Math.round(memory.jsHeapSizeLimit / 1048576);
+        
+        if (usedMB > limitMB * 0.9) {
+          this.log('MEMORY_WARNING', `Critical memory usage: ${usedMB}MB/${limitMB}MB`);
+          this.triggerMemoryCleanup();
+        }
+      }, 15000);
+    }
+
+    // Detect React component errors
+    window.addEventListener('error', (event) => {
+      if (event.message.includes('React') || event.message.includes('Component')) {
+        this.log('REACT_ERROR', `React component error: ${event.message}`);
+        this.logReactState();
+      }
+    });
+
+    // Monitor query client errors
+    window.addEventListener('unhandledrejection', (event) => {
+      if (event.reason?.toString().includes('query') || event.reason?.toString().includes('fetch')) {
+        this.log('QUERY_ERROR', `Query/Fetch error: ${event.reason}`);
+        this.suggestQueryReset();
+      }
+    });
+  }
+
+  private triggerCrashRecovery() {
+    this.log('CRASH_RECOVERY', 'Attempting automatic crash recovery...');
+    
+    // Clear potential memory leaks
+    for (let i = 1; i < 99999; i++) {
+      window.clearTimeout(i);
+      window.clearInterval(i);
+    }
+
+    // Force garbage collection
+    if ('gc' in window) {
+      (window as any).gc();
+    }
+
+    // Suggest reload if available
+    if (confirm('App may have crashed. Would you like to reload?')) {
+      window.location.reload();
+    }
+  }
+
+  private triggerMemoryCleanup() {
+    this.log('MEMORY_CLEANUP', 'Triggering memory cleanup...');
+    
+    // Clear query cache if available
+    if ((window as any).queryClient) {
+      (window as any).queryClient.clear();
+      this.log('MEMORY_CLEANUP', 'Query cache cleared');
+    }
+
+    // Force garbage collection
+    if ('gc' in window) {
+      (window as any).gc();
+    }
+  }
+
+  private logReactState() {
+    const reactElements = document.querySelectorAll('[data-reactroot], [data-react-checksum]');
+    this.log('REACT_STATE', `React elements found: ${reactElements.length}`);
+    
+    // Check for error boundaries
+    const errorBoundaries = document.querySelectorAll('[class*="error"], [class*="crash"]');
+    if (errorBoundaries.length > 0) {
+      this.log('REACT_ERROR_BOUNDARY', `Error boundaries active: ${errorBoundaries.length}`);
+    }
+  }
+
+  private suggestQueryReset() {
+    this.log('QUERY_RESET', 'Suggesting query client reset due to persistent errors');
+    
+    setTimeout(() => {
+      if ((window as any).queryClient) {
+        (window as any).queryClient.invalidateQueries();
+        this.log('QUERY_RESET', 'Query cache invalidated');
+      }
+    }, 1000);
+  }
+
+  // Enhanced app state logging
+  logAppState() {
+    const state = {
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      memory: 'memory' in performance ? {
+        used: Math.round(((performance as any).memory.usedJSHeapSize / 1048576)),
+        total: Math.round(((performance as any).memory.totalJSHeapSize / 1048576)),
+        limit: Math.round(((performance as any).memory.jsHeapSizeLimit / 1048576))
+      } : 'unavailable',
+      viewport: `${window.innerWidth}x${window.innerHeight}`,
+      connection: (navigator as any).connection ? {
+        type: (navigator as any).connection.effectiveType,
+        downlink: (navigator as any).connection.downlink,
+        rtt: (navigator as any).connection.rtt
+      } : 'unavailable',
+      geolocation: navigator.geolocation ? 'available' : 'unavailable',
+      storage: {
+        localStorage: !!window.localStorage,
+        sessionStorage: !!window.sessionStorage
+      }
+    };
+    
+    this.log('APP_STATE', JSON.stringify(state, null, 2));
   }
 }
 

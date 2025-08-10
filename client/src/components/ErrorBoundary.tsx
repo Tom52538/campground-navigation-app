@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { mobileLogger } from '@/utils/mobileLogger';
 
 interface Props {
   children: ReactNode;
@@ -25,9 +26,16 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Navigation Error Boundary caught an error:', error, errorInfo);
 
-    // Log additional context for debugging
-    console.error('Error stack:', error.stack);
-    console.error('Component stack:', errorInfo.componentStack);
+    // Log to mobile logger for detailed tracking
+    mobileLogger.log('CRITICAL_ERROR', `App crash: ${error.message}`);
+    mobileLogger.log('ERROR_STACK', error.stack || 'No stack trace');
+    mobileLogger.log('COMPONENT_STACK', errorInfo.componentStack);
+    
+    // Log app state at time of crash
+    mobileLogger.logAppState();
+
+    // Store error info for display
+    this.setState({ error, errorInfo });
 
     // Clear any potential memory leaks
     if (typeof window !== 'undefined') {
@@ -42,6 +50,9 @@ export class ErrorBoundary extends Component<Props, State> {
         (window as any).gc();
       }
     }
+
+    // Log recovery attempt
+    mobileLogger.log('CRASH_RECOVERY', 'Error boundary activated, attempting cleanup');
   }
 
   private handleReload = () => {
@@ -85,6 +96,19 @@ export class ErrorBoundary extends Component<Props, State> {
                 variant="outline"
               >
                 Reload App
+              </Button>
+
+              <Button 
+                onClick={() => {
+                  const logs = mobileLogger.exportLogs();
+                  console.log('=== CRASH LOGS ===\n', logs);
+                  alert('Crash logs exported to console. Check developer tools.');
+                }}
+                className="w-full mt-2"
+                variant="secondary"
+                size="sm"
+              >
+                Export Debug Logs
               </Button>
             </div>
 
