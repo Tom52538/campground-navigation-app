@@ -929,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conditions = ['Clear', 'Clouds', 'Rain', 'Partly Cloudy', 'Thunderstorm'];
       const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
-      const forecast = Array.from({ length: 7 }, (_, index) => {
+      const forecast = Array.from({ length: 3 }, (_, index) => {
         const date = new Date();
         date.setDate(date.getDate() + index);
 
