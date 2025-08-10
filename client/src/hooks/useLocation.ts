@@ -19,14 +19,25 @@ export const useLocation = (props?: UseLocationProps) => {
   console.log(`🔍 GPS DEBUG: useLocation initialized - Site: ${currentSite}, UseRealGPS: ${useRealGPS}, Position:`, currentPosition);
 
   useEffect(() => {
-    console.log(`🔍 GPS DEBUG: Effect triggered - useRealGPS: ${useRealGPS}, currentSite: ${currentSite}`);
+    console.group('🔍 GPS POSITION CHANGE - Weather Impact');
+    console.log(`📡 GPS Mode Change:`, {
+      useRealGPS,
+      currentSite,
+      previousPosition: currentPosition,
+      mockCoordinates,
+      timestamp: new Date().toISOString()
+    });
     
     // Clear existing GPS watch safely
     if (watchId !== undefined) {
       try {
         if (navigator.geolocation) {
           navigator.geolocation.clearWatch(watchId);
-          console.log(`🔍 GPS DEBUG: Cleared watch ${watchId}`);
+          console.log(`🛑 GPS Watch Cleared:`, {
+            watchId,
+            reason: 'GPS mode change',
+            timestamp: new Date().toISOString()
+          });
         }
       } catch (e) {
         console.warn('Error clearing GPS watch:', e);
@@ -48,7 +59,30 @@ export const useLocation = (props?: UseLocationProps) => {
               lat: position.coords.latitude,
               lng: position.coords.longitude,
             };
-            console.log(`🔍 GPS DEBUG: Real GPS position:`, coords);
+            
+            console.group('🛰️ REAL GPS POSITION UPDATE - Weather Impact');
+            console.log(`📍 New GPS Coordinates:`, {
+              coordinates: coords,
+              accuracy: position.coords.accuracy,
+              altitude: position.coords.altitude,
+              speed: position.coords.speed,
+              heading: position.coords.heading,
+              timestamp: new Date(position.timestamp).toISOString(),
+              weatherQueryWillUpdate: true
+            });
+            
+            console.log(`🌦️ Weather Query Impact:`, {
+              previousCoords: currentPosition,
+              newCoords: coords,
+              coordinateChange: {
+                latDiff: Math.abs(coords.lat - currentPosition.lat),
+                lngDiff: Math.abs(coords.lng - currentPosition.lng)
+              },
+              willTriggerNewWeatherFetch: true,
+              queryKey: ['/api/weather', Math.round(coords.lat * 1000), Math.round(coords.lng * 1000)]
+            });
+            console.groupEnd();
+            
             setCurrentPosition(coords);
             setError(null);
           },
@@ -71,11 +105,36 @@ export const useLocation = (props?: UseLocationProps) => {
       }
     } else {
       // Mock GPS mode - always use site coordinates
-      console.log(`🔍 GPS DEBUG: Using MOCK GPS:`, mockCoordinates);
+      console.group('🎯 MOCK GPS MODE - Weather Impact');
+      console.log(`📍 Mock GPS Coordinates:`, {
+        site: currentSite,
+        coordinates: mockCoordinates,
+        previousPosition: currentPosition,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`🌦️ Weather Query Impact:`, {
+        mockPosition: mockCoordinates,
+        coordinateChange: {
+          latDiff: Math.abs(mockCoordinates.lat - currentPosition.lat),
+          lngDiff: Math.abs(mockCoordinates.lng - currentPosition.lng)
+        },
+        weatherQueryKey: ['/api/weather', Math.round(mockCoordinates.lat * 1000), Math.round(mockCoordinates.lng * 1000)],
+        willTriggerWeatherFetch: true
+      });
+      
+      console.log('🔒 Position locked to mock coordinates:', {
+        site: currentSite,
+        coordinates: mockCoordinates,
+        weatherWillUpdate: true
+      });
+      console.groupEnd();
+      
       setCurrentPosition(mockCoordinates);
-      console.log('Locked to mock position:', mockCoordinates);
       setError(null);
     }
+    
+    console.groupEnd();
 
     // Cleanup function
     return () => {
@@ -152,8 +211,28 @@ export const useLocation = (props?: UseLocationProps) => {
 
   const toggleGPS = () => {
     const newGPSState = !useRealGPS;
-    console.log(`🔍 GPS DEBUG: toggleGPS called - switching from ${useRealGPS} to ${newGPSState}`);
-    console.trace('🔍 GPS DEBUG: toggleGPS call stack');
+    
+    console.group('🔄 GPS TOGGLE - Weather Impact Analysis');
+    console.log(`🎚️ GPS Mode Switch:`, {
+      from: useRealGPS ? 'Real GPS' : 'Mock GPS',
+      to: newGPSState ? 'Real GPS' : 'Mock GPS',
+      currentPosition,
+      targetPosition: newGPSState ? 'Will fetch real location' : mockCoordinates,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`🌦️ Expected Weather Impact:`, {
+      currentWeatherQueryKey: ['/api/weather', Math.round(currentPosition.lat * 1000), Math.round(currentPosition.lng * 1000)],
+      expectedNewQueryKey: newGPSState 
+        ? 'Will update based on real GPS coordinates' 
+        : ['/api/weather', Math.round(mockCoordinates.lat * 1000), Math.round(mockCoordinates.lng * 1000)],
+      weatherDataWillRefresh: true,
+      cacheWillInvalidate: true
+    });
+    
+    console.trace('🔍 GPS Toggle call stack');
+    console.groupEnd();
+    
     setUseRealGPS(newGPSState);
   };
 

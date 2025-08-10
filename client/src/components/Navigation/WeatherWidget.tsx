@@ -1,6 +1,7 @@
 import { useWeather } from '@/hooks/useWeather';
 import { Coordinates } from '@/types/navigation';
 import { Cloud, Sun, CloudRain, Loader2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 interface WeatherWidgetProps {
   coordinates: Coordinates;
@@ -20,15 +21,75 @@ const getWeatherIcon = (condition: string) => {
 
 export const WeatherWidget = ({ coordinates }: WeatherWidgetProps) => {
   const { data: weather, isLoading, error } = useWeather(coordinates.lat, coordinates.lng);
+  const previousCoordinates = useRef<Coordinates>(coordinates);
   
-  // Debug logging
-  console.log('🌦️ BASIC WEATHER WIDGET DEBUG:', {
-    coordinates,
-    weather,
-    isLoading,
-    error: error?.message,
+  // Track coordinate changes and their impact on weather data
+  useEffect(() => {
+    const coordsChanged = 
+      Math.abs(coordinates.lat - previousCoordinates.current.lat) > 0.001 ||
+      Math.abs(coordinates.lng - previousCoordinates.current.lng) > 0.001;
+      
+    if (coordsChanged) {
+      console.group('📍 WEATHER WIDGET: Coordinate Change Detected');
+      console.log('🔄 Coordinate Update:', {
+        previous: previousCoordinates.current,
+        current: coordinates,
+        change: {
+          latDelta: coordinates.lat - previousCoordinates.current.lat,
+          lngDelta: coordinates.lng - previousCoordinates.current.lng,
+          distance: Math.sqrt(
+            Math.pow(coordinates.lat - previousCoordinates.current.lat, 2) + 
+            Math.pow(coordinates.lng - previousCoordinates.current.lng, 2)
+          ) * 111000 // Rough meters
+        },
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log('🌤️ Weather Query Impact:', {
+        previousQueryKey: ['/api/weather', Math.round(previousCoordinates.current.lat * 1000), Math.round(previousCoordinates.current.lng * 1000)],
+        newQueryKey: ['/api/weather', Math.round(coordinates.lat * 1000), Math.round(coordinates.lng * 1000)],
+        willInvalidateCache: true,
+        expectedNewRequest: true
+      });
+      
+      console.groupEnd();
+      previousCoordinates.current = coordinates;
+    }
+  }, [coordinates.lat, coordinates.lng]);
+  
+  // Detailed GPS and Weather logging
+  console.group('🌦️ WEATHER WIDGET DEBUG');
+  console.log('📍 GPS Coordinates:', {
+    latitude: coordinates.lat,
+    longitude: coordinates.lng,
+    rounded: {
+      lat: Math.round(coordinates.lat * 1000) / 1000,
+      lng: Math.round(coordinates.lng * 1000) / 1000
+    },
     timestamp: new Date().toLocaleTimeString()
   });
+  
+  console.log('🔄 Weather Hook State:', {
+    isLoading,
+    hasData: !!weather,
+    hasError: !!error,
+    errorMessage: error?.message,
+    queryKey: ['/api/weather', Math.round(coordinates.lat * 1000), Math.round(coordinates.lng * 1000)],
+    timestamp: new Date().toLocaleTimeString()
+  });
+  
+  if (weather) {
+    console.log('🌡️ Weather Data:', {
+      temperature: weather.temperature,
+      condition: weather.condition,
+      humidity: weather.humidity,
+      windSpeed: weather.windSpeed,
+      dataAge: weather.timestamp ? new Date().getTime() - new Date(weather.timestamp).getTime() : 'unknown',
+      timestamp: new Date().toLocaleTimeString()
+    });
+  }
+  
+  console.groupEnd();
 
   if (isLoading) {
     return (
