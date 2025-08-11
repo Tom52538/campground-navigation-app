@@ -113,8 +113,8 @@ app.use((req, res, next) => {
     } else {
       console.log('📦 Setting up production static serving...');
       
-      // Custom static file serving with Railway absolute path
-      const distPath = "/app/dist/public";
+      // Custom static file serving with correct build path
+      const distPath = path.resolve(process.cwd(), "dist/public");
       
       if (!fs.existsSync(distPath)) {
         console.error(`❌ Warning: Build directory not found at ${distPath}. Run 'npm run build' first.`);
