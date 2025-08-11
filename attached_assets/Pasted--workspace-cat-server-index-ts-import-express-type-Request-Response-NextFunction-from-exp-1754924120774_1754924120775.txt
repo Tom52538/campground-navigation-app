@@ -1,0 +1,295 @@
+~/workspace$ cat server/index.ts
+import express, { type Request, Response, NextFunction } from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
+import fs from "fs";
+
+// Enhanced logging utility
+const debugLog = (level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG', message: string, data?: any) => {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] ${level}: ${message}`;
+  
+  if (data) {
+    console.log(logEntry, data);
+  } else {
+    console.log(logEntry);
+  }
+
+  // Also use the existing log function
+  log(`${level}: ${message}`);
+};
+
+// Server health monitoring
+const serverHealth = {
+  startTime: Date.now(),
+  requestCount: 0,
+  errorCount: 0,
+  lastError: null as string | null,
+  memoryUsage: () => process.memoryUsage()
+};
+
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Enhanced request monitoring middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  const requestId = Math.random().toString(36).substr(2, 9);
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  // Increment request counter
+  serverHealth.requestCount++;
+
+  // Log request start for debugging
+  debugLog('DEBUG', `Request ${requestId} started`, {
+    method: req.method,
+    path: req.path,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip,
+    headers: req.headers
+  });
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const isError = res.statusCode >= 400;
+    
+    if (isError) {
+      serverHealth.errorCount++;
+      serverHealth.lastError = `${req.method} ${path} - ${res.statusCode}`;
+    }
+
+    if (path.startsWith("/api")) {
+      let logLine = `${requestId}: ${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      const logLevel = isError ? 'ERROR' : duration > 1000 ? 'WARN' : 'INFO';
+      debugLog(logLevel, logLine);
+    }
+
+    // Log slow requests
+    if (duration > 2000) {
+      debugLog('WARN', `Slow request detected`, {
+        requestId,
+        method: req.method,
+        path,
+        duration,
+        statusCode: res.statusCode
+      });
+    }
+  });
+
+  next();
+});
+
+// Health check endpoint - add before other routes
+app.get('/api/health', (req, res) => {
+  const uptime = Date.now() - serverHealth.startTime;
+  const memory = serverHealth.memoryUsage();
+  
+  const healthData = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: Math.round(uptime / 1000), // seconds
+    requests: {
+      total: serverHealth.requestCount,
+      errors: serverHealth.errorCount,
+      errorRate: serverHealth.requestCount > 0 ? 
+        Math.round((serverHealth.errorCount / serverHealth.requestCount) * 100) : 0
+    },
+    memory: {
+      rss: Math.round(memory.rss / 1024 / 1024), // MB
+      heapUsed: Math.round(memory.heapUsed / 1024 / 1024), // MB
+      heapTotal: Math.round(memory.heapTotal / 1024 / 1024), // MB
+      external: Math.round(memory.external / 1024 / 1024) // MB
+    },
+    lastError: serverHealth.lastError,
+    environment: {
+      nodeVersion: process.version,
+      platform: process.platform,
+      nodeEnv: process.env.NODE_ENV || 'development'
+    }
+  };
+
+  // Mark as unhealthy if error rate is too high
+  if (healthData.requests.errorRate > 10) {
+    healthData.status = 'unhealthy';
+  }
+
+  res.json(healthData);
+});
+
+(async () => {
+  const server = await registerRoutes(app);
+
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Enhanced error logging
+    debugLog('ERROR', `Unhandled error in ${req.method} ${req.path}`, {
+      status,
+      message,
+      stack: err.stack,
+      userAgent: req.get('User-Agent'),
+      ip: req.ip
+    });
+
+    // Update server health
+    serverHealth.errorCount++;
+    serverHealth.lastError = `${req.method} ${req.path} - ${status}: ${message}`;
+
+    res.status(status).json({ 
+      message,
+      timestamp: new Date().toISOString(),
+      requestId: Math.random().toString(36).substr(2, 9)
+    });
+    
+    // Don't throw in production - just log
+    if (process.env.NODE_ENV !== 'production') {
+      throw err;
+    }
+  });
+
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (process.env.NODE_ENV === "development") {
+    await setupVite(app, server);
+  } else {
+    // Custom static file serving with Railway absolute path
+    const distPath = "/app/dist/public";
+    
+    if (!fs.existsSync(distPath)) {
+      log(`Warning: Build directory not found at ${distPath}. Run 'npm run build' first.`);
+    } else {
+      // Serve static assets
+      app.use(express.static(distPath));
+      
+      // Handle client-side routing - serve index.html for all non-API routes
+      app.use("*", (req, res) => {
+        // Exclude API routes from SPA fallback
+        if (req.path.startsWith('/api')) {
+          return res.status(404).json({ message: 'API endpoint not found' });
+        }
+        
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    }
+  }
+
+  // Use Railway's PORT environment variable or fallback to 5000
+  const port = process.env.PORT || 5000;
+  
+  // Enhanced server startup diagnostics
+  debugLog('INFO', 'Starting server with configuration', {
+    port,
+    nodeEnv: process.env.NODE_ENV,
+    nodeVersion: process.version,
+    platform: process.platform,
+    cwd: process.cwd(),
+    distPath: process.env.NODE_ENV !== "development" ? "/app/dist/public" : 'dev-mode'
+  });
+
+  // Check for required environment variables
+  const requiredEnvVars = ['GOOGLE_DIRECTIONS_API_KEY', 'OPENWEATHER_API_KEY'];
+  const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+  
+  if (missingEnvVars.length > 0) {
+    debugLog('WARN', 'Missing environment variables', { missing: missingEnvVars });
+  } else {
+    debugLog('INFO', 'All required environment variables present');
+  }
+
+  // Check static files in production
+  if (process.env.NODE_ENV !== "development") {
+    const distPath = "/app/dist/public";
+    const indexPath = path.join(distPath, "index.html");
+    
+    debugLog('INFO', 'Checking production assets', {
+      distPath,
+      distExists: fs.existsSync(distPath),
+      indexExists: fs.existsSync(indexPath),
+      files: fs.existsSync(distPath) ? fs.readdirSync(distPath).slice(0, 10) : []
+    });
+  }
+  
+  server.listen({
+    port,
+    host: "0.0.0.0",
+  }, () => {
+    debugLog('INFO', `🚀 Server successfully started on port ${port}`, {
+      timestamp: new Date().toISOString(),
+      pid: process.pid,
+      memory: process.memoryUsage(),
+      uptime: process.uptime()
+    });
+    
+    log(`serving on port ${port}`);
+    
+    // Start periodic health monitoring
+    setInterval(() => {
+      const memory = process.memoryUsage();
+      const heapUsedMB = Math.round(memory.heapUsed / 1024 / 1024);
+      
+      if (heapUsedMB > 100) { // Warn if using more than 100MB
+        debugLog('WARN', `High memory usage detected: ${heapUsedMB}MB`, memory);
+      }
+      
+      debugLog('DEBUG', 'Server health check', {
+        uptime: Math.round(process.uptime()),
+        requests: serverHealth.requestCount,
+        errors: serverHealth.errorCount,
+        memoryMB: heapUsedMB
+      });
+    }, 60000); // Every minute
+  });
+  
+  // Graceful shutdown handling
+  process.on('SIGTERM', () => {
+    debugLog('INFO', 'SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      debugLog('INFO', 'Server closed');
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    debugLog('INFO', 'SIGINT received, shutting down gracefully');
+    server.close(() => {
+      debugLog('INFO', 'Server closed');
+      process.exit(0);
+    });
+  });
+
+  // Catch unhandled errors
+  process.on('uncaughtException', (error) => {
+    debugLog('ERROR', 'Uncaught Exception', {
+      message: error.message,
+      stack: error.stack
+    });
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    debugLog('ERROR', 'Unhandled Rejection', {
+      reason: reason,
+      promise: promise
+    });
+  });
+})();
+~/workspace$ 

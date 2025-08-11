@@ -1,0 +1,31 @@
+~/workspace$ rm -f .git/index.lock
+~/workspace$ git add .gitignore
+~/workspace$ git commit -m "Update .gitignore to exclude attached_assets folder"
+[main 57b0813] Update .gitignore to exclude attached_assets folder
+ 18 files changed, 2 insertions(+), 114 deletions(-)
+ delete mode 100644 attached_assets/Legende_1754477451494.png
+ delete mode 100644 attached_assets/Legende_1754478613217.png
+ delete mode 100644 attached_assets/Pasted--Railway-Deployment-Issue-Summary-Original-Problem-User-s-Express-TypeScript-application-was-1754922733257_1754922733258.txt
+ delete mode 100644 attached_assets/Pasted--Railway-Deployment-Issue-Summary-Original-Problem-User-s-Express-TypeScript-application-was-1754923500649_1754923500649.txt
+ delete mode 100644 attached_assets/Screenshot_20250810-233315_1754861606852.png
+ delete mode 100644 attached_assets/Screenshot_20250810-233550_1754861770586.png
+ delete mode 100644 attached_assets/Screenshot_20250810-233705_1754861841510.png
+ delete mode 100644 attached_assets/Screenshot_20250810-233807_1754861909760.png
+ delete mode 100644 attached_assets/Screenshot_20250810-233923_1754861969549.png
+ delete mode 100644 attached_assets/beach resort-1_1754478714796.png
+ delete mode 100644 attached_assets/beach resort-1_1754480543905.png
+ delete mode 100644 attached_assets/image_1754486448778.png
+ delete mode 100644 attached_assets/image_1754486704905.png
+ delete mode 100644 attached_assets/image_1754487424001.png
+ delete mode 100644 attached_assets/image_1754487996270.png
+ delete mode 100644 attached_assets/image_1754488254615.png
+ delete mode 100644 attached_assets/image_1754491891128.png
+~/workspace$ git push origin main
+To https://github.com/Tom52538/campground-navigation-app
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/Tom52538/campground-navigation-app'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+~/workspace$ 

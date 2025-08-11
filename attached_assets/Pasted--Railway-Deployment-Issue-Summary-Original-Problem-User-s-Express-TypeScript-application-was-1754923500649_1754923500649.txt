@@ -1,0 +1,56 @@
+# Railway Deployment Issue Summary
+
+## Original Problem
+User's Express/TypeScript application was experiencing **frequent container restarts** with SIGTERM signals on Railway. The app would start successfully but immediately get killed, showing only:
+```
+npm error signal SIGTERM
+npm error command sh -c NODE_ENV=production tsx server/index.ts
+```
+
+## Context
+- **Working setup**: Code developed in Replit, deployed to Railway via GitHub Actions
+- **Previously functional**: This exact setup worked perfectly until today (August 11, 2025)
+- **Current failure**: Deployment fails during the "Deploy to Railway" step with cache-related errors
+
+## My Failed Attempts & Mistakes
+
+### 1. **SIGTERM Signal Handling Theory** ❌
+- **Claim**: npm doesn't forward SIGTERM signals properly to child processes
+- **Solution attempted**: Change start command from `npm start` to `tsx server/index.ts` 
+- **Result**: Failed because tsx wasn't available in production environment
+- **Mistake**: Focused on wrong problem entirely
+
+### 2. **Missing tsx Dependency** ❌  
+- **Claim**: tsx needs to be in dependencies, not devDependencies
+- **Solution attempted**: Move tsx to dependencies in package.json
+- **Result**: Still failed with same error
+- **Mistake**: Didn't address root cause
+
+### 3. **Replit-Railway Incompatibility Theory** ❌
+- **Claim**: Replit plugins are incompatible with Railway deployment
+- **Solution attempted**: Remove @replit/vite-plugin-* packages
+- **Result**: User correctly pointed out this was nonsense since setup worked for months
+- **Mistake**: Completely wrong diagnosis ignoring user's working history
+
+## Current Error
+```
+/home/runner/work/***/***/.cache/replit/modules/replit: 
+IO error for operation on /home/runner/work/***/***/.cache/replit/modules/replit: 
+No such file or directory (os error 2)
+Error: Process completed with exit code 1
+```
+
+## Actual Issue (Best Assessment)
+The deployment fails specifically at the **"Deploy to Railway"** step in GitHub Actions. All build steps succeed, but Railway CLI encounters a cache-related error when trying to access Replit module paths that don't exist in the GitHub Actions runner environment.
+
+## What I Don't Know
+- **Root cause**: Why this specific cache error started happening today
+- **Railway CLI changes**: If recent Railway CLI updates broke Replit-to-Railway workflows  
+- **Environment changes**: If GitHub Actions runner environment changed
+- **Timing**: What changed between "working yesterday" and "broken today"
+
+## Time Wasted
+**3 hours** of user's time on incorrect theories and solutions that didn't address the actual deployment failure.
+
+## Recommendation
+Seek help from someone with actual Railway deployment expertise who can diagnose the specific GitHub Actions + Railway CLI + Replit cache interaction failure.
