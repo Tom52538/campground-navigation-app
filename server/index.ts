@@ -1,13 +1,11 @@
-// === DEBUG LOGGING START ===
-console.log('🚀 Server starting with NODE_ENV:', process.env.NODE_ENV);
-console.log('📊 Process PID:', process.pid);
-console.log('💾 Memory usage at start:', process.memoryUsage());
+// === PRODUCTION LOGGING START ===
+if (process.env.NODE_ENV === 'development') {
+  console.log('🚀 Server starting with NODE_ENV:', process.env.NODE_ENV);
+}
 
 // Graceful shutdown handling
 process.on('SIGTERM', () => {
   console.log('⚠️  SIGTERM received - graceful shutdown initiated');
-  console.log('💾 Memory usage at SIGTERM:', process.memoryUsage());
-  console.log('⏰ Uptime at shutdown:', process.uptime(), 'seconds');
   process.exit(0);
 });
 
@@ -18,27 +16,27 @@ process.on('SIGINT', () => {
 
 // Error handling
 process.on('uncaughtException', (error) => {
-  console.error('💥 Uncaught Exception:', error);
-  console.error('Stack:', error.stack);
+  console.error('💥 Uncaught Exception:', error.message);
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚫 Unhandled Rejection at:', promise);
-  console.error('Reason:', reason);
+  console.error('🚫 Unhandled Rejection:', reason);
   process.exit(1);
 });
 
-// Memory monitoring
-setInterval(() => {
-  const usage = process.memoryUsage();
-  console.log('📈 Memory check:', {
-    rss: Math.round(usage.rss / 1024 / 1024) + 'MB',
-    heapUsed: Math.round(usage.heapUsed / 1024 / 1024) + 'MB',
-    uptime: Math.round(process.uptime()) + 's'
-  });
-}, 30000); // Alle 30 Sekunden
-// === DEBUG LOGGING END ===
+// Memory monitoring only in development
+if (process.env.NODE_ENV === 'development') {
+  setInterval(() => {
+    const usage = process.memoryUsage();
+    console.log('📈 Memory check:', {
+      rss: Math.round(usage.rss / 1024 / 1024) + 'MB',
+      heapUsed: Math.round(usage.heapUsed / 1024 / 1024) + 'MB',
+      uptime: Math.round(process.uptime()) + 's'
+    });
+  }, 60000); // Every 60 seconds, only in dev
+}
+// === PRODUCTION LOGGING END ===
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
@@ -46,11 +44,10 @@ import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import fs from "fs";
 
-// Debug environment
-console.log('🔧 Key environment variables:');
-console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- PORT:', process.env.PORT);
-console.log('- Available memory:', process.memoryUsage().rss / 1024 / 1024, 'MB');
+// Environment info (development only)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔧 Environment - NODE_ENV:', process.env.NODE_ENV, 'PORT:', process.env.PORT);
+}
 
 const app = express();
 app.use(express.json());

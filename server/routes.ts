@@ -366,7 +366,10 @@ async function getPOIData(site: string): Promise<POI[]> {
                 subCategory = 'general';
               }
             }
-            console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}`);
+            // Debug logging only in development
+            if (process.env.NODE_ENV === 'development' && index < 5) {
+              console.log(`Roompot POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}`);
+            }
 
             let coordinates;
             if (feature.geometry.type === 'Point') {
@@ -600,7 +603,10 @@ async function getPOIData(site: string): Promise<POI[]> {
                 subCategory = 'general';
               }
             }
-            console.log(`Combined POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}, Ref: ${props.ref}`);
+            // Debug logging only in development (first 5 POIs only)
+            if (process.env.NODE_ENV === 'development' && index < 5) {
+              console.log(`Combined POI ${index}: ${name}, Building: ${buildingType}, Category: ${category}, SubCategory: ${subCategory}, Ref: ${props.ref}`);
+            }
 
             let coordinates;
             if (feature.geometry.type === 'Point') {
@@ -772,14 +778,9 @@ async function getPOIData(site: string): Promise<POI[]> {
       return acc;
     }, {});
 
-    console.log(`POI API: Loaded ${filteredPOIs.length} POIs for site ${site}`);
-    console.log(`🔍 POI DEBUG: Category breakdown:`, categoryBreakdown);
-    console.log(`🔍 POI DEBUG: Sample POI response:`, filteredPOIs.slice(0, 2).map(poi => ({
-      id: poi.id,
-      name: poi.name,
-      category: poi.category,
-      coordinates: poi.coordinates
-    })));
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`POI API: Loaded ${filteredPOIs.length} POIs for site ${site}`);
+    }
 
     // Set proper headers to ensure data reaches client
     // headers are set in the API route handler, not here. This function just returns data.

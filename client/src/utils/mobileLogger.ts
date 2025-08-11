@@ -6,9 +6,12 @@ export class MobileLogger {
   private isVisible = false;
 
   constructor() {
-    this.setupMobileLogging();
-    this.createLogDisplay();
-    this.setupCrashDetection();
+    // Only enable mobile logger in development
+    if (import.meta.env.DEV) {
+      this.setupMobileLogging();
+      this.createLogDisplay();
+      this.setupCrashDetection();
+    }
   }
 
   private setupMobileLogging() {
@@ -131,6 +134,9 @@ export class MobileLogger {
   }
 
   log(level: string, message: string) {
+    // Only log in development mode
+    if (!import.meta.env.DEV) return;
+    
     const timestamp = new Date().toISOString().substr(11, 12);
     const logEntry = `[${timestamp}] ${level}: ${message}`;
     
